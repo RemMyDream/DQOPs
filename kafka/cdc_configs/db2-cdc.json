@@ -1,0 +1,22 @@
+{
+  "name": "db2-cdc",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "source_data",
+    "database.port": "5432",
+    "database.user": "postgres",
+    "database.password": "postgres",
+    "plugin.name": "pgoutput",
+    "slot.name": "db2",
+    "publication.autocreate.mode": "filtered",
+    "include.schema.changes": "false",
+    "key.converter": "io.confluent.connect.avro.AvroConverter",
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "key.converter.schema.registry.url": "http://schema-registry:8081",
+    "value.converter.schema.registry.url": "http://schema-registry:8081",
+    "database.dbname": "db2",
+    "database.server.name": "db2",
+    "table.include.list": "public.devices,public.users",
+    "topic.prefix": "db2"
+  }
+}

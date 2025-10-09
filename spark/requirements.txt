@@ -1,10 +1,13 @@
 confluent-kafka==2.3.0
 pyspark==3.5.1
 pyarrow
-pandas 
+pandas==2.1.4
 numpy
 protobuf
 requests
 minio
 ipython
 pyyaml
+psycopg2-binary
+SQLAlchemy==1.4.49
+delta-spark==3.2.0

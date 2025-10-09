@@ -1,4 +1,24 @@
 services:
+  data_source:
+    image: postgres:15
+    ports: 
+      - "5432:5432"
+    container_name: data_source
+    command: ['postgres', '-c', 'wal_level=logical']
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: data_source 
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - kafka-network
+      - default
   kafka-node-1:
     image: confluentinc/cp-enterprise-kafka:7.6.0
     container_name: kafka-node-1
@@ -24,7 +44,7 @@ services:
       KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
 
     volumes:
-      - ./kafka-node-1-data:/var/lib/kafka/data-node-1
+      - ./data/kafka-node-1:/var/lib/kafka/data-node-1
     healthcheck:
       test: ["CMD", "kafka-topics", "--bootstrap-server=kafka-node-1:9092", "--list"]
       interval: 30s
@@ -58,7 +78,7 @@ services:
       KAFKA_CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 4
       KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
     volumes:
-      - ./kafka-node-2-data:/var/lib/kafka/data-node-2
+      - ./data/kafka-node-2:/var/lib/kafka/data-node-2
     healthcheck:
       test: ["CMD", "kafka-topics", "--bootstrap-server=kafka-node-2:9092", "--list"]
       interval: 30s
@@ -94,7 +114,7 @@ services:
       KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
 
     volumes:
-      - ./kafka-node-3-data:/var/lib/kafka/data-node-3
+      - ./data/kafka-node-3:/var/lib/kafka/data-node-3
     healthcheck:
       test: ["CMD", "kafka-topics", "--bootstrap-server=kafka-node-3:9092", "--list"]
       interval: 30s
@@ -130,7 +150,7 @@ services:
       KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
 
     volumes:
-      - ./kafka-node-4-data:/var/lib/kafka/data-node-4
+      - ./data/kafka-node-4:/var/lib/kafka/data-node-4
     healthcheck:
       test: ["CMD", "kafka-topics", "--bootstrap-server=kafka-node-4:9092", "--list"]
       interval: 30s
@@ -177,6 +197,8 @@ services:
       CONTROL_CENTER_REPLICATION_FACTOR: 3
       CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 4
       KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      CONTROL_CENTER_CONNECT_HEALTHCHECK_ENDPOINT: '/connectors'
+      CONTROL_CENTER_CONNECT_CONNECT-DEFAULT_CLUSTER: 'debezium:8083'
 
     depends_on:
       kafka-node-1:
@@ -187,13 +209,61 @@ services:
         condition: service_healthy
       kafka-node-4:
         condition: service_healthy
+      debezium: 
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9021/healthcheck']
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - kafka-network
       - default
+
+  debezium:
+    build: .
+    image: debezium:latest
+    container_name: cdc-debezium
+    ports:
+      - "8083:8083"
+    environment:
+      BOOTSTRAP_SERVERS: kafka-node-1:9092
+      GROUP_ID: cdc-debezium
+      CONFIG_STORAGE_TOPIC: connect_configs
+      OFFSET_STORAGE_TOPIC: connect_offsets
+      STATUS_STORAGE_TOPIC: connect_status
+      KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
+      VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "-X", "GET", "http://localhost:8083/connectors"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: on-failure
+    networks:
+      - kafka-network
+  debezium-ui:
+    image: debezium/debezium-ui
+    container_name: debezium-ui
+    hostname: debezium-ui
+    depends_on:
+      debezium:
+        condition: service_healthy
+    ports:
+      - "28080:8080"
+    environment:
+      KAFKA_CONNECT_URIS: http://debezium:8083
+    networks:
+      - kafka-network
 
 networks:
   kafka-network:
     driver: bridge
   default:
-    name: bigdata-net
+    name: bigdata-net   
     external: true
+volumes:
+  postgres_data:
