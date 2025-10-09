@@ -1,4 +1,2 @@
-./kafka/kafka-node-1-data
-./kafka/kafka-node-2-data
-./kafka/kafka-node-3-data
-./kafka/kafka-node-4-data
+kafka/data/*
+__pycache__

@@ -13,7 +13,7 @@ services:
       - ./data:/opt/spark/data
       - ./spark_apps:/opt/spark/apps
       - spark-logs:/opt/spark/spark-events
-      - ../utils/sys_conf:/opt/sys_conf
+      - ../utils:/opt/spark/utils
     env_file:
       - .env.spark
     ports:
@@ -36,7 +36,7 @@ services:
       - ./data:/opt/spark/data
       - ./spark_apps:/opt/spark/apps
       - spark-logs:/opt/spark/spark-events
-      - ../utils/sys_conf:/opt/sys_conf
+      - ../utils:/opt/spark/utils
     ports:
       - '18080:18080'
     networks:
@@ -56,7 +56,7 @@ services:
       - ./data:/opt/spark/data
       - ./spark_apps:/opt/spark/apps
       - spark-logs:/opt/spark/spark-events
-      - ../utils/sys_conf:/opt/sys_conf
+      - ../utils:/opt/spark/utils
     networks:
       - default
       - spark_network
