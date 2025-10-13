@@ -23,11 +23,16 @@ It also manages dependencies between batch and streaming tasks, ensuring reliabi
 *   **Data Quality (DQOps):** DQOps is integrated to ensure data quality across the lakehouse. It connects to the Spark Thrift Server to retrieve schemas and run data quality checks using SQL.
 *   **Query Engine (Spark Thrift Server):** The Spark Thrift Server provides a JDBC/ODBC interface to the data stored in the lakehouse, allowing BI tools to query the data using standard SQL.
 *   **Analytics & BI (Apache Superset):** Superset is a modern data exploration and visualization platform. It connects to the Spark Thrift Server to query the gold layer data and build interactive dashboards.
-*   **CDC (Debezium):** 
-*   **Messesge queue (Apache Kafka):**
-*   **... (Feast):**
-*   **... (MLFlow):**
-*   **... (Prometheus + Grafana):**
+*   **CDC (Debezium):** Debezium continuously monitors PostgreSQL’s transaction logs to detect real-time changes (insert/update/delete). It streams these events to Apache Kafka, enabling real-time data ingestion into the lakehouse and instant fraud detection scenarios.
+*   **Messesge queue (Apache Kafka):** Apache Kafka serves as the event streaming backbone. It decouples producers (Debezium, backend systems) from consumers (Spark streaming, Infer Service, Feature Store).
+*   **Feature Store (Feast):** Feast acts as a centralized feature store for machine learning applications.It stores and serves computed features from the Gold layer, ensuring feature consistency between training and real-time inference. Feast allows the Infer Service to retrieve the latest user or transaction features directly during prediction.
+*   **Model Lifecycle Management (MLFlow):** MLflow manages the entire machine learning lifecycle:
+    *   **Experiment tracking (metrics, parameters, artifacts)**
+    *   **Model versioning and registry**
+    *   **Deployment of trained models to the Infer Service**: Models trained offline (batch) using Spark are logged to MLflow and then deployed for real-time inference.
+*   **Monitoring & Alerting (Prometheus + Grafana):**
+    * Prometheus collects metrics from system components (Kafka, Spark, Airflow, Infer Service).
+    * Grafana visualizes these metrics in real-time dashboards and triggers alerts based on thresholds (e.g., data ingestion lag, inference latency, or error rate).
 
 
 ## Data Flow
@@ -56,3 +61,9 @@ It also manages dependencies between batch and streaming tasks, ensuring reliabi
 Reference
 1. https://github.com/qdinh18/Data_Quality_in_Lakehouse/tree/main?tab=readme-ov-file
 2. https://github.com/dqops/dqo
+3. Learn spark: 
+3.1. https://medium.com/@MarinAgli1/setting-up-a-spark-standalone-cluster-on-docker-in-layman-terms-8cbdc9fdd14b
+3.2. https://medium.com/@suffyan.asad1/spark-parallelization-of-reading-data-from-jdbc-sources-e8b35e94cb82 
+3.3. https://medium.com/@dkalouris/setting-up-and-connecting-airflow-and-spark-using-docker-compose-9773dec21bc8
+4. Airflow: https://medium.com/@dkalouris/setting-up-and-connecting-airflow-and-spark-using-docker-compose-9773dec21bc8
+5. Learn architecture: https://medium.com/@simardeep.oberoi/building-a-data-streaming-pipeline-leveraging-kafka-spark-airflow-and-docker-16527f9e9142
