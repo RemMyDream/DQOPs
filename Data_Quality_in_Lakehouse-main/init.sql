@@ -1,0 +1,4 @@
+CREATE DATABASE IF NOT EXISTS metastore_db;
+CREATE USER IF NOT EXISTS 'myuser'@'%' IDENTIFIED BY 'mypassword';
+GRANT ALL PRIVILEGES ON metastore_db.* TO 'myuser'@'%';
+FLUSH PRIVILEGES;

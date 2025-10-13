@@ -1,0 +1,21 @@
+services:
+  dqops:
+    image: dqops/dqo
+    container_name: dqops
+    volumes:
+      - ./dqops_userhome:/dqo/userhome
+      - ./data:/dqo/data
+    ports:
+      - "8888:8888"
+    environment:
+      - DQO_INSTANCE_NAME=DQOpsInstance
+      - DQO_CLOUD_LOGIN=false  
+    stdin_open: true  
+    tty: true         
+    networks:
+      - default
+
+networks:
+  default:
+    name: bigdata-net
+    external: True
