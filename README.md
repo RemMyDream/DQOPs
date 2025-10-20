@@ -55,9 +55,6 @@ It also manages dependencies between batch and streaming tasks, ensuring reliabi
 *   **Data Quality:** DQOps
 *   **BI & Analytics:** Apache Superset
 
-
-
-
 Reference
 1. https://github.com/qdinh18/Data_Quality_in_Lakehouse/tree/main?tab=readme-ov-file
 2. https://github.com/dqops/dqo
@@ -67,3 +64,5 @@ Reference
 3.3. https://medium.com/@dkalouris/setting-up-and-connecting-airflow-and-spark-using-docker-compose-9773dec21bc8
 4. Airflow: https://medium.com/@dkalouris/setting-up-and-connecting-airflow-and-spark-using-docker-compose-9773dec21bc8
 5. Learn architecture: https://medium.com/@simardeep.oberoi/building-a-data-streaming-pipeline-leveraging-kafka-spark-airflow-and-docker-16527f9e9142
+6. GDELT Dataset: http://data.gdeltproject.org/documentation/GDELT-Event_Codebook-V2.0.pdf
+7. https://stooq.com/q/d/?f=17890501&t=20251020&s=%5Espx&c=0
