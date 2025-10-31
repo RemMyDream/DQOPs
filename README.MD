@@ -1,4 +1,4 @@
-chạy code sau để có data trong postgres
+chạy code sau trong powershell để có data trong postgres
 
 ```bash
 wsl
