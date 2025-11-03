@@ -1,0 +1,10 @@
+spec:
+  type: python
+  mode: current_value
+  fields:
+    field_name: min_percent
+    display_name: min_percent
+    help_text: Minimum accepted value for the actual_value returned by the sensor.
+    data_type: double
+    required: true
+    default_value: 100.0
