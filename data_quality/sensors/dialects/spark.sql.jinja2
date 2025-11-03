@@ -150,51 +150,46 @@
     {%- endif -%}
 {% endmacro %}
 
-{%- macro render_data_grouping_projections(table_alias_prefix  = 'analyzed_table', indentation = '   ') -%}
-    {%- if data_groupings is not none and (data_groupings | length()) > 0 -%}
-        {% for attribute in data_groupings %}
-            {%- if not loop.first -%},{{ eol() }}{% endif -%}
-                {{ indentation }}
-            {%- with data_grouping_level = data_groupings[attribute] -%}
-                {%- if data_grouping_level.source == 'tag' -%}
-                    {{ make_text_constant(data_grouping_level.tag) }}
-                {%- elif data_grouping_level.source == 'column_value' -%}
-                    {{ render_column(data_grouping_level.column, table_alias_prefix) }}
-                {%- endif -%}
-            {%- endwith %} AS grouping_{{ attribute }}
-        {% endfor %}
-    {%- endif -%}
-{% endmacro %}
-
-{%- macro render_data_grouping_projections_reference(table_alias_prefix = 'grouping_table', indentation = '    ') -%}
+{% macro render_data_grouping_projections(table_alias_prefix = 'analyzed_table', indentation = '    ') %}
     {%- if data_groupings is not none and (data_groupings | length()) > 0 -%}
         {%- for attribute in data_groupings -%}
-            {%- if not loop.first -%}
-                ,{{ eol() }}
-            {%- else -%}
-                {{ eol() }}
-            {%- endif -%}
-            {{ indentation }}{{ table_alias_prefix }}.grouping_{{ attribute }}
+            {{ ',' }}
+            {%- with data_grouping_level = data_groupings[attribute] -%}
+                {%- if data_grouping_level.source == 'tag' -%}
+                    {{ eol() }}{{ indentation }}{{ make_text_constant(data_grouping_level.tag) }}
+                {%- elif data_grouping_level.source == 'column_value' -%}
+                    {{ eol() }}{{ indentation }}{{ render_column(data_grouping_level.column, table_alias_prefix) }}
+                {%- endif -%}
+            {%- endwith %} AS grouping_{{ attribute }}
         {%- endfor -%}
     {%- endif -%}
 {% endmacro %}
 
-{% macro render_time_dimension_projection(table_alias_prefix = 'analyzed_table', indentation = '    ') %}
-    {%- if time_series is not none -%}
-        {{- eol() -}}
-        {{ indentation }}{{ render_time_dimension_expression(table_alias_prefix) }} AS time_period,
-        {{ eol() -}}{{ indentation }}TIMESTAMP({{ render_time_dimension_expression(table_alias_prefix) }}) AS time_period_utc
+
+{% macro render_data_grouping_projections_reference(table_alias_prefix = 'grouping_table', indentation = '    ') %}
+    {%- if data_groupings is not none and (data_groupings | length()) > 0 -%}
+        {%- for attribute in data_groupings -%}
+            {{- ',' -}}{{- eol() }}
+            {{ indentation }}{{ table_alias_prefix }}.grouping_{{ attribute -}}
+        {%- endfor -%}
     {%- endif -%}
 {% endmacro %}
 
-{% macro render_time_dimension_projection_reference(table_alias_prefix = 'grouping_table', indentation = '  ') %}
+{% macro render_time_dimension_projections(table_alias_prefix = 'analyzed_table', indentation = '    ') %}
     {%- if time_series is not none -%}
-        {{- eol() -}}
+        {{ ',' -}}{{- eol() -}}
+        {{ indentation }}{{ render_time_dimension_expression(table_alias_prefix) }} AS time_period,{{ eol() -}}
+        {{ indentation }}TIMESTAMP({{ render_time_dimension_expression(table_alias_prefix) }}) AS time_period_utc
+    {%- endif -%}
+{% endmacro %}
+
+{% macro render_time_dimension_projections_reference(table_alias_prefix = 'grouping_table', indentation = '    ') %}
+    {%- if time_series is not none -%}
+        {{ ',' -}}{{- eol() -}}
         {{ indentation }}time_period,{{ eol() -}}
         {{ indentation }}time_period_utc
     {%- endif -%}
 {% endmacro %}
-
 
 {# ==========================================================
    SparkSQL-Compatible Time Range Filters
@@ -320,39 +315,17 @@
    → Sinh phần WHERE (và cả bộ lọc ngày) trong câu query.
    ===================================================== #}
 {% macro render_where_clause(extra_filter = none, table_alias_prefix = 'analyzed_table', indentation = '') %}
-    {# Gom toàn bộ các bộ lọc có thể đến từ nhiều nguồn:
-       - table.filter
-       - parameters.filter
-       - extra_filter
-       - additional_filters
-       rồi loại bỏ giá trị None #}
-    {%- with filters = ([table.filter|default(none, true), parameters.filter|default(none, true), extra_filter|default(none, true)] 
-        | reject('none') | list) + (additional_filters | list) -%}
-
+    {%- with filters = ([table.filter|default(none, true), parameters.filter|default(none, true), extra_filter|default(none, true)] | reject('none') | list) + (additional_filters | list) -%}
         {%- if (filters | length) > 0 %}
 {{ indentation ~ 'WHERE ' -}}
-            {# Lặp qua từng filter trong danh sách #}
             {%- for filter in filters -%}
                 {%- if not loop.first -%}
                     {{ eol() ~ indentation ~ '      AND ' }}
                 {%- endif -%}
-
-                {# Thay thế placeholder trong filter:
-                   - {column} → tên cột target
-                   - {table}  → tên bảng gốc
-                   - {alias}  → alias của bảng phân tích
-                 #}
-                {{ "(" -}} 
-                {{ filter | replace('{column}', render_target_column('analyzed_table')) 
-                          | replace('{table}', render_target_table()) 
-                          | replace('{alias}', table_alias_prefix) }} 
-                {{- ")" -}}
+                {{ "(" -}} {{ filter | replace('{column}', render_target_column('analyzed_table')) | replace('{table}', render_target_table()) | replace('{alias}', table_alias_prefix) }} {{- ")" -}}
             {%- endfor -%}
-
-            {# Nếu có filter theo thời gian, thêm vào sau cùng với AND #}
             {{ render_date_range_filters(eol() ~ indentation ~ '      AND ', table_alias_prefix, indentation ~ '      ') }}
         {%- else -%}
-            {# Nếu không có filter khác → chỉ render phần lọc theo thời gian #}
             {{ render_date_range_filters(eol() ~ indentation ~ 'WHERE ', table_alias_prefix, indentation ~ '      ') }}
         {%- endif -%}
     {%- endwith -%}
@@ -363,42 +336,33 @@
    → Tạo danh sách các cột dùng trong GROUP BY và ORDER BY
    ===================================================== #}
 {% macro render_grouping_column_names() %}
-    {# Trường hợp có nhóm dữ liệu (data_groupings)
-       → sinh ra grouping_attr1, grouping_attr2, ... #}
     {%- if (data_groupings is not none and (data_groupings | length()) > 0) -%}
         {%- for attribute in data_groupings -%}
-            {%- if not loop.first -%}, {% endif -%}
-            grouping_{{ attribute }}
+            {%- if not loop.first -%}
+                {{ ', ' }}
+            {%- endif -%}
+                grouping_{{ attribute }}
         {%- endfor -%}
     {%- endif -%}
-
-    {# Nếu có time_series → thêm cột thời gian vào grouping #}
     {%- if time_series is not none -%}
-        {%- if (data_groupings is not none and (data_groupings | length()) > 0) -%}, {% endif -%}
-        time_period, time_period_utc
+        {%- if (data_groupings is not none and (data_groupings | length()) > 0) -%}
+            {{ ', ' }}
+        {%- endif -%}
+            {{ 'time_period' }}, {{ 'time_period_utc' }}
     {%- endif -%}
 {% endmacro %}
 
-{# =====================================================
-   Macro: render_group_by
-   → Sinh câu GROUP BY
-   ===================================================== #}
 {% macro render_group_by(indentation = '') %}
     {%- if (data_groupings is not none and (data_groupings | length()) > 0) or time_series is not none %}
 {{ indentation }}GROUP BY {{ render_grouping_column_names() }}
     {%- endif -%}
 {% endmacro %}
 
-{# =====================================================
-   Macro: render_order_by
-   → Sinh câu ORDER BY tương tự GROUP BY
-   ===================================================== #}
 {% macro render_order_by(indentation = '') %}
     {%- if (data_groupings is not none and (data_groupings | length()) > 0) or time_series is not none %}
 {{ indentation }}ORDER BY {{ render_grouping_column_names() }}
     {%- endif -%}
 {% endmacro %}
-
 {# =====================================================
    Macro: render_date_format
    → Chuyển format ngày định nghĩa trong config sang format Spark
@@ -437,46 +401,6 @@
     {%- endif -%}
 {% endmacro -%}
 
-
-{# 
-    Macro để render SQL query lấy mẫu dữ liệu lỗi (error samples)
-    
-    Tham số:
-    - wrap_condition: Điều kiện bọc ngoài câu WHERE => Khi muốn kiểm tra lỗi chỉ trên subset dữ liệu (VD: chỉ kiểm tra đơn hàng đã hoàn thành)
-    - render_null_check: Có lọc bỏ giá trị NULL trước khi kiểm tra lỗi hay không (mặc định: true)
-    - override_samples_limit: Giới hạn số mẫu lỗi lấy về
-    - value_order_by: Sắp xếp các mẫu lỗi theo giá trị tăng/giảm dần (ASC/DESC, mặc định: ASC)
-    - sample_index: Thêm cột đánh số thứ tự mẫu trong mỗi nhóm | dùng khi có grouping - biết đây là mẫu thứ mấy trong nhóm (ví dụ mẫu thứ 2 trong nhóm country = 'vietnam' (mặc định: true)
-    - order_by_value_first: Sắp xếp theo giá trị trước khi sắp xếp theo ID (mặc định: true)
-    - order_by_expression: Biểu thức sắp xếp tùy chỉnh
-
-    E.g: 
-    Input: 
-        {% call render_error_sampler(
-            wrap_condition='AND',
-            render_null_check=true,
-            override_samples_limit=5,
-            value_order_by='ASC',
-            sample_index=true,
-            order_by_expression='ABS({column} - 100)'
-        ) %}
-            total_price < 0 OR total_price > 10000000
-        {% endcall %}
-
-    data_groupings = {
-    'region': {
-        'source': 'column_value',
-        'column': 'customer_region'
-        }
-    }
-    error_sampling = {
-        'samples_limit': 5,
-        'total_samples_limit': 1000,
-        'id_columns': ['order_id']
-    }
-
-
-#}
 {% macro render_error_sampler(
     wrap_condition = '',
     render_null_check = true,
