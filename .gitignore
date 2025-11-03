@@ -1,3 +1,4 @@
 kafka/data/*
 __pycache__
 Data_Quality_in_Lakehouse-main/
+dqops
