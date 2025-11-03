@@ -9,7 +9,7 @@
 %}
 
 {% set macro_schema_name = target_table.schema_name -%}
-{% set macro_table_name = target_table.table_name -%}
+{% set macro_table_name = target_table.table_name -%}   
 {% set calculated_column_expression = table.columns[column_name].sql_expression | default('', true) -%}
 
 {% set time_series = time_series | default(none, true) -%}
@@ -17,10 +17,20 @@
         mode: ['current_time', 'timestamp_column']: Cách lấy thời gian, lấy đến thời điểm hiện tại hoặc là nhóm theo cột được định nghĩa
         timestamp_column: str: Tên cột chứa timestamp (dùng khi mode = timestamp_column)
         time_gradient: Độ chia nhỏ nhất
-        timestamp_column_data_type: ['DATE', 'TIMESTAMP']: Kiểu dữ liệu của cột timestamp_column
     #}
 
 {% set time_window_filter = time_window_filter | default(none, true) -%}
+    {# Chứa thông tin giới hạn khoảng thời gian mà người dùng hoặc hệ thống muốn áp dụng khi sinh ra truy vấn SQL (từ ngày nào -> ngày nào)
+    time_window_filter:
+        from_date: ngày
+        to_date
+        from_date_time: ngày + giờ
+        to_date_time
+        from_date_time_offset: thêm timezone
+        to_date_time_offset
+        daily_partitioning_include_today: có bao gồm ngày hôm nay không -> boolean
+        monthly_partitioning_include_current_month: có bao gồm tháng hiện tại không -> boolean
+    #}
 {% set timestamp_column_data_type = table.columns[time_series.timestamp_column].type_snapshot.column_type | upper | default(none, true) -%}
 {% set data_groupings = data_groupings | default(none, true) -%}
     {# data_groupings = {
@@ -58,6 +68,17 @@
         {{ foreign_table }}
     {%- endif -%}
 {%- endmacro -%}
+
+{%- macro render_target_column(table_alias_prefix = 'analyzed_table') -%}
+    {%- if calculated_column_expression != '' -%}
+        ({{ calculated_column_expression | 
+        replace('{column}', table_alias_prefix ~ '.' ~ quote_identifier(column_name)) | 
+        replace('{table}', render_target_table()) | 
+        replace('{alias}', table_alias_prefix) }})
+    {%- else -%}
+        {{ table_alias_prefix }}.{{ quote_identifier(column_name) }}
+    {%- endif -%}
+{%- endmacro %}
 
 {%- macro render_column(column_name, table_alias_prefix = 'analyzed_table') -%}
     {%- if calculated_column_expression != '' -%}
@@ -173,3 +194,422 @@
         {{ indentation }}time_period_utc
     {%- endif -%}
 {% endmacro %}
+
+
+{# ==========================================================
+   SparkSQL-Compatible Time Range Filters
+   Support only DATE and TIMESTAMP types
+   ----------------------------------------------------------
+   time_window_filter: 
+     - from_date / from_date_time / from_date_time_offset: mốc bắt đầu
+     - to_date / to_date_time / to_date_time_offset: mốc kết thúc
+     - daily_partitioning_recent_days: số ngày gần nhất
+     - monthly_partitioning_recent_months: số tháng gần nhất
+     - daily_partitioning_include_today: có tính hôm nay không
+     - monthly_partitioning_include_current_month: có tính tháng hiện tại không
+   ========================================================== #}
+
+
+{% macro render_end_date_filter(prefix_to_render = none, table_alias_prefix = 'analyzed_table') %}
+    {%- if time_window_filter is not none -%}
+
+        {# ======================================================
+           1️⃣ Nếu có end-date cụ thể được chỉ định 
+           (ưu tiên offset → datetime → date)
+           E.g Output: AND analyzed_table.`created_at` < '2025-11-01T23:59:59+07:00'
+           ====================================================== #}
+        {%- if time_window_filter.to_date_time_offset | default(none, true) is not none -%}
+            {{ prefix_to_render -}}{{ render_column(time_series.timestamp_column, table_alias_prefix) }} {{- ' < ' -}} {{ make_text_constant(time_window_filter.to_date_time_offset) }}
+
+        {%- elif time_window_filter.to_date_time | default(none, true) is not none -%}
+            {{ prefix_to_render -}}{{ render_column(time_series.timestamp_column, table_alias_prefix) }} {{- ' < ' -}} {{ make_text_constant(time_window_filter.to_date_time) }}
+
+        {%- elif time_window_filter.to_date | default(none, true) is not none -%}
+            {{ prefix_to_render -}}{{ render_column(time_series.timestamp_column, table_alias_prefix) }} {{- ' < ' -}} {{ make_text_constant(time_window_filter.to_date) }}
+
+
+        {# ======================================================
+           2️⃣ Nếu không có end-date cụ thể → dùng rule theo partition
+           - daily_partitioning_include_today = false → exclude hôm nay
+           - monthly_partitioning_include_current_month = false → exclude tháng hiện tại
+           ====================================================== #}
+
+        {%- elif time_window_filter.daily_partitioning_include_today is false -%}
+            {{ prefix_to_render -}}
+            {# Nếu cột là TIMESTAMP thì cần CAST cho khớp kiểu #}
+            {%- if is_instant(timestamp_column_data_type) == 'true' -%}
+                {{ render_column(time_series.timestamp_column, table_alias_prefix) }} {{- ' < ' -}} CAST(CURRENT_DATE() AS TIMESTAMP)
+            {%- else -%}
+                {{ render_column(time_series.timestamp_column, table_alias_prefix) }} {{- ' < ' -}} CURRENT_DATE()
+            {%- endif -%}
+
+        {%- elif time_window_filter.monthly_partitioning_include_current_month is false -%}
+            {{ prefix_to_render -}}
+            {# Lọc dữ liệu trước đầu tháng hiện tại #}
+            {%- if is_instant(timestamp_column_data_type) == 'true' -%}
+                {{ render_column(time_series.timestamp_column, table_alias_prefix) }} {{- ' < ' -}} CAST(date_trunc('CURRENT_DATE()', 'month', timestamp_column_data_type) AS TIMESTAMP)
+            {%- else -%}
+                {{ render_column(time_series.timestamp_column, table_alias_prefix) }} {{- ' < ' -}} date_trunc('CURRENT_DATE()', 'month', timestamp_column_data_type)
+            {%- endif -%}
+
+        {%- endif -%}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro render_date_range_filters(prefix_to_render = none, table_alias_prefix = 'analyzed_table', indentation = '      ') %}
+    {%- if time_window_filter is not none and (time_series.timestamp_column | default(none, true)) is not none -%}
+
+        {# ======================================================
+           1️⃣ Nếu có from-date cụ thể được chỉ định
+           (ưu tiên offset → datetime → date)
+           ====================================================== #}
+        {%- if time_window_filter.from_date_time_offset | default(none, true) is not none -%}
+            {{ prefix_to_render -}}{{ render_column(time_series.timestamp_column, table_alias_prefix) }} {{- ' >= ' -}} {{ make_text_constant(time_window_filter.from_date_time_offset) }}
+            {{- render_end_date_filter(eol() ~ indentation ~ 'AND ', table_alias_prefix) -}}
+
+        {%- elif time_window_filter.from_date_time | default(none, true) is not none -%}
+            {{ prefix_to_render -}}{{ render_column(time_series.timestamp_column, table_alias_prefix) }} {{- ' >= ' -}} {{ make_text_constant(time_window_filter.from_date_time) }}
+            {{- render_end_date_filter(eol() ~ indentation ~ 'AND ', table_alias_prefix) -}}
+
+        {%- elif time_window_filter.from_date | default(none, true) is not none -%}
+            {{ prefix_to_render -}}{{ render_column(time_series.timestamp_column, table_alias_prefix) }} {{- ' >= ' -}} {{ make_text_constant(time_window_filter.from_date) }}
+            {{- render_end_date_filter(eol() ~ indentation ~ 'AND ', table_alias_prefix) -}}
+
+
+        {# ======================================================
+           2️⃣ Nếu không có mốc cụ thể → dùng quy tắc gần đây
+           daily_partitioning_recent_days → ví dụ: 7 ngày gần nhất
+           ====================================================== #}
+        {%- elif time_window_filter.daily_partitioning_recent_days | default(none, true) is not none -%}
+            {{ prefix_to_render -}}
+            {%- if is_instant(timestamp_column_data_type) == 'true' -%}
+                {{ render_column(time_series.timestamp_column, table_alias_prefix) }} {{- ' >= ' -}} CAST(DATE_ADD(CURRENT_DATE(), -{{ time_window_filter.daily_partitioning_recent_days }}) AS TIMESTAMP)
+            {%- else -%}
+                {{ render_column(time_series.timestamp_column, table_alias_prefix) }} {{- ' >= ' -}} DATE_ADD(CURRENT_DATE(), -{{ time_window_filter.daily_partitioning_recent_days }})
+            {%- endif -%}
+            {{- render_end_date_filter(eol() ~ indentation ~ 'AND ', table_alias_prefix) -}}
+
+
+        {# ======================================================
+           3️⃣ Hoặc dùng monthly_partitioning_recent_months 
+           → ví dụ: 3 tháng gần nhất
+           ====================================================== #}
+        {%- elif time_window_filter.monthly_partitioning_recent_months | default(none, true) is not none -%}
+            {{ prefix_to_render -}}
+            {%- if is_instant(timestamp_column_data_type) == 'true' -%}
+                {{ render_column(time_series.timestamp_column, table_alias_prefix) }} >= CAST(ADD_MONTHS(DATE_TRUNC('MONTH', CURRENT_DATE()), -{{ time_window_filter.monthly_partitioning_recent_months }}) AS TIMESTAMP)
+            {%- else -%}
+                {{ render_column(time_series.timestamp_column, table_alias_prefix) }} >= ADD_MONTHS(DATE_TRUNC('MONTH', CURRENT_DATE()), -{{ time_window_filter.monthly_partitioning_recent_months }})
+            {%- endif -%}
+            {{- render_end_date_filter(eol() ~ indentation ~ 'AND ', table_alias_prefix) -}}
+
+
+        {# ======================================================
+           4️⃣ Nếu không có điều kiện from_date nào, chỉ dùng end_date
+           (ví dụ chỉ muốn lọc "trước ngày X")
+           ====================================================== #}
+        {%- else -%}
+            {{- render_end_date_filter(prefix_to_render, table_alias_prefix) -}}
+        {%- endif -%}
+
+    {%- endif -%}
+{% endmacro %}
+
+{# =====================================================
+   Macro: render_where_clause
+   → Sinh phần WHERE (và cả bộ lọc ngày) trong câu query.
+   ===================================================== #}
+{% macro render_where_clause(extra_filter = none, table_alias_prefix = 'analyzed_table', indentation = '') %}
+    {# Gom toàn bộ các bộ lọc có thể đến từ nhiều nguồn:
+       - table.filter
+       - parameters.filter
+       - extra_filter
+       - additional_filters
+       rồi loại bỏ giá trị None #}
+    {%- with filters = ([table.filter|default(none, true), parameters.filter|default(none, true), extra_filter|default(none, true)] 
+        | reject('none') | list) + (additional_filters | list) -%}
+
+        {%- if (filters | length) > 0 %}
+{{ indentation ~ 'WHERE ' -}}
+            {# Lặp qua từng filter trong danh sách #}
+            {%- for filter in filters -%}
+                {%- if not loop.first -%}
+                    {{ eol() ~ indentation ~ '      AND ' }}
+                {%- endif -%}
+
+                {# Thay thế placeholder trong filter:
+                   - {column} → tên cột target
+                   - {table}  → tên bảng gốc
+                   - {alias}  → alias của bảng phân tích
+                 #}
+                {{ "(" -}} 
+                {{ filter | replace('{column}', render_target_column('analyzed_table')) 
+                          | replace('{table}', render_target_table()) 
+                          | replace('{alias}', table_alias_prefix) }} 
+                {{- ")" -}}
+            {%- endfor -%}
+
+            {# Nếu có filter theo thời gian, thêm vào sau cùng với AND #}
+            {{ render_date_range_filters(eol() ~ indentation ~ '      AND ', table_alias_prefix, indentation ~ '      ') }}
+        {%- else -%}
+            {# Nếu không có filter khác → chỉ render phần lọc theo thời gian #}
+            {{ render_date_range_filters(eol() ~ indentation ~ 'WHERE ', table_alias_prefix, indentation ~ '      ') }}
+        {%- endif -%}
+    {%- endwith -%}
+{% endmacro %}
+
+{# =====================================================
+   Macro: render_grouping_column_names
+   → Tạo danh sách các cột dùng trong GROUP BY và ORDER BY
+   ===================================================== #}
+{% macro render_grouping_column_names() %}
+    {# Trường hợp có nhóm dữ liệu (data_groupings)
+       → sinh ra grouping_attr1, grouping_attr2, ... #}
+    {%- if (data_groupings is not none and (data_groupings | length()) > 0) -%}
+        {%- for attribute in data_groupings -%}
+            {%- if not loop.first -%}, {% endif -%}
+            grouping_{{ attribute }}
+        {%- endfor -%}
+    {%- endif -%}
+
+    {# Nếu có time_series → thêm cột thời gian vào grouping #}
+    {%- if time_series is not none -%}
+        {%- if (data_groupings is not none and (data_groupings | length()) > 0) -%}, {% endif -%}
+        time_period, time_period_utc
+    {%- endif -%}
+{% endmacro %}
+
+{# =====================================================
+   Macro: render_group_by
+   → Sinh câu GROUP BY
+   ===================================================== #}
+{% macro render_group_by(indentation = '') %}
+    {%- if (data_groupings is not none and (data_groupings | length()) > 0) or time_series is not none %}
+{{ indentation }}GROUP BY {{ render_grouping_column_names() }}
+    {%- endif -%}
+{% endmacro %}
+
+{# =====================================================
+   Macro: render_order_by
+   → Sinh câu ORDER BY tương tự GROUP BY
+   ===================================================== #}
+{% macro render_order_by(indentation = '') %}
+    {%- if (data_groupings is not none and (data_groupings | length()) > 0) or time_series is not none %}
+{{ indentation }}ORDER BY {{ render_grouping_column_names() }}
+    {%- endif -%}
+{% endmacro %}
+
+{# =====================================================
+   Macro: render_date_format
+   → Chuyển format ngày định nghĩa trong config sang format Spark
+   ===================================================== #}
+{% macro render_date_format(date_format) %}
+    {%- if date_format == 'YYYY-MM-DD'-%} 'yyyy-MM-dd'
+    {%- elif date_format == 'MM/DD/YYYY' -%} 'MM/dd/yyyy'
+    {%- elif date_format == 'DD/MM/YYYY' -%} 'dd/MM/yyyy'
+    {%- elif date_format == 'YYYY/MM/DD'-%} 'yyyy/MM/dd'
+    {%- elif date_format == 'Month D, YYYY'-%} 'MMMM d, yyyy'
+    {%- endif -%}
+{% endmacro -%}
+
+{# =====================================================
+   Macro: render_date_format_cast
+   → Cast cột thời gian về kiểu DATE
+   ===================================================== #}
+{% macro render_date_format_cast() -%}
+    {%- if is_local_date(table.columns[column_name].type_snapshot.column_type) == 'true' -%}
+        {{ render_target_column('analyzed_table') }}
+    {%- else -%}
+        CAST({{ render_target_column('analyzed_table') }} AS DATE)
+    {%- endif -%}
+{%- endmacro -%}
+
+{# =====================================================
+   Macro: render_date_format_regex
+   → Regex validate định dạng date nhập vào
+   ===================================================== #}
+{% macro render_date_format_regex(date_format) %}
+    {%- if date_format == 'DD/MM/YYYY'-%} "^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\\d{4}$"
+    {%- elif date_format == 'DD-MM-YYYY' -%} "^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\\d{4}$"
+    {%- elif date_format == 'DD.MM.YYYY' -%} "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.\\d{4}$"
+    {%- elif date_format == 'YYYY-MM-DD' -%} "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+    {%- elif date_format == 'MM/DD/YYYY'-%} "^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/\\d{4}$"
+    {%- endif -%}
+{% endmacro -%}
+
+
+{# 
+    Macro để render SQL query lấy mẫu dữ liệu lỗi (error samples)
+    
+    Tham số:
+    - wrap_condition: Điều kiện bọc ngoài câu WHERE => Khi muốn kiểm tra lỗi chỉ trên subset dữ liệu (VD: chỉ kiểm tra đơn hàng đã hoàn thành)
+    - render_null_check: Có lọc bỏ giá trị NULL trước khi kiểm tra lỗi hay không (mặc định: true)
+    - override_samples_limit: Giới hạn số mẫu lỗi lấy về
+    - value_order_by: Sắp xếp các mẫu lỗi theo giá trị tăng/giảm dần (ASC/DESC, mặc định: ASC)
+    - sample_index: Thêm cột đánh số thứ tự mẫu trong mỗi nhóm | dùng khi có grouping - biết đây là mẫu thứ mấy trong nhóm (ví dụ mẫu thứ 2 trong nhóm country = 'vietnam' (mặc định: true)
+    - order_by_value_first: Sắp xếp theo giá trị trước khi sắp xếp theo ID (mặc định: true)
+    - order_by_expression: Biểu thức sắp xếp tùy chỉnh
+
+    E.g: 
+    Input: 
+        {% call render_error_sampler(
+            wrap_condition='AND',
+            render_null_check=true,
+            override_samples_limit=5,
+            value_order_by='ASC',
+            sample_index=true,
+            order_by_expression='ABS({column} - 100)'
+        ) %}
+            total_price < 0 OR total_price > 10000000
+        {% endcall %}
+
+    data_groupings = {
+    'region': {
+        'source': 'column_value',
+        'column': 'customer_region'
+        }
+    }
+    error_sampling = {
+        'samples_limit': 5,
+        'total_samples_limit': 1000,
+        'id_columns': ['order_id']
+    }
+
+
+#}
+{% macro render_error_sampler(
+    wrap_condition = '',
+    render_null_check = true,
+    override_samples_limit = none,
+    value_order_by = 'ASC',
+    sample_index = true,
+    order_by_value_first = true,
+    order_by_expression = ''
+)%}
+    {# Kiểm tra nếu có data groupings (nhóm dữ liệu theo các thuộc tính) #}
+    {%- if (data_groupings is not none and (data_groupings | length()) > 0)  -%}
+{# ============================================================================
+   PHẦN 1: Query với Data Groupings
+   Khi có data groupings, sử dụng ROW_NUMBER() để lấy mẫu theo từng nhóm
+   ============================================================================ #}
+SELECT
+    {# Cột giá trị thực tế #}
+    sample_table.sample_value AS actual_value
+    {# Thêm cột index nếu được yêu cầu #}
+    {%- if sample_index -%},
+    sample_table.sample_index AS sample_index
+    {%- endif %}
+    {# Thêm các cột grouping (nhóm dữ liệu) #}
+    {%- for attribute in data_groupings -%}
+        {{ ',' }}
+    sample_table.grouping_{{ attribute }} AS grouping_{{ attribute }}
+    {%- endfor -%}
+    {# Thêm các cột ID để định danh dòng #}
+    {%- if (error_sampling.id_columns is not none and (error_sampling.id_columns | length()) > 0) -%}
+        {%- for id_column in error_sampling.id_columns -%}
+            {{ ',' }}
+    sample_table.row_id_{{ loop.index }} AS row_id_{{ loop.index }}
+        {%- endfor -%}
+    {%- endif %}
+FROM
+(
+    {# Subquery để lấy dữ liệu từ bảng phân tích #}
+    SELECT
+        {# Cột được phân tích #}
+        {{ render_target_column('analyzed_table') }} AS sample_value
+        {# Render các cột grouping #}
+        {{- render_data_grouping_projections(table_alias_prefix = 'analyzed_table', indentation = '        ') }}
+        {# Thêm các cột ID #}
+        {%- if (error_sampling.id_columns is not none and (error_sampling.id_columns | length()) > 0) -%}
+            {%- for id_column in error_sampling.id_columns -%}
+                {{ ',' }}
+        {{ render_column(id_column, 'analyzed_table') }} AS row_id_{{ loop.index }}
+        {%- endfor -%}
+    {%- endif -%}
+    {# Tạo sample_index bằng ROW_NUMBER() #}
+    {%- if sample_index -%}{{ ',' }}
+        ROW_NUMBER() OVER (
+            {# Phân vùng theo các thuộc tính grouping #}
+            PARTITION BY
+                {%- for attribute in data_groupings -%}
+                    {%- if not loop.first -%}
+                        {{ ',' }}
+                    {%- endif -%}
+                    {%- with data_grouping_level = data_groupings[attribute] -%}
+                        {# Grouping từ tag (hằng số) #}
+                        {%- if data_grouping_level.source == 'tag' -%}
+                            {{ eol()  }}{{ '                ' }}{{ make_text_constant(data_grouping_level.tag) }}
+                        {# Grouping từ giá trị cột #}
+                        {%- elif data_grouping_level.source == 'column_value' -%}
+                            {{ eol() }}{{ '                ' }}{{ render_column(data_grouping_level.column, 'analyzed_table') }}
+                        {%- endif -%}
+                    {%- endwith %}
+                {%- endfor %}
+            {# Sắp xếp trong mỗi partition #}
+            ORDER BY
+                {# Sắp xếp theo biểu thức tùy chỉnh (nếu có) #}
+                {% if order_by_expression is not none and (order_by_expression | length() > 0) %}{{ order_by_expression | replace('{column}', 'analyzed_table.' ~ quote_identifier(column_name)) ~ ' ' ~ value_order_by ~ ', ' }}{% endif -%}
+                {# Sắp xếp theo giá trị trước #}
+                {% if order_by_value_first %} {{ render_target_column('analyzed_table') ~ ' ' ~ value_order_by }} {% endif -%}
+                {{ ', ' if order_by_value_first and (error_sampling.id_columns is not none and (error_sampling.id_columns | length()) > 0) -}}
+                {# Sắp xếp theo ID columns #}
+                {% if (error_sampling.id_columns is not none and (error_sampling.id_columns | length()) > 0) -%}
+                    {%- for id_column in error_sampling.id_columns -%}
+                        {{ ', ' if not loop.first }}
+                        {{- render_column(id_column, 'analyzed_table') }} ASC
+                    {%- endfor %}
+                {%- endif -%}
+                {# Sắp xếp theo giá trị sau (nếu chưa sắp xếp) #}
+                {% if not order_by_value_first %} {{ ', ' ~ render_target_column('analyzed_table') ~ ' ' ~ value_order_by }} {% endif %}
+        ) AS sample_index
+    {%- endif %}
+    FROM
+        {# Bảng nguồn #}
+        {{ render_target_table() }} AS analyzed_table
+    {# LEFT JOIN với bảng foreign nếu có #}
+    {% if parameters.foreign_table is not none and (parameters.foreign_table | length() > 0) -%}
+    LEFT OUTER JOIN {{ render_referenced_table(parameters.foreign_table) }} AS foreign_table
+    ON {{ render_target_column('analyzed_table')}} = foreign_table.{{ quote_identifier(parameters.foreign_column) }}
+    {% endif %}
+        {# Render WHERE clause với điều kiện lọc #}
+        {{- render_where_clause(extra_filter = (render_target_column('analyzed_table') ~ ' IS NOT NULL AND ' if render_null_check) ~
+             wrap_condition ~ ' (' ~ caller() ~ ')', table_alias_prefix = 'analyzed_table', indentation = '    ') }}
+) AS sample_table
+{# Lọc chỉ lấy N mẫu đầu tiên của mỗi nhóm #}
+{% if sample_index -%}
+WHERE sample_table.sample_index <= {{ override_samples_limit if override_samples_limit is not none else error_sampling.samples_limit }}
+{%- endif %}
+{# Giới hạn tổng số mẫu #}
+LIMIT {{ error_sampling.total_samples_limit }}
+    {%- else -%}
+{# ============================================================================
+   PHẦN 2: Query đơn giản không có Data Groupings
+   Chỉ lấy mẫu theo thứ tự và giới hạn số lượng
+   ============================================================================ #}
+SELECT
+    {# Cột giá trị thực tế #}
+    {{ render_target_column('analyzed_table') }} as actual_value
+    {# Thêm các cột ID #}
+    {%- if (error_sampling.id_columns is not none and (error_sampling.id_columns | length()) > 0) -%}
+        {%- for id_column in error_sampling.id_columns -%}
+            {{ ',' }}
+    {{ render_column(id_column) }} AS row_id_{{ loop.index }}
+        {%- endfor -%}
+    {%- endif %}
+FROM
+    {# Bảng nguồn #}
+    {{ render_target_table() }} AS analyzed_table
+{# LEFT JOIN với bảng foreign nếu có #}
+{% if parameters.foreign_table is not none and (parameters.foreign_table | length() > 0) -%}
+LEFT OUTER JOIN {{ render_referenced_table(parameters.foreign_table) }} AS foreign_table
+ON {{ render_target_column('analyzed_table')}} = foreign_table.{{ quote_identifier(parameters.foreign_column) }}
+{% endif %}
+    {# Render WHERE clause với điều kiện lọc #}
+    {{- render_where_clause((render_target_column('analyzed_table') ~ ' IS NOT NULL AND ' if render_null_check) ~ wrap_condition ~ ' (' ~ caller() ~ ')') }}
+{# Sắp xếp kết quả #}
+ORDER BY {% if order_by_expression is not none and (order_by_expression | length() > 0) %} {{ order_by_expression | replace('{column}', 'analyzed_table.' ~ quote_identifier(column_name)) ~ ' ' ~ value_order_by ~ ', ' }} {% endif -%}
+    {{ render_target_column('analyzed_table') ~ ' ' ~ value_order_by }}
+{# Giới hạn số lượng mẫu #}
+LIMIT {{ override_samples_limit if override_samples_limit is not none else error_sampling.samples_limit }}
+    {%- endif -%}
+{%- endmacro %}         
