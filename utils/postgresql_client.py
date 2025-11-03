@@ -25,7 +25,16 @@ class PostgresSQLClient:
         inspector = self.inspector
         columns = inspector.get_columns(table_name)
         return [col['name'] for col in columns]
+    
+    def get_columns_with_types(self, table_name, schema = "public"):
+        query = f"""SELECT column_name, data_type 
+                    FROM information_schema.columns
+                    WHERE table_schema = '{schema}'
+                    AND table_name = '{table_name}';"""
+        res = self.execute_query(query).fetchall()
+        return {row[0]: row[1] for row in res}
 
-    def list_tables(self, schema="public"):
+    def get_table_name(self, schema="public"):
         inspector = self.inspector
         return inspector.get_table_names()
+    

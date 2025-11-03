@@ -38,10 +38,35 @@ spec:
       type_snapshot:
         column_type: VARCHAR
         nullable: true
+      profiling_checks:
+        nulls:
+          profile_nulls_count:
+            error:
+              max_count: 0
+          profile_nulls_percent:
+            fatal:
+              max_percent: 50.0
+          profile_not_nulls_count:
+            error:
+              min_count: 400
     num_of_item:
       type_snapshot:
         column_type: BIGINT
         nullable: true
+      profiling_checks:
+        nulls:
+          profile_nulls_count:
+            fatal:
+              max_count: 100000
+          profile_nulls_percent:
+            error:
+              max_percent: 0.0
+          profile_not_nulls_count:
+            error:
+              min_count: 1
+          profile_not_nulls_percent:
+            error:
+              max_percent: 0.0
   file_format:
     file_paths:
     - /dqo/data/orders.csv
