@@ -14,8 +14,6 @@ Template Jinja2 này được thiết kế cho **Data Quality Monitoring** - gi�
 - [Tham số của Macro](#-input---tham-số-của-macro)
 - [Output và Ý nghĩa](#-output---ý-nghĩa-các-cột-kết-quả)
 - [Context Variables](#-context-variables)
-- [Macro Helper](#-các-macro-helper-khác)
-- [Ví dụ đầy đủ](#-ví-dụ-đầy-đủ)
 
 ---
 
