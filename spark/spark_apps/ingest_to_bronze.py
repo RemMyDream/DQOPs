@@ -10,6 +10,7 @@ from pyspark.sql.functions import from_json, col
 from pyspark.sql.types import StringType
 from delta.tables import DeltaTable
 import logging
+from sqlalchemy import text
 import yaml
 from minio import Minio
 
@@ -45,9 +46,9 @@ def psql_client(database:str, host:str, user: str = "postgres", password:str = "
         logger.error(f"Error when creating PostgreSQLClient: {e}")
         raise
 
-# Demo injest data from BE to Postgre
+# Demo ingest data from BE to Postgre
 def drop_table(pc):
-    query0 = "DROP TABLE public.orders"
+    query0 = "DROP TABLE IF EXISTS public.orders"
     pc.execute_query(query0)
 
 def create_table(pc):
@@ -62,11 +63,10 @@ def create_table(pc):
     delivered_at   TIMESTAMP NULL, 
     num_of_item    INT NOT NULL CHECK (num_of_item > 0))""")
 
-def insert_table(pc):
+def insert_table(pc:PostgresSQLClient):
     df = pd.read_csv(r"C:\Users\Chien\Documents\Project VDT\orders.csv", sep = ',')
-    engine = create_engine("postgresql+psycopg2://postgres:postgres@localhost:5432/data_source")
 
-    with engine.begin() as conn:
+    with pc.engine.begin() as conn:
         df.to_sql(
             name="orders",
             con=conn,
@@ -316,4 +316,3 @@ def run():
     else:
         logger.info("Error when load data!")
 
-run()

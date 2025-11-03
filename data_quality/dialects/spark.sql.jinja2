@@ -1,0 +1,175 @@
+{# Notation:
+    - analyzed_table: Là bảng chính chứa dữ liệu gốc mà bạn muốn phân tích.
+    - grouping_table: Là bảng trung gian hoặc subquery mà bạn đã tính toán xong các cột thời gian#}
+{% set dialect_settings = {
+    "quote_begin": "`",
+    "quote_end": "`",
+    "quote_escape": "``"
+    }
+%}
+
+{% set macro_schema_name = target_table.schema_name -%}
+{% set macro_table_name = target_table.table_name -%}
+{% set calculated_column_expression = table.columns[column_name].sql_expression | default('', true) -%}
+
+{% set time_series = time_series | default(none, true) -%}
+    {# Time_series:
+        mode: ['current_time', 'timestamp_column']: Cách lấy thời gian, lấy đến thời điểm hiện tại hoặc là nhóm theo cột được định nghĩa
+        timestamp_column: str: Tên cột chứa timestamp (dùng khi mode = timestamp_column)
+        time_gradient: Độ chia nhỏ nhất
+        timestamp_column_data_type: ['DATE', 'TIMESTAMP']: Kiểu dữ liệu của cột timestamp_column
+    #}
+
+{% set time_window_filter = time_window_filter | default(none, true) -%}
+{% set timestamp_column_data_type = table.columns[time_series.timestamp_column].type_snapshot.column_type | upper | default(none, true) -%}
+{% set data_groupings = data_groupings | default(none, true) -%}
+    {# data_groupings = {
+        'attribute': {
+            'source': nhóm dữ liệu the giá trị trong cột hoặc theo một giá trị cố định -> ['column_value', 'tag'],
+            'column'/ 'tag': tên cột cần nhóm/ nhãn}
+        } 
+    #}
+{% set target_column_data_type = table.columns[column_name].type_snapshot.column_type | default(none, true) -%}
+
+{%- macro quote_identifier(name) -%}
+    {{- dialect_settings.quote_begin }}{{ name | replace(dialect_settings.quote_end, dialect_settings.quote_escape) }}{{ dialect_settings.quote_end -}}
+{%- endmacro %}
+
+{% macro make_text_constant(string) -%}
+    {{ '\'' }}{{ string | replace('\'', '\'\'') }}{{ '\'' }}
+{%- endmacro %}
+
+{%- macro render_regex(regex) -%}
+     {{ '\'' }}{{ regex }}{{ '\'' }}
+{%- endmacro -%}
+
+{% macro eol() -%}
+    {{ '' }}
+{% endmacro %}
+
+{%- macro render_target_table() -%}
+   {{ quote_identifier(macro_schema_name) }}.{{ quote_identifier(macro_table_name) }}
+{%- endmacro %}
+
+{%- macro render_referenced_table(foreign_table) -%}
+    {%- if foreign_table.find(".") < 0 -%}
+        {{ quote_identifier(macro_schema_name) }}.{{- quote_identifier(foreign_table) -}}
+    {%- else -%}
+        {{ foreign_table }}
+    {%- endif -%}
+{%- endmacro -%}
+
+{%- macro render_column(column_name, table_alias_prefix = 'analyzed_table') -%}
+    {%- if calculated_column_expression != '' -%}
+        ({{ table.columns[column_name].sql_expression | 
+        replace('{column}', table_alias_prefix ~ '.' ~ quote_identifier(column_name)) | 
+        replace('{table}', render_target_table()) | 
+        replace('{alias}', table_alias_prefix) }})
+    {%- else -%}
+        {%- if table_alias_prefix != '' -%}
+            {{ table_alias_prefix }}.{{ quote_identifier(column_name) }}
+        {%- else -%}
+            {{ quote_identifier(column_name) }}
+        {%- endif -%}
+    {%- endif -%}
+{%- endmacro %}
+
+{%- macro is_local_date(data_type) -%}
+    {%- if data_type == 'DATE' -%}
+        {{- 'true' -}}
+    {%- else -%}
+        {{- 'false' -}}
+    {%- endif -%}
+{% endmacro %}
+
+{%- macro is_instant(data_type) -%}
+   {% if data_type == 'TIMESTAMP' -%}
+       {{- 'true' -}}
+   {%- else -%}
+       {{- 'false' -}}
+   {%- endif -%}
+{% endmacro %}
+
+{% macro date_trunc(value, part='day', datatype=none) %}
+    {# Truncate the time value : used when grouping#}
+    {%- if part == 'year' -%}
+        DATE_TRUNC('YEAR', CAST({{value}} AS TIMESTAMP))
+    {%- elif part == 'quarter' -%}
+        DATE_TRUNC('QUARTER', CAST({{value}} AS TIMESTAMP))
+    {%- elif part == 'month' -%}
+        DATE_TRUNC('MONTH', CAST({{value}} AS TIMESTAMP))
+    {%- elif part == 'week' -%}
+        DATE_TRUNC('WEEK', CAST({{value}} AS TIMESTAMP))
+    {%- elif part == 'day' -%}
+        {%- if datatype | upper == 'DATE' -%}
+            {{value}}
+        {%- else -%}
+            CAST({{value}} AS DATE)
+        {%- endif -%}
+    {%- elif part == 'hour' -%}
+        DATE_TRUNC('HOUR', CAST({{value}} AS TIMESTAMP))
+    {%- else -%}
+        CAST({{value}} AS TIMESTAMP)
+    {%- endif -%}
+{% endmacro %}
+
+{% macro render_time_dimension_expression(table_alias_prefix = 'analyzed_table') %}
+    {%- if time_series is not none-%}
+        {%- if time_series.mode == 'current_time' -%}
+            {%- if time_series.time_gradient is defined -%}
+                {{ date_trunc('CURRENT_TIMESTAMP()', time_series.time_gradient, 'TIMESTAMP') }}
+            {%- else -%}
+                CURRENT_TIMESTAMP()
+            {%- endif -%}
+        {%- elif time_series.mode == 'timestamp_column' -%}
+            {{ date_trunc(render_column(time_series.timestamp_column, table_alias_prefix), time_series.time_gradient, timestamp_column_data_type) }}
+        {%- else -%}
+            <INVALID TIME SERIES MODE: {{time_series.mode}}>
+        {%- endif -%}
+    {%- endif -%}
+{% endmacro %}
+
+{%- macro render_data_grouping_projections(table_alias_prefix  = 'analyzed_table', indentation = '   ') -%}
+    {%- if data_groupings is not none and (data_groupings | length()) > 0 -%}
+        {% for attribute in data_groupings %}
+            {%- if not loop.first -%},{{ eol() }}{% endif -%}
+                {{ indentation }}
+            {%- with data_grouping_level = data_groupings[attribute] -%}
+                {%- if data_grouping_level.source == 'tag' -%}
+                    {{ make_text_constant(data_grouping_level.tag) }}
+                {%- elif data_grouping_level.source == 'column_value' -%}
+                    {{ render_column(data_grouping_level.column, table_alias_prefix) }}
+                {%- endif -%}
+            {%- endwith %} AS grouping_{{ attribute }}
+        {% endfor %}
+    {%- endif -%}
+{% endmacro %}
+
+{%- macro render_data_grouping_projections_reference(table_alias_prefix = 'grouping_table', indentation = '    ') -%}
+    {%- if data_groupings is not none and (data_groupings | length()) > 0 -%}
+        {%- for attribute in data_groupings -%}
+            {%- if not loop.first -%}
+                ,{{ eol() }}
+            {%- else -%}
+                {{ eol() }}
+            {%- endif -%}
+            {{ indentation }}{{ table_alias_prefix }}.grouping_{{ attribute }}
+        {%- endfor -%}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro render_time_dimension_projection(table_alias_prefix = 'analyzed_table', indentation = '    ') %}
+    {%- if time_series is not none -%}
+        {{- eol() -}}
+        {{ indentation }}{{ render_time_dimension_expression(table_alias_prefix) }} AS time_period,
+        {{ eol() -}}{{ indentation }}TIMESTAMP({{ render_time_dimension_expression(table_alias_prefix) }}) AS time_period_utc
+    {%- endif -%}
+{% endmacro %}
+
+{% macro render_time_dimension_projection_reference(table_alias_prefix = 'grouping_table', indentation = '  ') %}
+    {%- if time_series is not none -%}
+        {{- eol() -}}
+        {{ indentation }}time_period,{{ eol() -}}
+        {{ indentation }}time_period_utc
+    {%- endif -%}
+{% endmacro %}
