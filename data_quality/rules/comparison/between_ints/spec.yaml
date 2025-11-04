@@ -1,0 +1,14 @@
+kind: rule
+spec:
+  type: python
+  mode: current_value
+  fields:
+  - field_name: from_
+    display_name: from
+    help_text: Minimum accepted value for the actual_value returned by the sensor (inclusive).
+    data_type: long
+
+  - field_name: to
+    display_name: to
+    help_text: Maximum accepted value for the actual_value returned by the sensor (inclusive).
+    data_type: long

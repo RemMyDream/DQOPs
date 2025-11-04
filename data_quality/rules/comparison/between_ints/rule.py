@@ -1,18 +1,20 @@
 from datetime import datetime
 from typing import Sequence
 
+class BetweenFloatRuleParametersSpec:
+    from_: int
+    to: int
 
-# rule specific parameters object, contains values received from the quality check threshold configuration
-class MinPercentRuleParametersSpec:
-    min_percent: float
-
-
+    def __getatt__(self, name):
+        if name == "from":
+            return self.from_ if hasattr(self, 'from_') else None
+        return object.__getattribute__(self, name)
+    
 class HistoricDataPoint:
     historical_time: datetime
     back_periods_index: int
     sensor_readout: float
     expected_value: float
-
 
 class RuleTimeWindowSettingsSpec:
     prediction_time_window: int         # Số kỳ (ngày, tuần, tháng…) trong quá khứ để lấy dữ liệu lịch sử so sánh.
@@ -21,7 +23,7 @@ class RuleTimeWindowSettingsSpec:
 # rule execution param  eters, contains the sensor value (actual_value) and the rule parameters
 class RuleExecutionRunParameters:
     actual_value: float
-    parameters: MinPercentRuleParametersSpec
+    parameters: BetweenFloatRuleParametersSpec
     current_time: datetime
     previous_readouts: Sequence[HistoricDataPoint]
     time_window: RuleTimeWindowSettingsSpec
@@ -38,16 +40,13 @@ class RuleExecutionResult:
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
 
-
-# rule evaluation method that should be modified for each type of rule
 def evaluate_rule(rule_parameters: RuleExecutionRunParameters) -> RuleExecutionResult:
     if not hasattr(rule_parameters, 'actual_value') or not hasattr(rule_parameters.parameters, 'min_percent'):
         return RuleExecutionResult()
 
-    expected_value = rule_parameters.parameters.min_percent
-    lower_bound = rule_parameters.parameters.min_percent
-    upper_bound = None
-    passed = rule_parameters.actual_value >= lower_bound
+    expected_value = None
+    lower_bound = getattr(rule_parameters.parameters, "from") if hasattr(rule_parameters, "from") else None
+    upper_bound = rule_parameters.parameters.to if hasattr(rule_parameters,"to") else None
+    passed = (lower_bound if lower_bound is not None else rule_parameters.actual_value) <= rule_parameters.actual_value <= (upper_bound if upper_bound is not None else rule_parameters.actual_value) 
 
-    return RuleExecutionResult(passed, expected_value, lower_bound, upper_bound)
-
+    return RuleExecutionResult(passed, expected_value, lower_bound, upper_bound)   
