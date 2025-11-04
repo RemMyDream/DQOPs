@@ -1,3 +1,4 @@
+kind: rule
 spec:
   type: python
   mode: current_value
