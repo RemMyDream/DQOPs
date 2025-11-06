@@ -1,0 +1,17 @@
+kind: rule
+spec:
+  type: python
+  mode: previous_readouts
+  time_window:
+    prediction_time_window: 1
+    min_periods_with_readouts: 1
+    historic_data_point_grouping: last_n_readouts
+  fields:
+  - field_name: from
+    display_name: from
+    help_text: Minimum accepted change with regards to the previous readout (inclusive).
+    data_type: double
+  - field_name: to
+    display_name: to
+    help_text: Maximum accepted change with regards to the previous readout (inclusive).
+    data_type: double

@@ -166,14 +166,13 @@
 {% endmacro %}
 
 
-{% macro render_data_grouping_projections_reference(table_alias_prefix = 'grouping_table', indentation = '    ') %}
+{%- macro render_data_grouping_projections_reference(table_alias_prefix = 'grouping_table', indentation = '    ') -%}
     {%- if data_groupings is not none and (data_groupings | length()) > 0 -%}
         {%- for attribute in data_groupings -%}
-            {{- ',' -}}{{- eol() }}
-            {{ indentation }}{{ table_alias_prefix }}.grouping_{{ attribute -}}
+            {{- ',' ~ eol() ~ indentation ~ table_alias_prefix ~ '.grouping_' ~ attribute -}}
         {%- endfor -%}
     {%- endif -%}
-{% endmacro %}
+{%- endmacro -%}
 
 {% macro render_time_dimension_projection(table_alias_prefix = 'analyzed_table', indentation = '    ') %}
     {%- if time_series is not none -%}
@@ -183,13 +182,12 @@
     {%- endif -%}
 {% endmacro %}
 
-{% macro render_time_dimension_projection_reference(table_alias_prefix = 'grouping_table', indentation = '    ') %}
+{%- macro render_time_dimension_projection_reference(table_alias_prefix = 'grouping_table', indentation = '    ') -%}
     {%- if time_series is not none -%}
-        {{ ',' -}}{{- eol() -}}
-        {{ indentation }}time_period,{{ eol() -}}
-        {{ indentation }}time_period_utc
+        {{- ',' ~ eol() ~ indentation }}time_period,
+        {{- eol() ~ indentation }}time_period_utc
     {%- endif -%}
-{% endmacro %}
+{%- endmacro -%}
 
 {# ==========================================================
    SparkSQL-Compatible Time Range Filters
@@ -313,19 +311,18 @@
    Macro: render_where_clause
    ===================================================== #}
 {% macro render_where_clause(extra_filter = none, table_alias_prefix = 'analyzed_table', indentation = '') %}
-    {{ '\n' ~ indentation }}WHERE
+{{ '\n' ~ indentation }}WHERE
 {%- with filters = ([table.filter|default(none, true), parameters.filter|default(none, true), extra_filter|default(none, true)] 
                     | reject('none') | list) + (additional_filters | list) -%}
     {%- if (filters | length) > 0 %}
-{%- for filter in filters %}
-    {{ '\n' ~ '    ' }}    {%- if not loop.first %}AND {% endif -%}
-{{ filter | replace('{column}', render_target_column('analyzed_table')) 
+        {%- for filter in filters %}
+{{ '\n' ~ indentation }}    {% if not loop.first %}AND {% endif %}{{ filter | replace('{column}', render_target_column('analyzed_table')) 
           | replace('{table}', render_target_table()) 
           | replace('{alias}', table_alias_prefix) }}
-{%- endfor %}
+        {%- endfor %}
 {{ render_date_range_filters('\n' ~ indentation ~ '    AND ', table_alias_prefix, indentation ~ '    ') }}
     {%- else -%}
-{{ '\n' ~ indentation }}    {{ render_date_range_filters('', table_alias_prefix, indentation ~ '    ') }}
+{{ render_date_range_filters('\n' ~ indentation ~ '    ', table_alias_prefix, indentation ~ '    ') }}
     {%- endif -%}
 {%- endwith -%}
 {% endmacro %}
@@ -364,7 +361,7 @@
     {%- if (data_groupings is not none and (data_groupings | length()) > 0) or time_series is not none -%}
 {{ indentation }}ORDER BY {{ render_grouping_column_names() }}
     {%- endif -%}
-{% endmacro %}
+{%- endmacro -%}
 
 
 {#===============================================

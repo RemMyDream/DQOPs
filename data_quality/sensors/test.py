@@ -11,7 +11,8 @@ env = Environment(loader = FileSystemLoader([template_folder, dialects_folder]),
                   lstrip_blocks=True)
 
 template = env.get_template("spark.sql.jinja2")
-
+print(template_folder)
+print(os.listdir(template_folder))
 context = {
     # 1. Bảng nguồn
     'target_table': {
@@ -76,7 +77,8 @@ context = {
     # 8. Tham số bổ sung
     'parameters': {
         'filter': 'payment_status = "completed"',
-        "expected_values": ["A", "B", "C"] 
+        "expected_values": ["A", "B", "C"] ,
+        "columns": ['order_id'] # Used for uniqueness
     },
     
     # 9. Filters động

@@ -1,10 +1,19 @@
-from datetime import datetime
 from typing import Sequence
+from enum import IntEnum
+from datetime import datetime
+
+class DetectedDatatypeCategory(IntEnum):
+    integers = 1
+    floats = 2
+    dates = 3
+    timestamps = 4
+    booleans = 5
+    texts = 6
+    mixed = 7
 
 
-# rule specific parameters object, contains values received from the quality check threshold configuration
-class MinPercentRuleParametersSpec:
-    min_percent: float
+class DetectedDatatypeEqualsRuleParametersSpec:
+    expected_datatype: str
 
 
 class HistoricDataPoint:
@@ -15,16 +24,18 @@ class HistoricDataPoint:
 
 
 class RuleTimeWindowSettingsSpec:
-    prediction_time_window: int         # Số kỳ (ngày, tuần, tháng…) trong quá khứ để lấy dữ liệu lịch sử so sánh.
-    min_periods_with_readouts: int      # Số kỳ tối thiểu phải có dữ liệu thì rule mới chạy được.
+    prediction_time_window: int
+    min_periods_with_readouts: int
 
-# rule execution param  eters, contains the sensor value (actual_value) and the rule parameters
+
+# rule execution parameters, contains the sensor value (actual_value) and the rule parameters
 class RuleExecutionRunParameters:
     actual_value: float
-    parameters: MinPercentRuleParametersSpec
+    parameters: DetectedDatatypeEqualsRuleParametersSpec
     current_time: datetime
     previous_readouts: Sequence[HistoricDataPoint]
     time_window: RuleTimeWindowSettingsSpec
+
 
 class RuleExecutionResult:
     passed: bool
@@ -41,13 +52,12 @@ class RuleExecutionResult:
 
 # rule evaluation method that should be modified for each type of rule
 def evaluate_rule(rule_parameters: RuleExecutionRunParameters) -> RuleExecutionResult:
-    if not hasattr(rule_parameters, 'actual_value') or not hasattr(rule_parameters.parameters, 'min_percent'):
+    if not hasattr(rule_parameters, 'actual_value') or not hasattr(rule_parameters.parameters, 'expected_datatype'):
         return RuleExecutionResult()
 
-    expected_value = rule_parameters.parameters.min_percent
-    lower_bound = rule_parameters.parameters.min_percent
+    expected_value = getattr(DetectedDatatypeCategory, rule_parameters.parameters.expected_datatype).value
+    lower_bound = None
     upper_bound = None
-    passed = rule_parameters.actual_value >= lower_bound
+    passed = (expected_value == rule_parameters.actual_value)
 
     return RuleExecutionResult(passed, expected_value, lower_bound, upper_bound)
-

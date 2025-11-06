@@ -1,0 +1,15 @@
+kind: rule
+spec:
+  type: python
+  mode: current_value
+  fields:
+  - field_name: expected_value
+    display_name: expected_value
+    help_text: Expected value for the actual_value returned by the sensor. The sensor
+      value should equal expected_value +/- the error_margin.
+    data_type: double
+    required: true
+  - field_name: error_margin
+    display_name: error_margin
+    help_text: Error margin for comparison.
+    data_type: double
