@@ -1,0 +1,6 @@
+CREATE TABLE if NOT EXISTS articles (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    link TEXT NOT NULL,
+    published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
