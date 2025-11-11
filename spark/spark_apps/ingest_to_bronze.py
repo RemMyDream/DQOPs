@@ -352,7 +352,7 @@ def run_test():
 
     dialects_folder = os.path.join(project_root, "data_quality/sensors")
 
-    template_folder = os.path.join(project_root, "data_quality/sensors/table/uniqueness/duplicate_record_count")
+    template_folder = os.path.join(project_root, "data_quality/sensors/table/completeness/not_null_record_percent")
 
     env = Environment(loader = FileSystemLoader([template_folder, dialects_folder]),
                   trim_blocks=True,
@@ -390,13 +390,13 @@ def run_test():
     context['error_sampling']['id_columns'] = ['order_id']
 
     context['data_groupings'] = dict()
-    # context['data_groupings']['gender'] = dict()
-    # context['data_groupings']['gender']['source'] = None
-    # context['data_groupings']['gender']['column'] = None
+    context['data_groupings']['status'] = dict()
+    context['data_groupings']['status']['source'] = 'column_value'
+    context['data_groupings']['status']['column'] = 'status'
 
     context['time_series'] = dict()
     # context['time_series']['mode'] = None
-    # context['time_series']['timestamp_column'] = None
+    # context['time_series']['timestamp_column'] = l
     # context['time_series']['time_gradient'] = None
 
     context['time_window_filter'] = dict()
@@ -404,9 +404,8 @@ def run_test():
     # context['time_window_filter']['daily_partitioning_include_today'] = False
 
     context['parameters'] = dict()
-    context['parameters']['filter'] = 'num_of_item >= 2'
+    # context['parameters']['filter'] = 'num_of_item >= 2'
     # context['parameters']['expected_values'] = ["A", "B", "C"]
-    context['parameters']['columns'] = ['gender']
     # context['parameters']['sql_expression'] = "100.0 * SUM(CASE WHEN {alias}.email LIKE '%@%' THEN 1 ELSE 0 END) / COUNT(*)"
     # context['parameters']['sql_condition'] = "email LIKE '%@%'"
 
@@ -417,5 +416,6 @@ def run_test():
     print(sql)
     spark.sql(sql.strip()).show()
     print("\n=== End of SQL ===")
-
+    
+    spark.stop()
 run_test()
