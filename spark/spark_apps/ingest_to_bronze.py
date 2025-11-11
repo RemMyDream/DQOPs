@@ -12,6 +12,7 @@ from delta.tables import DeltaTable
 import logging
 from sqlalchemy import text
 import yaml
+from jinja2 import Environment, FileSystemLoader
 from minio import Minio
 
 # Logger
@@ -56,7 +57,7 @@ def create_table(pc):
     order_id       INT NOT NULL,                      
     user_id        INT NOT NULL,                         
     status         VARCHAR(20),
-    gender         VARCHAR(5),    
+    gender         CHAR(5),    
     created_at     TIMESTAMP NOT NULL,           
     returned_at    TIMESTAMP NULL,   
     shipped_at     TIMESTAMP NULL,  
@@ -102,53 +103,47 @@ def read_table_info(table_name, pc, schema = "public"):
             WHERE table_name = '{table_name}' AND table_schema = '{schema}'
             ORDER BY ordinal_position;
         """, con=conn)
-        return df
+    return df
 
-def read_constraint_info(table_name, pc, schema = "public"):
-    with engine.connect() as conn:
-        df = pd.read_sql_query(f"""SELECT 
-                                constraint_catalog,
-                                constraint_schema,
-                                constraint_name,
-                                column_name
-            FROM information_schema.key_column_usage
-            WHERE table_name = '{table_name}' AND table_schema = '{schema}'
-            ORDER BY ordinal_position;
-        """, con=conn)
-        return df
-
-def create_spark_connection(app_name:str, access_key:str, secret_key:str, endpoint:str) -> SparkSession:
+def create_spark_connection(app_name, access_key, secret_key, endpoint):
     """
-        Initialize the Spark Session with provided configurations.
-        
-        :param app_name: Name of the spark application.
-        :param access_key: Access key for Minio.
-        :param secret_key: Secret key for Minio.
-        :param endpoint: Endpoint of Minio.
-        :return: Spark session object or None if there's an error.
+    Initialize or reuse an existing Spark Session with provided configurations.
+    
+    :param app_name: Name of the Spark application.
+    :param access_key: Access key for Minio.
+    :param secret_key: Secret key for Minio.
+    :param endpoint: Endpoint of Minio.
+    :return: Spark session object or None if there's an error.
     """
-    spark_conn = None
-
     try:
+        existing_spark = SparkSession.getActiveSession()
+        if existing_spark is not None:
+            print("Reusing existing Spark session.")
+            return existing_spark
+        
         spark_conn = (
-            SparkSession.builder\
-                .appName(app_name)\
-                .config("spark.hadoop.fs.s3a.access.key", access_key)\
-                .config("spark.hadoop.fs.s3a.secret.key", secret_key)\
-                .config("spark.hadoop.fs.s3a.endpoint", endpoint)\
-                .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")\
-                .config("spark.hadoop.fs.s3a.path.style.access", "true")\
-                .config("spark.hadoop.fs.s3a.connection.ssl.enabled", "false")\
-                .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
+            SparkSession.builder
+                .appName(app_name)
+                .config("spark.hadoop.fs.s3a.access.key", access_key)
+                .config("spark.hadoop.fs.s3a.secret.key", secret_key)
+                .config("spark.hadoop.fs.s3a.endpoint", endpoint)
+                .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+                .config("spark.hadoop.fs.s3a.path.style.access", "true")
+                .config("spark.hadoop.fs.s3a.connection.ssl.enabled", "false")
+                .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
                 .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+                .config("spark.sql.catalogImplementation", "hive") \
+                .config("spark.hadoop.hive.metastore.uris", "thrift://hive-metastore:9083") \
+                .enableHiveSupport() \
                 .getOrCreate()
         )
         
-        spark_conn.sparkContext.setLogLevel("Error")
-        logger.info("Spark Session initialized successfully!")
+        spark_conn.sparkContext.setLogLevel("ERROR")
+        print("Spark Session initialized successfully!")
         return spark_conn
+
     except Exception as e:
-        logger.error(f"Error when creating spark connection: {e}")
+        print(f"Error when creating spark connection: {e}")
         return None
 
 def create_minio_connection(cfg: str):
@@ -242,7 +237,7 @@ def ingest_to_bronze(df: DataFrame, path: str, layer: str, source: str, target_t
 
             delta_table = DeltaTable.forName(spark, full_table_name)
 
-            # Merge based on primary key
+            # Merge based on primary key: target -> existed data, source -> new data
             merge_condition = f"target.{primary_key} = source.{primary_key}"
             delta_table.alias("target").merge(
                 df.alias("source"),
@@ -295,7 +290,7 @@ def run():
                                     access_key=access_key, 
                                     secret_key=secret_key, 
                                     endpoint=spark_endpoint)
-    
+
     if spark:
         df = read_data_from_postgre(spark=spark, host='data_source',
                                     db_name='data_source',schema='public',
@@ -315,4 +310,112 @@ def run():
             logger.info("DataFrame does not exist")
     else:
         logger.info("Error when load data!")
+    
+    spark.stop()
 
+def run_test():
+    # Load system config
+    cfg_file = "/opt/spark/utils/sys_conf/config.yaml" 
+    cfg = load_cfg(cfg_file)
+
+    # Configure spark
+    app_name = cfg['spark']['app_name']
+    dwh_cfg = cfg['dwh']
+    access_key = dwh_cfg['root_user']
+    secret_key = dwh_cfg['root_password']
+    spark_endpoint = f"http://{dwh_cfg['endpoint']}"
+    bucket_name = dwh_cfg['bucket_name']
+    
+    spark = create_spark_connection(app_name = app_name,
+                                    access_key=access_key, 
+                                    secret_key=secret_key, 
+                                    endpoint=spark_endpoint)
+    
+    layer = 'bronze'
+    data_source = 'data_source'
+    table_name = 'orders'
+    path = str(f"s3a://{bucket_name}/{layer}/{data_source}/{table_name}")
+
+    pc = psql_client(database="data_source", host = "data_source")
+
+    with pc.engine.connect() as conn:
+        df = pd.read_sql_query(f"""
+            SELECT 
+                column_name, 
+                data_type
+            FROM information_schema.columns
+            WHERE table_name = '{table_name}' AND table_schema = 'public'
+            ORDER BY ordinal_position;
+        """, con=conn)
+
+    project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
+
+    dialects_folder = os.path.join(project_root, "data_quality/sensors")
+
+    template_folder = os.path.join(project_root, "data_quality/sensors/table/uniqueness/duplicate_record_count")
+
+    env = Environment(loader = FileSystemLoader([template_folder, dialects_folder]),
+                  trim_blocks=True,
+                  lstrip_blocks=True)
+    
+    template = env.get_template("spark.sql.jinja2")
+
+    context = dict()
+
+    context['target_table'] = dict()
+    context['target_table']['schema_name'] = 'bronze'
+    context['target_table']['table_name'] = 'data_source_orders'
+
+    context['table'] = dict()
+    # context['table']['filter'] = 'is_deleted = FALSE'
+    context['table']['timestamp_columns'] = dict()
+    context['table']['timestamp_columns']['event_timestamp_column'] = 'created_at'
+    context['table']['timestamp_columns']['ingestion_timestamp_column'] = None
+    context['table']['columns'] = dict()
+    for index, row in df.iterrows():
+        column_name = row.loc['column_name']
+        data_type = row.loc['data_type']
+        context['table']['columns'][column_name] = dict()
+        context['table']['columns'][column_name]['type_snapshot'] = dict()
+
+        context['table']['columns'][column_name]['type_snapshot']['column_type'] = data_type
+        context['table']['columns'][column_name]['sql_expression'] = None
+
+
+    context['column_name'] = 'gender'
+
+    context['error_sampling'] = dict()
+    context['error_sampling']['samples_limit'] = 5
+    context['error_sampling']['total_samples_limit'] = 1000
+    context['error_sampling']['id_columns'] = ['order_id']
+
+    context['data_groupings'] = dict()
+    # context['data_groupings']['gender'] = dict()
+    # context['data_groupings']['gender']['source'] = None
+    # context['data_groupings']['gender']['column'] = None
+
+    context['time_series'] = dict()
+    # context['time_series']['mode'] = None
+    # context['time_series']['timestamp_column'] = None
+    # context['time_series']['time_gradient'] = None
+
+    context['time_window_filter'] = dict()
+    # context['time_window_filter']['daily_partitioning_recent_days'] = 30
+    # context['time_window_filter']['daily_partitioning_include_today'] = False
+
+    context['parameters'] = dict()
+    context['parameters']['filter'] = 'num_of_item >= 2'
+    # context['parameters']['expected_values'] = ["A", "B", "C"]
+    context['parameters']['columns'] = ['gender']
+    # context['parameters']['sql_expression'] = "100.0 * SUM(CASE WHEN {alias}.email LIKE '%@%' THEN 1 ELSE 0 END) / COUNT(*)"
+    # context['parameters']['sql_condition'] = "email LIKE '%@%'"
+
+    context['additional_filters'] = []
+    
+    sql = template.render(**context)
+    print("=== Generated SQL ===\n")
+    print(sql)
+    spark.sql(sql.strip()).show()
+    print("\n=== End of SQL ===")
+
+run_test()

@@ -1,0 +1,6 @@
+{% import 'dialects/spark.sql.jinja2' as lib with context -%}
+
+SELECT COUNT(1) AS actual_value
+FROM information_schema.columns
+WHERE table_schema = {{lib.make_text_constant(lib.macro_schema_name)}}
+AND table_name = {{lib.make_text_constant(lib.macro_table_name)}}
