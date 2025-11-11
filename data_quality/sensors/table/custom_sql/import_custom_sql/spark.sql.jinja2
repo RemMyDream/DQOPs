@@ -1,0 +1,6 @@
+{% import 'dialects/spark.sql.jinja2' as lib with context -%}
+{{ parameters.sql_expression
+   | replace('{table_name}', lib.make_text_constant(target_table.table_name))
+   | replace('{schema_name}', lib.make_text_constant(target_table.schema_name))
+}}
+FROM {{lib.render_target_table()}}

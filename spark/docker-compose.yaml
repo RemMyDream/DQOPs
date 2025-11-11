@@ -12,6 +12,7 @@ services:
     volumes:
       - ./data:/opt/spark/data
       - ./spark_apps:/opt/spark/apps
+      - ../data_quality:/opt/spark/data_quality
       - spark-logs:/opt/spark/spark-events
       - ../utils:/opt/spark/utils
     env_file:
@@ -35,6 +36,7 @@ services:
     volumes:
       - ./data:/opt/spark/data
       - ./spark_apps:/opt/spark/apps
+      - ../data_quality:/opt/spark/data_quality
       - spark-logs:/opt/spark/spark-events
       - ../utils:/opt/spark/utils
     ports:
@@ -56,6 +58,7 @@ services:
       - ./data:/opt/spark/data
       - ./spark_apps:/opt/spark/apps
       - spark-logs:/opt/spark/spark-events
+      - ../data_quality:/opt/spark/data_quality
       - ../utils:/opt/spark/utils
     networks:
       - default
