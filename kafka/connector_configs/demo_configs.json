@@ -1,0 +1,22 @@
+{
+  "name": "data_source-cdc",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "data_source",
+    "database.port": "5432",
+    "database.user": "postgres",
+    "database.password": "postgres",
+    "plugin.name": "pgoutput",
+    "slot.name": "data_source",
+    "publication.autocreate.mode": "filtered",
+    "include.schema.changes": "false",
+    "database.dbname": "data_source",
+    "database.server.name": "data_source",
+    "table.include.list": "public.articles",
+    "topic.prefix": "data_source",
+    "key.converter": "io.confluent.connect.avro.AvroConverter",
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "key.converter.schema.registry.url": "http://schema-registry:8081",
+    "value.converter.schema.registry.url": "http://schema-registry:8081"
+  }
+}
