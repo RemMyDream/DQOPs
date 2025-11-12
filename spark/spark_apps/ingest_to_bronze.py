@@ -352,7 +352,7 @@ def run_test():
 
     dialects_folder = os.path.join(project_root, "data_quality/sensors")
 
-    template_folder = os.path.join(project_root, "data_quality/sensors/table/completeness/not_null_record_percent")
+    template_folder = os.path.join(project_root, "data_quality/sensors/column/accepted_values/text_found_in_set_percent")
 
     env = Environment(loader = FileSystemLoader([template_folder, dialects_folder]),
                   trim_blocks=True,
@@ -382,7 +382,7 @@ def run_test():
         context['table']['columns'][column_name]['sql_expression'] = None
 
 
-    context['column_name'] = 'gender'
+    context['column_name'] = 'status'
 
     context['error_sampling'] = dict()
     context['error_sampling']['samples_limit'] = 5
@@ -390,9 +390,9 @@ def run_test():
     context['error_sampling']['id_columns'] = ['order_id']
 
     context['data_groupings'] = dict()
-    context['data_groupings']['status'] = dict()
-    context['data_groupings']['status']['source'] = 'column_value'
-    context['data_groupings']['status']['column'] = 'status'
+    # context['data_groupings']['status'] = dict()
+    # context['data_groupings']['status']['source'] = 'column_value'
+    # context['data_groupings']['status']['column'] = 'status'
 
     context['time_series'] = dict()
     # context['time_series']['mode'] = None
@@ -405,8 +405,13 @@ def run_test():
 
     context['parameters'] = dict()
     # context['parameters']['filter'] = 'num_of_item >= 2'
-    # context['parameters']['expected_values'] = ["A", "B", "C"]
+    context['parameters']['expected_values'] = ['Shipped', 'Processing', 'Returned']
     # context['parameters']['sql_expression'] = "100.0 * SUM(CASE WHEN {alias}.email LIKE '%@%' THEN 1 ELSE 0 END) / COUNT(*)"
+    # context['parameters']['referenced_column']=
+    # context['parameters']['referenced_table']=
+    # min_date
+    # max_date
+    # percentile_value
     # context['parameters']['sql_condition'] = "email LIKE '%@%'"
 
     context['additional_filters'] = []
