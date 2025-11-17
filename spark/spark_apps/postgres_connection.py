@@ -7,13 +7,14 @@ from utils.postgresql_client import PostgresSQLClient
 from sqlalchemy import create_engine
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import from_json, col
-from pyspark.sql.types import StringType
 from delta.tables import DeltaTable
 import logging
 from sqlalchemy import text
 import yaml
 from jinja2 import Environment, FileSystemLoader
 from minio import Minio
+from delta.tables import DeltaTable
+import hashlib
 
 # Logger
 def create_logger(name):
@@ -32,78 +33,6 @@ def load_cfg(cfg_file):
     return cfg
 
 logger = create_logger(name = "Ingest_to_bronze_layer")
-
-def psql_client(database:str, host:str, user: str = "postgres", password:str = "postgres") -> PostgresSQLClient: 
-    try:
-        pc = PostgresSQLClient(
-            database=database,
-            user=user,
-            password=password,
-            host=host
-        )
-        logger.info("Create PostgreSQLClient successfully")
-        return pc
-    except Exception as e:
-        logger.error(f"Error when creating PostgreSQLClient: {e}")
-        raise
-
-# Demo ingest data from BE to Postgre
-def drop_table(pc):
-    query0 = "DROP TABLE IF EXISTS public.orders"
-    pc.execute_query(query0)
-
-def create_table(pc):
-    pc.execute_query("""CREATE TABLE IF NOT EXISTS public.orders (
-    order_id       INT NOT NULL,                      
-    user_id        INT NOT NULL,                         
-    status         VARCHAR(20),
-    gender         CHAR(5),    
-    created_at     TIMESTAMP NOT NULL,           
-    returned_at    TIMESTAMP NULL,   
-    shipped_at     TIMESTAMP NULL,  
-    delivered_at   TIMESTAMP NULL, 
-    num_of_item    INT NOT NULL CHECK (num_of_item > 0))""")
-
-def insert_table(pc:PostgresSQLClient):
-    df = pd.read_csv(r"C:\Users\Chien\Documents\Project VDT\orders.csv", sep = ',')
-
-    with pc.engine.begin() as conn:
-        df.to_sql(
-            name="orders",
-            con=conn,
-            schema="public", 
-            if_exists='append', 
-            index=False
-        )
-
-def check_table_demo(pc):
-    query1 = "SELECT * FROM public.orders LIMIT 200"
-    query2 = "SELECT COUNT(*) FROM public.orders"
-    with pc.engine.connect() as conn:
-        df1 = pd.read_sql_query(query1, conn)
-        print(df1)
-        df2 = pd.read_sql_query(query2, conn)
-        print(df2)
-
-# Metadata
-def read_table_info(table_name, pc, schema = "public"):
-    with pc.engine.connect() as conn:
-        df = pd.read_sql_query(f"""
-            SELECT 
-                table_catalog,
-                table_schema,
-                table_name,
-                column_name, 
-                data_type, 
-                character_maximum_length,
-                is_nullable,
-                column_default,
-                is_updatable
-            FROM information_schema.columns
-            WHERE table_name = '{table_name}' AND table_schema = '{schema}'
-            ORDER BY ordinal_position;
-        """, con=conn)
-    return df
 
 def create_spark_connection(app_name, access_key, secret_key, endpoint):
     """
@@ -146,12 +75,12 @@ def create_spark_connection(app_name, access_key, secret_key, endpoint):
         print(f"Error when creating spark connection: {e}")
         return None
 
-def create_minio_connection(cfg: str):
+def create_minio_connection(access_key: str, secret_key: str, endpoint: str):
     try:
         client = Minio(
-            endpoint=cfg['endpoint'],
-            access_key=cfg['root_user'],
-            secret_key=cfg['root_password'],
+            endpoint = endpoint,
+            access_key = access_key,
+            secret_key = secret_key,
             secure=False
         )
         logger.info("Create minio connection successfully!")
@@ -168,77 +97,151 @@ def create_bucket(client: Minio, bucket_name):
     else:
         logger.info(f"Bucket name {bucket_name} has already existed")
 
-def cal_upper_and_lower_bound(pc, schema:str, table_name:str, partition_column:str):
+def get_primary_keys(pc: PostgresSQLClient, schema: str, table_name: str) -> list:
+    query = f"""
+        SELECT kcu.column_name
+        FROM information_schema.table_constraints tc
+        JOIN information_schema.key_column_usage kcu
+          ON tc.constraint_name = kcu.constraint_name
+          AND tc.table_schema = kcu.table_schema
+        WHERE tc.constraint_type = 'PRIMARY KEY'
+          AND tc.table_name = '{table_name}'
+          AND tc.table_schema = '{schema}';
+    """
     with pc.engine.connect() as conn:
-        result = pd.read_sql_query(f"SELECT MIN({partition_column}) AS lower, MAX({partition_column}) AS upper FROM {schema}.{table_name}", con = conn)
+        df = pd.read_sql_query(query, conn)
+    return df['column_name'].tolist()
+
+def detect_primary_keys(pc: PostgresSQLClient, schema: str, table_name: str, threshold: float = 0.99) -> list:
+    query_cols = f"""
+        SELECT column_name
+        FROM information_schema.columns 
+        WHERE table_schema = '{schema}'
+        AND table_name = '{table_name}';
+    """
+    
+    with pc.engine.connect() as conn:
+        df_cols = pd.read_sql_query(query_cols, conn)
+
+        column_names = df_cols['column_name'].tolist()
+        result = []
+
+        for col in column_names:
+            query_unique = f"""
+                SELECT 
+                    COUNT(DISTINCT "{col}")::float / NULLIF(COUNT("{col}"), 0) AS distinct_percent
+                FROM "{schema}"."{table_name}";
+            """
+            df_unique = pd.read_sql_query(query_unique, conn)
+            distinct_percent = df_unique['distinct_percent'].iloc[0]
+
+            if distinct_percent is not None and distinct_percent >= threshold:
+                result.append(col)
+
+    return result
+
+def cal_upper_and_lower_bound(pc, schema: str, table_name: str, partition_column: str):
+    """
+    Tính lower và upper bound cho partition column.
+    Sử dụng double quotes cho PostgreSQL identifiers.
+    """
+    with pc.engine.connect() as conn:
+        query = f'''
+            SELECT 
+                MIN("{partition_column}") AS lower, 
+                MAX("{partition_column}") AS upper 
+            FROM "{schema}"."{table_name}"
+        '''
+        result = pd.read_sql_query(query, con=conn)
         lower_bound = result['lower'].iloc[0]
         upper_bound = result['upper'].iloc[0]
-        return lower_bound, upper_bound
-    
-def read_data_from_postgre(spark: SparkSession,
-                           host: str,
-                           db_name: str,
-                           schema: str,
-                           table_name: str,
-                           partition_column: str,
-                           port: str="5432",
-                           user: str = "postgres",
-                           password: str = "postgres",
-                           num_partitions: int = 8,
-                           query: str = None) -> DataFrame:
+        return lower_bound, upper_bound 
 
-    pc = PostgresSQLClient(database=db_name, host = host, user = user, password=password) 
-    lower_bound, upper_bound = cal_upper_and_lower_bound(pc, schema=schema, table_name=table_name, partition_column=partition_column)
-    
+def read_data_from_postgre(
+    spark: SparkSession,
+    pc: PostgresSQLClient,
+    schema: str,
+    table_name: str,
+    primary_keys: list,
+    num_partitions: int = 8
+) -> DataFrame:
+
+    jdbc_url = f"jdbc:postgresql://{pc.host}:{pc.port}/{pc.database}"
+
     properties = {
-        "user": user,
-        "password": password,
-        "driver": "org.postgresql.Driver",
-        "partitionColumn": partition_column,
-        "upperBound": str(upper_bound),
-        "lowerBound": str(lower_bound),
-        "numPartitions": str(num_partitions)
+        "user": pc.user,
+        "password": pc.password,
+        "driver": "org.postgresql.Driver"
     }
 
-    jdbc_url = f"jdbc:postgresql://{host}:{port}/{db_name}"
-    table_or_query = query if query else f"{schema}.{table_name}"
+    partition_column = primary_keys[0] if primary_keys else None
+
+    if partition_column:
+        try:
+            lower_bound, upper_bound = cal_upper_and_lower_bound(
+                pc, schema, table_name, partition_column
+            )
+
+            properties.update({
+                "partitionColumn": partition_column,
+                "lowerBound": str(lower_bound),
+                "upperBound": str(upper_bound),
+                "numPartitions": str(num_partitions)
+            })
+
+            logger.info(f"Reading data with partition on '{partition_column}' from {schema}.{table_name}")
+        except Exception as e:
+            logger.warning(f"Cannot partition on '{partition_column}': {e}. Reading without partition.")
+            partition_column = None
+
+    if not partition_column:
+        logger.info(f"Reading data without partition from {schema}.{table_name}")
 
     try:
         df = spark.read.jdbc(
             url=jdbc_url,
-            properties=properties,
-            table = table_or_query
+            table=f'"{schema}"."{table_name}"',   
+            properties=properties
         )
-        logger.info(f"Reading dirty data from Postgre Database {host}, {db_name}.{schema}.{table_name}")
+        row_count = df.count()
+        logger.info(f"Successfully read {row_count} rows from {schema}.{table_name}")
         return df
-    except Exception as e:
-        logger.error(f"Error when connect spark with table {db_name}.{schema}.{table_name}: {e}")
 
-def ingest_to_bronze(df: DataFrame, path: str, layer: str, source: str, target_table: str, spark: SparkSession, primary_key: str):
+    except Exception as e:
+        logger.error(f"Error connecting Spark to {schema}.{table_name}: {e}")
+        return None
+
+def ingest_to_bronze(
+    df: DataFrame, 
+    path: str, 
+    layer: str, 
+    table_name: str, 
+    spark: SparkSession, 
+    primary_keys: list
+):
     """
-        Start loading the raw data to the specified Minio bucket in format Delta Table.
-        :param df: Transformed dataframe.
-        :param path: bucket path.
-        :return: None
+    Load raw data to Delta Table with Hive Metastore as catalog.
     """
     try:
         logger.info(f"Loading to Layer {layer} ...")
-        spark.sql(f"CREATE DATABASE IF NOT EXISTS {layer}")
-        full_table_name = f"{layer}.{source}_{target_table}"
-
-        # Transform varchar/char to stringtype
-        for field in df.schema.fields:
-            if "varchar" in str(field.dataType).lower() or "char" in str(field.dataType).lower():
-                df = df.withColumn(field.name, col(field.name).cast(StringType))
         
-        # Check if table exists:
-        if spark.catalog.tableExists(full_table_name):
+        spark.sql(f"CREATE DATABASE IF NOT EXISTS {layer}")
+        
+        full_table_name = f"`{layer}`.`{table_name}`"
+
+        table_exists = False
+        try:
+            DeltaTable.forName(spark, full_table_name)
+            table_exists = True
+        except:
+            table_exists = False
+
+        if table_exists:
             logger.info(f"Table {full_table_name} exists, performing merge...")
-
             delta_table = DeltaTable.forName(spark, full_table_name)
+            
+            merge_condition = " AND ".join([f"target.`{col}` = source.`{col}`" for col in primary_keys])
 
-            # Merge based on primary key: target -> existed data, source -> new data
-            merge_condition = f"target.{primary_key} = source.{primary_key}"
             delta_table.alias("target").merge(
                 df.alias("source"),
                 merge_condition
@@ -247,14 +250,12 @@ def ingest_to_bronze(df: DataFrame, path: str, layer: str, source: str, target_t
             logger.info(f"Merge completed for {full_table_name}")
         else:
             logger.info(f"Creating new table {full_table_name}")
-            # Create new table
             df.write.format("delta")\
                 .mode("overwrite")\
                 .option("path", path)\
                 .option("overwriteSchema", "true")\
                 .saveAsTable(full_table_name)
-            
-            logger.info("Load successfully")
+            logger.info(f"Table {full_table_name} created and data loaded successfully")
 
         # Log row count
         row_count = spark.table(full_table_name).count()
@@ -264,54 +265,90 @@ def ingest_to_bronze(df: DataFrame, path: str, layer: str, source: str, target_t
         logger.error(f"Error when ingest to bronze: {e}")
         raise
 
-def run():
+def run(table_cfg: dict):
     # Load system config
     cfg_file = "/opt/spark/utils/sys_conf/config.yaml" 
     cfg = load_cfg(cfg_file)
 
     # Configure spark
     app_name = cfg['spark']['app_name']
-    dwh_cfg = cfg['dwh']
-    access_key = dwh_cfg['root_user']
-    secret_key = dwh_cfg['root_password']
-    spark_endpoint = f"http://{dwh_cfg['endpoint']}"
-    bucket_name = dwh_cfg['bucket_name']
-    
+    # Configure data_source
+    host = cfg['data_source']['host']
+    port = cfg['data_source']['port']
+    # Configure database
+    database_name = table_cfg['database']
+    schema_name = table_cfg['schema']
+    table_name = table_cfg['table']
+    user = table_cfg['user']
+    password = table_cfg['password']
+    # Configure lakehouse
+    lakehouse_cfg = cfg['lakehouse']
+    access_key = lakehouse_cfg['root_user']
+    secret_key = lakehouse_cfg['root_password']
+    bucket_name = database_name
+    minio_endpoint = f"http://{lakehouse_cfg['endpoint']}"
+
+        
     # Create minio client
-    client = create_minio_connection(dwh_cfg)
+    client = create_minio_connection(access_key=access_key, secret_key=secret_key, endpoint=lakehouse_cfg['endpoint'])
     if client:
         logger.info("Minio client exists")
     else:
         logger.info("Do not exist minio client")
+    
     # Create bucket
     create_bucket(client=client, bucket_name=bucket_name)
     
-    spark = create_spark_connection(app_name = app_name,
+    spark = create_spark_connection(app_name=app_name,
                                     access_key=access_key, 
                                     secret_key=secret_key, 
-                                    endpoint=spark_endpoint)
+                                    endpoint=minio_endpoint)
 
+    pc = PostgresSQLClient(database=database_name, user=user, password=password, host=host, port=port)
+    
+    # primary_keys = get_primary_keys(pc, schema=schema_name, table_name=table_name)
+    # if not primary_keys:
+    #     primary_keys = detect_primary_keys(pc, schema_name, table_name)
+    # print("Primary keys detected:", primary_keys)
+    
+    primary_keys = ['datarow_id']
+    
     if spark:
-        df = read_data_from_postgre(spark=spark, host='data_source',
-                                    db_name='data_source',schema='public',
-                                    table_name='orders',
-                                    partition_column='order_id')
-
+        df = read_data_from_postgre(spark=spark,
+                                    pc=pc,
+                                    schema=schema_name,
+                                    table_name=table_name,
+                                    primary_keys=primary_keys)
+    
         if df: 
-            # Minio
             layer = 'bronze'
-            data_source = 'data_source'
-            table_name = 'orders'
-
-            path = str(f"s3a://{bucket_name}/{layer}/{data_source}/{table_name}")
-            ingest_to_bronze(df = df, path = path, layer=layer, source=data_source, target_table=table_name, spark = spark, primary_key="order_id")
-            logger.info(f"Successfully load data from {data_source} to {layer}.{data_source}.{table_name}")
+            path = f"s3a://{bucket_name}/{layer}/{schema_name}/{table_name}"
+            
+            ingest_to_bronze(df, path, layer, table_name, spark, primary_keys)
+            logger.info(f"Successfully load data from Postgre: {database_name}.{schema_name}.{table_name} to Minio: {layer}.{table_name}")
         else:
             logger.info("DataFrame does not exist")
     else:
         logger.info("Error when load data!")
     
+    spark.sql("SHOW TABLES IN bronze").show(truncate=False)
+    
+    query = f"SELECT * FROM `bronze`.`{table_name}`"
+    res = spark.sql(query)
+    res.show(5)          # hiển thị 5 dòng đầu
+    print(res.count())   # số lượng row
+    res.printSchema()    # in schema cột
+
     spark.stop()
+
+table_cfg = {
+    'database': "bkhcn",
+    'schema': "public",
+    'table': "01_bct_bao_cao_thuc_hien_ke_hoach_san_xuat_kinh_doanh_1008476",
+    'user': "postgres",
+    'password': "postgres"
+}
+
 
 def run_test():
     # Load system config
@@ -423,4 +460,5 @@ def run_test():
     print("\n=== End of SQL ===")
     
     spark.stop()
-run_test()
+
+run(table_cfg = table_cfg)

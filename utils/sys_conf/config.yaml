@@ -2,16 +2,16 @@ spark:
   master: spark://spark-master:7077
   app_name: dqops
 
-dwh:
+data_source: 
+  host: data_source
+  port: 5432
+  
+lakehouse:
   endpoint: minio:9000
   root_user: minio_access_key
   root_password: minio_secret_key
-  bucket_name: dqops
   secure: false
 
 kafka:
   brokers: "kafka-node-1:9092,kafka-node-1:9092,kafka-node-2:9092,kafka-node-3:9092,kafka-node-4:9092"
   topic: "event_streaming"
-
-source: 
-  api_endpoint: "https://randomuser.me/api/"

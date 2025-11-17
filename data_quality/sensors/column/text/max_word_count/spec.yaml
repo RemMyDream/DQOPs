@@ -1,0 +1,5 @@
+kind: sensor
+spec:
+  type: sql_template
+  supports_grouping: true
+  supports_partitioned_checks: true
