@@ -1,3 +1,6 @@
+injest:
+   psql -U postgres -d bkhcn  -f /sql/demo.sql 2>/sql/error.log
+   
 build:
    docker-compose build
 
