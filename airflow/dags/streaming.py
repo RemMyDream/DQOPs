@@ -13,24 +13,31 @@ default_args = {
 }
 
 with DAG(
-    'streaming_pipeline',
+    'data_quality_app',
     default_args=default_args,
     schedule_interval='@daily',
     catchup=False
 ) as dag:
 
-    kafka_task = BashOperator(
-        task_id='kafka_streaming',
-        bash_command='python /opt/airflow/scripts/kafka_event_streaming.py',
-        dag=dag
-    )
-
-    spark_submit_task = SparkSubmitOperator(
-        task_id='spark_task',
-        application='/opt/spark/apps/spark_processing.py',
+    postgres_connect_task = SparkSubmitOperator(
+        task_id='postgres_connection',
+        application='/opt/spark/apps/postgres_connection.py',
         conn_id='spark_default',
         packages='org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,' \
         'org.apache.hadoop:hadoop-aws:3.3.4,'\
         'com.amazonaws:aws-java-sdk-bundle:1.12.262',
         dag=dag
     )
+
+    ingest_bronze_task = SparkSubmitOperator(
+        task_id='bronze_ingestion',
+        application='/opt/spark/apps/bronze_ingestion.py',
+        conn_id='spark_default',
+        packages='org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,' \
+        'org.apache.hadoop:hadoop-aws:3.3.4,'\
+        'com.amazonaws:aws-java-sdk-bundle:1.12.262',
+        dag=dag
+    )
+
+
+    postgres_connect_task >> ingest_bronze_task

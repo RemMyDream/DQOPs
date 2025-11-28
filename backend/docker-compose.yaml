@@ -1,0 +1,40 @@
+services:
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app             
+      - ../utils:/app/utils
+      - ../data_quality:/app/data_quality
+    restart: unless-stopped
+    networks:
+      - default
+    depends_on:
+      fastapi_db:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+  
+  fastapi_db:
+    image: postgres:15
+    ports: 
+      - "5434:5432"
+    container_name: fastapi_db
+    environment:
+      POSTGRES_USER: fastapi 
+      POSTGRES_PASSWORD: fastapi
+      POSTGRES_DB: fastapi
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fastapi"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+networks:
+  default:
+    name: bigdata-net
+    external: True

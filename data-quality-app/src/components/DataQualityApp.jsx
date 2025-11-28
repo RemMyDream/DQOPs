@@ -18,59 +18,123 @@ export default function DataQualityApp() {
     jdbcProperties: []
   });
 
-  const [schemas, setSchemas] = useState([
-    {
-      name: 'public',
-      expanded: false,
-      tables: ['users', 'orders', 'products', 'transactions']
-    },
-    {
-      name: 'bronze',
-      expanded: false,
-      tables: ['raw_data', 'staging_orders', 'staging_users']
-    },
-    {
-      name: 'silver',
-      expanded: false,
-      tables: ['cleaned_data', 'transformed_orders']
-    }
-  ]);
-
+  const [schemas, setSchemas] = useState([]);
   const [selectedTables, setSelectedTables] = useState([]);
+  const [isLoadingSchemas, setIsLoadingSchemas] = useState(false);
 
-  const saveConfigToFile = () => {
-    const config = {
-      connectionName: dbConfig.connectionName,
-      host: dbConfig.host,
-      port: dbConfig.port,
-      username: dbConfig.username,
-      database: dbConfig.database,
-      jdbcProperties: dbConfig.jdbcProperties.reduce((acc, prop) => {
-        acc[prop.key] = prop.value;
-        return acc;
-      }, {}),
-      savedAt: new Date().toISOString()
-    };
+  const fetchSchemas = async () => {
+    setIsLoadingSchemas(true);
+    setSchemas([]);
     
-    console.log('Config saved to: /configs/db_connections.json', config);
-    localStorage.setItem('db_connection_config', JSON.stringify(config));
-    return config;
+    try {
+      console.log('Fetching schemas for connection:', dbConfig.connectionName);
+      
+      // Convert jdbcProperties array to object
+      const jdbcPropertiesObj = dbConfig.jdbcProperties && dbConfig.jdbcProperties.length > 0
+        ? dbConfig.jdbcProperties.reduce((acc, prop) => {
+            acc[prop.key] = prop.value;
+            return acc;
+          }, {})
+        : {};
+      
+      // Call API to get schemas - simplified payload
+      const response = await fetch('http://localhost:8000/get_schemas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          connectionName: dbConfig.connectionName,
+          host: dbConfig.host,
+          port: dbConfig.port,
+          username: dbConfig.username,
+          password: dbConfig.password,
+          database: dbConfig.database,
+          jdbcProperties: jdbcPropertiesObj,
+          savedAt: new Date().toISOString()
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to fetch schemas');
+      }
+
+      const data = await response.json();
+      console.log('Schemas fetched:', data);
+      
+      // Transform data to match our schema structure
+      const formattedSchemas = data.schemas.map(schema => ({
+        name: schema.schema_name,
+        expanded: false,
+        tables: schema.tables || [],
+        tableCount: schema.table_count || 0
+      }));
+
+      setSchemas(formattedSchemas);
+      
+      if (formattedSchemas.length === 0) {
+        console.warn('No schemas found in database');
+      } else {
+        console.log(`Loaded ${formattedSchemas.length} schemas with tables`);
+      }
+      
+    } catch (error) {
+      console.error('Error fetching schemas:', error);
+      alert(`Failed to fetch schemas: ${error.message}`);
+      setSchemas([]);
+    } finally {
+      setIsLoadingSchemas(false);
+    }
   };
 
-  const proceedToSchemaSelection = () => {
+  const proceedToSchemaSelection = async () => {
     if (connectionStatus === 'success') {
       setStep(2);
+      await fetchSchemas();
     }
   };
 
-  const submitSelectedTables = () => {
+  const submitSelectedTables = async () => {
+    if (selectedTables.length === 0) {
+      alert('Please select at least one table');
+      return;
+    }
+
     const selectedData = selectedTables.map(tableId => {
       const [schema, table] = tableId.split('.');
       return { schema, table };
     });
     
-    console.log('Selected tables submitted:', selectedData);
-    alert(`Successfully added ${selectedTables.length} tables to Data Quality system!`);
+    try {
+      console.log('Submitting tables:', selectedData);
+      
+      // Call API to submit selected tables
+      const response = await fetch('http://localhost:8000/submit_tables', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          connectionName: dbConfig.connectionName,
+          tables: selectedData
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to submit tables');
+      }
+
+      const result = await response.json();
+      console.log('Tables submitted successfully:', result);
+      
+      alert(`Successfully added ${selectedTables.length} tables to Data Quality system!\n\nConfig saved to: ${result.configFile}`);
+      
+    } catch (error) {
+      console.error('Error submitting tables:', error);
+      alert(`Failed to submit tables: ${error.message}`);
+    }
   };
 
   return (
@@ -127,7 +191,6 @@ export default function DataQualityApp() {
             setDbConfig={setDbConfig}
             connectionStatus={connectionStatus}
             setConnectionStatus={setConnectionStatus}
-            saveConfigToFile={saveConfigToFile}
             proceedToSchemaSelection={proceedToSchemaSelection}
           />
         )}
@@ -141,6 +204,8 @@ export default function DataQualityApp() {
             setSelectedTables={setSelectedTables}
             setStep={setStep}
             submitSelectedTables={submitSelectedTables}
+            isLoadingSchemas={isLoadingSchemas}
+            dbConfig={dbConfig}
           />
         )}
       </div>

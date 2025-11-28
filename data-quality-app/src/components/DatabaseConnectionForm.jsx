@@ -1,231 +1,291 @@
 // DatabaseConnectionForm.jsx
 import React, { useState } from 'react';
-import { Plus, Trash2, Database, RefreshCw, Check, ChevronRight } from 'lucide-react';
+import { Server, Database, User, Lock, Plus, Trash2, CheckCircle, XCircle, Loader2, ChevronRight } from 'lucide-react';
 
 export default function DatabaseConnectionForm({
   dbConfig,
   setDbConfig,
   connectionStatus,
   setConnectionStatus,
-  saveConfigToFile,
   proceedToSchemaSelection
 }) {
-  const [isTestingConnection, setIsTestingConnection] = useState(false);
-  const [newProperty, setNewProperty] = useState({ key: '', value: '' });
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [newJdbcKey, setNewJdbcKey] = useState('');
+  const [newJdbcValue, setNewJdbcValue] = useState('');
 
-  // Predefined JDBC properties
-  const jdbcPropertyOptions = [
-    'ssl',
-    'sslmode',
-    'connectTimeout',
-    'socketTimeout',
-    'applicationName',
-    'loginTimeout',
-    'prepareThreshold',
-    'binaryTransfer',
-    'tcpKeepAlive',
-    'defaultRowFetchSize'
-  ];
-
-  const addJdbcProperty = () => {
-    if (newProperty.key && newProperty.value) {
-      setDbConfig({
-        ...dbConfig,
-        jdbcProperties: [...dbConfig.jdbcProperties, { ...newProperty, id: Date.now() }]
-      });
-      setNewProperty({ key: '', value: '' });
+  const updateConfig = (field, value) => {
+    setDbConfig(prev => ({ ...prev, [field]: value }));
+    // Reset connection status when config changes
+    if (connectionStatus) {
+      setConnectionStatus(null);
     }
   };
 
-  const removeJdbcProperty = (id) => {
-    setDbConfig({
-      ...dbConfig,
-      jdbcProperties: dbConfig.jdbcProperties.filter(prop => prop.id !== id)
-    });
+  const addJdbcProperty = () => {
+    if (newJdbcKey && newJdbcValue) {
+      setDbConfig(prev => ({
+        ...prev,
+        jdbcProperties: [...(prev.jdbcProperties || []), { key: newJdbcKey, value: newJdbcValue }]
+      }));
+      setNewJdbcKey('');
+      setNewJdbcValue('');
+    }
   };
 
-  const testConnection = () => {
-    setIsTestingConnection(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsTestingConnection(false);
+  const removeJdbcProperty = (index) => {
+    setDbConfig(prev => ({
+      ...prev,
+      jdbcProperties: prev.jdbcProperties.filter((_, i) => i !== index)
+    }));
+  };
+
+  const testConnection = async () => {
+    setIsConnecting(true);
+    setConnectionStatus(null);
+
+    try {
+      // Validate required fields
+      if (!dbConfig.connectionName || !dbConfig.host || !dbConfig.port || !dbConfig.username || !dbConfig.database) {
+        throw new Error('Please fill in all required fields');
+      }
+
+      // Convert jdbcProperties array to object
+      const jdbcPropertiesObj = dbConfig.jdbcProperties && dbConfig.jdbcProperties.length > 0
+        ? dbConfig.jdbcProperties.reduce((acc, prop) => {
+            acc[prop.key] = prop.value;
+            return acc;
+          }, {})
+        : {};
+
+      const payload = {
+        connectionName: dbConfig.connectionName,
+        host: dbConfig.host,
+        port: dbConfig.port,
+        username: dbConfig.username,
+        password: dbConfig.password,
+        database: dbConfig.database,
+        jdbcProperties: jdbcPropertiesObj,
+        savedAt: new Date().toISOString()
+      };
+
+      console.log('Testing connection with payload:', payload);
+
+      const response = await fetch('http://localhost:8000/create_connection', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Connection failed');
+      }
+
+      console.log('Connection successful:', data);
       setConnectionStatus('success');
-      saveConfigToFile();
-    }, 2000);
+
+    } catch (error) {
+      console.error('Connection error:', error);
+      setConnectionStatus('error');
+      alert(`Connection failed: ${error.message}`);
+    } finally {
+      setIsConnecting(false);
+    }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-6">Database Connection</h3>
-        
-        <div className="space-y-4">
-          {/* Connection Name */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Connection Name <span className="text-red-500">*</span>
-            </label>
+    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
+      <div className="space-y-6">
+        {/* Connection Name */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            Connection Name *
+          </label>
+          <div className="relative">
+            <Database className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
               value={dbConfig.connectionName}
-              onChange={(e) => setDbConfig({...dbConfig, connectionName: e.target.value})}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Please enter the connection name."
+              onChange={(e) => updateConfig('connectionName', e.target.value)}
+              placeholder="e.g., production-db"
+              className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
             />
-          </div>
-
-          {/* Host and Port */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Host <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={dbConfig.host}
-                onChange={(e) => setDbConfig({...dbConfig, host: e.target.value})}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="data_source"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Port <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={dbConfig.port}
-                onChange={(e) => setDbConfig({...dbConfig, port: e.target.value})}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="5432"
-              />
-            </div>
-          </div>
-
-          {/* Username and Password */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Username <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={dbConfig.username}
-                onChange={(e) => setDbConfig({...dbConfig, username: e.target.value})}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="postgres"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Password <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="password"
-                value={dbConfig.password}
-                onChange={(e) => setDbConfig({...dbConfig, password: e.target.value})}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="••••••••"
-              />
-            </div>
-          </div>
-
-          {/* Database */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Database <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={dbConfig.database}
-              onChange={(e) => setDbConfig({...dbConfig, database: e.target.value})}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Please enter the database name"
-            />
-          </div>
-
-          {/* JDBC Connection Properties */}
-          <div className="border-t border-slate-200 pt-4 mt-6">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="font-medium text-slate-900">JDBC Connection Properties</h4>
-            </div>
-
-            {/* Add New Property */}
-            <div className="bg-slate-50 rounded-lg p-4 mb-4">
-              <div className="grid grid-cols-12 gap-3">
-                <div className="col-span-5">
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Property</label>
-                  <select
-                    value={newProperty.key}
-                    onChange={(e) => setNewProperty({...newProperty, key: e.target.value})}
-                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select property...</option>
-                    {jdbcPropertyOptions.map(prop => (
-                      <option key={prop} value={prop}>{prop}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="col-span-6">
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Value</label>
-                  <input
-                    type="text"
-                    value={newProperty.value}
-                    onChange={(e) => setNewProperty({...newProperty, value: e.target.value})}
-                    onKeyPress={(e) => e.key === 'Enter' && addJdbcProperty()}
-                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter value..."
-                  />
-                </div>
-                <div className="col-span-1 flex items-end">
-                  <button
-                    onClick={addJdbcProperty}
-                    disabled={!newProperty.key || !newProperty.value}
-                    className="w-full p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed"
-                  >
-                    <Plus className="w-4 h-4 mx-auto" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Properties List */}
-            {dbConfig.jdbcProperties.length > 0 && (
-              <div className="space-y-2">
-                <div className="grid grid-cols-12 gap-3 px-3 pb-2 text-xs font-medium text-slate-600 border-b">
-                  <div className="col-span-5">Property</div>
-                  <div className="col-span-6">Value</div>
-                  <div className="col-span-1">Action</div>
-                </div>
-                {dbConfig.jdbcProperties.map((prop) => (
-                  <div key={prop.id} className="grid grid-cols-12 gap-3 items-center bg-white border border-slate-200 rounded-lg p-3">
-                    <div className="col-span-5 font-medium text-sm text-slate-900">{prop.key}</div>
-                    <div className="col-span-6 text-sm text-slate-600">{prop.value}</div>
-                    <div className="col-span-1">
-                      <button
-                        onClick={() => removeJdbcProperty(prop.id)}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Test Connection Button */}
-        <div className="mt-6 flex items-center space-x-4">
+        {/* Host and Port */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Host *
+            </label>
+            <div className="relative">
+              <Server className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                value={dbConfig.host}
+                onChange={(e) => updateConfig('host', e.target.value)}
+                placeholder="localhost or IP address"
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Port *
+            </label>
+            <input
+              type="text"
+              value={dbConfig.port}
+              onChange={(e) => updateConfig('port', e.target.value)}
+              placeholder="5432"
+              className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            />
+          </div>
+        </div>
+
+        {/* Database Name */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            Database Name *
+          </label>
+          <div className="relative">
+            <Database className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <input
+              type="text"
+              value={dbConfig.database}
+              onChange={(e) => updateConfig('database', e.target.value)}
+              placeholder="postgres"
+              className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            />
+          </div>
+        </div>
+
+        {/* Username and Password */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Username *
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                value={dbConfig.username}
+                onChange={(e) => updateConfig('username', e.target.value)}
+                placeholder="postgres"
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Password *
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="password"
+                value={dbConfig.password}
+                onChange={(e) => updateConfig('password', e.target.value)}
+                placeholder="••••••••"
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* JDBC Properties */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            JDBC Properties (Optional)
+          </label>
+          
+          {/* Existing Properties */}
+          {dbConfig.jdbcProperties && dbConfig.jdbcProperties.length > 0 && (
+            <div className="space-y-2 mb-3">
+              {dbConfig.jdbcProperties.map((prop, index) => (
+                <div key={index} className="flex items-center space-x-2 bg-slate-50 p-3 rounded-lg">
+                  <span className="flex-1 text-sm font-mono text-slate-700">
+                    {prop.key} = {prop.value}
+                  </span>
+                  <button
+                    onClick={() => removeJdbcProperty(index)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add New Property */}
+          <div className="flex space-x-2">
+            <input
+              type="text"
+              value={newJdbcKey}
+              onChange={(e) => setNewJdbcKey(e.target.value)}
+              placeholder="Key (e.g., ssl)"
+              className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              type="text"
+              value={newJdbcValue}
+              onChange={(e) => setNewJdbcValue(e.target.value)}
+              placeholder="Value (e.g., true)"
+              className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              onClick={addJdbcProperty}
+              disabled={!newJdbcKey || !newJdbcValue}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-300"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Connection Status */}
+        {connectionStatus && (
+          <div className={`p-4 rounded-lg flex items-center space-x-3 ${
+            connectionStatus === 'success' 
+              ? 'bg-green-50 border border-green-200' 
+              : 'bg-red-50 border border-red-200'
+          }`}>
+            {connectionStatus === 'success' ? (
+              <>
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <span className="text-green-800 font-medium">Connection successful!</span>
+              </>
+            ) : (
+              <>
+                <XCircle className="w-5 h-5 text-red-600" />
+                <span className="text-red-800 font-medium">Connection failed. Please check your credentials.</span>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex justify-end space-x-3 pt-4">
           <button
             onClick={testConnection}
-            disabled={!dbConfig.connectionName || !dbConfig.host || !dbConfig.username || !dbConfig.database || isTestingConnection}
-            className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+            disabled={isConnecting}
+            className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors"
           >
-            {isTestingConnection ? (
+            {isConnecting ? (
               <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" />
                 <span>Testing Connection...</span>
               </>
             ) : (
@@ -237,37 +297,6 @@ export default function DatabaseConnectionForm({
           </button>
 
           {connectionStatus === 'success' && (
-            <div className="flex items-center space-x-2 text-green-600">
-              <Check className="w-5 h-5" />
-              <span className="font-medium">Connection Successful!</span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Configuration Preview */}
-      {connectionStatus === 'success' && (
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-slate-900">Configuration Preview</h3>
-            <span className="text-xs text-slate-500">Saved to: /configs/db_connections.json</span>
-          </div>
-          <pre className="bg-slate-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-{JSON.stringify({
-  connectionName: dbConfig.connectionName,
-  host: dbConfig.host,
-  port: dbConfig.port,
-  username: dbConfig.username,
-  database: dbConfig.database,
-  jdbcProperties: dbConfig.jdbcProperties.reduce((acc, prop) => {
-    acc[prop.key] = prop.value;
-    return acc;
-  }, {}),
-  savedAt: new Date().toISOString()
-}, null, 2)}
-          </pre>
-
-          <div className="mt-4 flex justify-end">
             <button
               onClick={proceedToSchemaSelection}
               className="flex items-center space-x-2 bg-green-600 text-white px-6 py-2.5 rounded-lg hover:bg-green-700 transition-colors"
@@ -275,9 +304,9 @@ export default function DatabaseConnectionForm({
               <span>Proceed to Schema Selection</span>
               <ChevronRight className="w-4 h-4" />
             </button>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

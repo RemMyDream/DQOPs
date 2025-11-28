@@ -15,3 +15,15 @@ lakehouse:
 kafka:
   brokers: "kafka-node-1:9092,kafka-node-1:9092,kafka-node-2:9092,kafka-node-3:9092,kafka-node-4:9092"
   topic: "event_streaming"
+
+fastapi_db:
+  user: fastapi
+  password: fastapi
+  database: fastapi
+  host: fastapi_db
+  port: 5432
+
+airflow:
+  user: admin
+  password: admin
+  url: http://webserver:8080
