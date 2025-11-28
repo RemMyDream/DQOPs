@@ -22,7 +22,7 @@ services:
     image: my-airflow:latest
     container_name: webserver
     command: ["airflow", "webserver"]
-    entrypoint: ./entrypoint.sh
+    entrypoint: ["/opt/airflow/entrypoint.sh"]
     depends_on:
       - postgres
     environment:
@@ -30,6 +30,7 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
       AIRFLOW__WEBSERVER__SECRET_KEY: this_is_a_very_secured_key
       AIRFLOW_CONN_SPARK_DEFAULT: spark://spark-master:7077
+      AIRFLOW__API__AUTH_BACKEND: airflow.api.auth.backend.basic_auth
     volumes:
       - ./dags:/opt/airflow/dags
       - ../spark/spark_apps:/opt/spark/apps
@@ -60,8 +61,9 @@ services:
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
-      AIRFLOW__WEBSERVER__SECRET_KEY: this_is_a_very_secured_key
+      AIRFLOW__WEBSERVER__  SECRET_KEY: this_is_a_very_secured_key
       AIRFLOW_CONN_SPARK_DEFAULT: spark://spark-master:7077
+      AIRFLOW__API__AUTH_BACKEND: airflow.api.auth.backend.basic_auth
     networks:
       - default
 

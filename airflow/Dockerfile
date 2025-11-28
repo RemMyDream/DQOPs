@@ -39,11 +39,11 @@ ENV PYTHONPATH=${AIRFLOW_HOME}:${SPARK_HOME}/python:${SPARK_HOME}/python/lib/py4
 RUN mkdir -p ${AIRFLOW_HOME}
 WORKDIR ${AIRFLOW_HOME}
 
-COPY requirements.txt ./requirements.txt
-COPY entrypoint.sh ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
+COPY requirements.txt  ${AIRFLOW_HOME}/requirements.txt
+COPY entrypoint.sh ${AIRFLOW_HOME}/entrypoint.sh
+RUN chmod +x ${AIRFLOW_HOME}/entrypoint.sh
 
 USER airflow
 RUN pip3 install -r ./requirements.txt --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.9.0/constraints-3.10.txt"
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["/opt/airflow/entrypoint.sh"]

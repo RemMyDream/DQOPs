@@ -6,6 +6,6 @@ import DataQualityApp from './components/DataQualityApp';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <DataQualityApp />
+    <DataQualityApp/>
   </React.StrictMode>
 );
