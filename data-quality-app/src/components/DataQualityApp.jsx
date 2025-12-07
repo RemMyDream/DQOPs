@@ -38,21 +38,11 @@ export default function DataQualityApp() {
         : {};
       
       // Call API to get schemas - simplified payload
-      const response = await fetch('http://localhost:8000/get_schemas', {
+      const response = await fetch('http://localhost:8000/postgres/schemas/' + dbConfig.connectionName, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          connectionName: dbConfig.connectionName,
-          host: dbConfig.host,
-          port: dbConfig.port,
-          username: dbConfig.username,
-          password: dbConfig.password,
-          database: dbConfig.database,
-          jdbcProperties: jdbcPropertiesObj,
-          savedAt: new Date().toISOString()
-        })
+        }
       });
 
       if (!response.ok) {

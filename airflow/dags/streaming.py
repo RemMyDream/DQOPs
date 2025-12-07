@@ -19,25 +19,32 @@ with DAG(
     catchup=False
 ) as dag:
 
-    postgres_connect_task = SparkSubmitOperator(
-        task_id='postgres_connection',
-        application='/opt/spark/apps/postgres_connection.py',
-        conn_id='spark_default',
-        packages='org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,' \
-        'org.apache.hadoop:hadoop-aws:3.3.4,'\
-        'com.amazonaws:aws-java-sdk-bundle:1.12.262',
+    # postgres_connect_task = SparkSubmitOperator(
+    #     task_id='postgres_connection',
+    #     application='/opt/spark/apps/postgres_connection.py',
+    #     conn_id='spark_default',
+    #     packages='org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,' \
+    #     'org.apache.hadoop:hadoop-aws:3.3.4,'\
+    #     'com.amazonaws:aws-java-sdk-bundle:1.12.262',
+    #     dag=dag
+    # )
+
+    # ingest_bronze_task = SparkSubmitOperator(
+    #     task_id='bronze_ingestion',
+    #     application='/opt/spark/apps/bronze_ingestion.py',
+    #     conn_id='spark_default',
+    #     packages='org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,' \
+    #     'org.apache.hadoop:hadoop-aws:3.3.4,'\
+    #     'com.amazonaws:aws-java-sdk-bundle:1.12.262',
+    #     dag=dag
+    # )
+
+
+    # postgres_connect_task >> ingest_bronze_task
+
+    task = BashOperator(
+        task_id='test',
+        bash_command='python /opt/airflow/dags/test1.py',
         dag=dag
     )
-
-    ingest_bronze_task = SparkSubmitOperator(
-        task_id='bronze_ingestion',
-        application='/opt/spark/apps/bronze_ingestion.py',
-        conn_id='spark_default',
-        packages='org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,' \
-        'org.apache.hadoop:hadoop-aws:3.3.4,'\
-        'com.amazonaws:aws-java-sdk-bundle:1.12.262',
-        dag=dag
-    )
-
-
-    postgres_connect_task >> ingest_bronze_task
+    task
