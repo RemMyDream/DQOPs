@@ -10,15 +10,27 @@ services:
     environment:
       MINIO_ROOT_USER: minio_access_key
       MINIO_ROOT_PASSWORD: minio_secret_key
-    command: server --console-address ":9001" /data
-    networks:
-      - default
+    command: server /data --console-address ":9001"
+
+  minio1:
+    image: minio/minio
+    container_name: minio1
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    volumes:
+      - minio1_storage:/data   # volume riêng
+    environment:
+      MINIO_ROOT_USER: minio1
+      MINIO_ROOT_PASSWORD: minio123456
+    command: server /data --console-address ":9001"
+
 
   metastore_db:
     container_name: metastore_db
     image: postgres:15
     ports:
-      - "5433:5432"
+      - "5434:5432"
     environment:
       POSTGRES_USER: hive
       POSTGRES_PASSWORD: hive
@@ -70,6 +82,8 @@ services:
       
 volumes:
   minio_storage:
+  minio1_storage:
+
 networks:
   default:
     name: bigdata-net

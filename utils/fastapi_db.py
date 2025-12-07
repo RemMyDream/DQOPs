@@ -15,24 +15,7 @@ class FastAPIClient(PostgresSQLClient):
 
     def init_fastapi_db(self):
         """Initialize the postgres_connections table if it doesn't exist"""
-        query1 = """
-            CREATE TABLE IF NOT EXISTS postgres_connections (
-                connection_id SERIAL PRIMARY KEY,
-                connection_name VARCHAR(100) UNIQUE NOT NULL,
-                host VARCHAR(100) NOT NULL,
-                port VARCHAR(50) NOT NULL,
-                database VARCHAR(100) NOT NULL,
-                username VARCHAR(100) NOT NULL,
-                password TEXT NOT NULL,
-                jdbc_properties JSON,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                status VARCHAR(20) DEFAULT 'active'
-            );
-            
-            CREATE INDEX IF NOT EXISTS idx_connection_name_status 
-            ON postgres_connections(connection_name, status);
-        """
+
 
         # Table 2: jobs
         query2 = """
@@ -117,138 +100,12 @@ class FastAPIClient(PostgresSQLClient):
             ON job_history(dag_run_id);
         """
         
-        self.execute_query(query1)
         self.execute_query(query2)
         self.execute_query(query3)
         self.execute_query(query4)
 
     # ============= Connection Management Endpoints =============
     
-    def insert_connection(self, pc_connection: PostgresSQLClient, connection_name: str):
-        """Insert a new connection into the database"""
-        jdbc_props_json = json.dumps(pc_connection.jdbc_properties) if pc_connection.jdbc_properties else '{}'
-        
-        query = """
-            INSERT INTO postgres_connections 
-            (connection_name, host, port, database, username, password, jdbc_properties, status)
-            VALUES (:connection_name, :host, :port, :database, :username, :password, CAST(:jdbc_properties AS JSONB), 'active')
-        """
-        
-        params = {
-            "connection_name": connection_name,
-            "host": pc_connection.host,
-            "port": pc_connection.port,
-            "database": pc_connection.database,
-            "username": pc_connection.user,
-            "password": pc_connection.password,
-            "jdbc_properties": jdbc_props_json
-        }
-        
-        self.execute_query(query, params)
-        # Add to Cache after successful insertion
-        self._connection_cache[connection_name] = pc_connection
-
-    def get_active_connection(self, connection_name: str):
-        """
-        Get active connection details from database
-        Returns connection info dict if found and active, None otherwise
-        """
-        query = """
-            SELECT connection_name, host, port, database, username, password, jdbc_properties, created_at, last_update
-            FROM postgres_connections
-            WHERE connection_name = :connection_name AND status = 'active'
-            ORDER BY last_update DESC
-            LIMIT 1
-        """
-        
-        params = {
-            "connection_name": connection_name
-        }
-
-        result = self.execute_query(query, params)
-        rows = result.mappings().all()
-        if rows:
-            return rows[0]
-        else:
-            return None
-    
-    def get_all_active_connection(self):
-        """
-        Get active connection details from database
-        Returns connection info dict if found and active, None otherwise
-        """
-        query = """
-            SELECT connection_name, host, port, database, username, password, jdbc_properties, created_at, last_update
-            FROM postgres_connections
-            WHERE status = 'active'
-            ORDER BY created_at
-        """
-        
-        result = self.execute_query(query)
-        rows = result.mappings().all()
-        if not rows:
-            return None
-        return rows
-
-    def get_postgres_client(self, connection_name):
-        """
-        Get or create a PostgresSQLClient instance for the given connection name.        
-        Returns:
-            PostgresSQLClient instance if connection exists and is active, None otherwise
-        """
-        # Check cache
-        if connection_name in self._connection_cache:
-            cached_client = self._connection_cache[connection_name]
-            try:
-                cached_client.test_connection()
-                return cached_client
-            except:
-                del self._connection_cache[connection_name]
-
-        # Get connection_info from database
-        conn_info = self.get_active_connection(connection_name)
-        if not conn_info:
-            return None
-
-        # Create new client
-        pc = PostgresSQLClient(database=conn_info['database'], 
-                               user = conn_info['username'],
-                               password = conn_info['password'],
-                               jdbc_properties=conn_info.get('jdbc_properties', {}),
-                               host = conn_info['host'],
-                               port=conn_info['port'])
-        
-        # Cache the client
-        self._connection_cache[connection_name] = pc
-        return pc 
-
-    def update_connection(self, connection_name: str):
-        """
-        Mark connection as deleted (soft delete)
-        Updates status from 'active' to 'deleted' and remove from cached
-        """
-        query = """
-            UPDATE postgres_connections
-            SET status = 'deleted', last_update = CURRENT_TIMESTAMP
-            WHERE connection_name = :connection_name AND status = 'active'
-        """
-        params = {
-            "connection_name": connection_name
-        }
-        self.execute_query(query, params)
-
-        self.clear_connection_cache(connection_name=connection_name)
-   
-    def clear_connection_cache(self, connection_name: Optional[str] = None):
-        """
-        Clear connection cache.
-        If connection_name is provided, clear only that connection.
-        """
-        if connection_name:
-            if connection_name in self._connection_cache:
-                del self._connection_cache[connection_name]
-        else:
-            self._connection_cache.clear()
 
     # ==================== Job CRUD Operations ====================    
     

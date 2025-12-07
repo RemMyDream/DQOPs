@@ -70,7 +70,7 @@ export default function DatabaseConnectionForm({
 
       console.log('Testing connection with payload:', payload);
 
-      const response = await fetch('http://localhost:8000/create_connection', {
+      const response = await fetch('http://localhost:8000/postgres/connections', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -78,14 +78,14 @@ export default function SchemaTableSelector({
 
     try {
       const payload = {
-        connection_name: dbConfig.connectionName,
-        db_schema: schemaName,
-        table: tableName
+        connectionName: dbConfig.connectionName,
+        schemaName: schemaName,
+        tableName: tableName
       };
       
       console.log('Preview table payload:', payload);
       
-      const response = await fetch('http://localhost:8000/preview_table', {
+      const response = await fetch('http://localhost:8000/postgres/tables/preview', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,7 +99,29 @@ export default function SchemaTableSelector({
       }
 
       const data = await response.json();
-      setPreviewData(data);
+      
+      if (data.rows && data.rows.length > 0) {
+        const columns = Object.keys(data.rows[0]); // Extract column names
+        const rowsAsArrays = data.rows.map(row => 
+          columns.map(col => row[col])
+        );
+        
+        setPreviewData({
+          schema: schemaName,
+          table: tableName,
+          columns: columns,
+          rows: rowsAsArrays,
+          rowCount: data.rows.length
+        });
+      } else {
+        setPreviewData({
+          schema: schemaName,
+          table: tableName,
+          columns: [],
+          rows: [],
+          rowCount: 0
+        });
+      }
 
     } catch (error) {
       console.error('Error previewing table:', error);
@@ -118,14 +140,14 @@ export default function SchemaTableSelector({
     
     try {
       const payload = {
-        connection_name: dbConfig.connectionName,
-        db_schema: schemaName,
-        table: tableName
+        connectionName: dbConfig.connectionName,
+        schemaName: schemaName,
+        tableName: tableName
       };
       
       console.log('Check primary keys payload:', payload);
       
-      const response = await fetch('http://localhost:8000/get_primary_keys', {
+      const response = await fetch('http://localhost:8000/postgres/tables/primary-keys', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
