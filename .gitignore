@@ -1,4 +1,6 @@
 .venv
 __pycache__/
-spark-jars/
+spark/
 yeucau.txt
+.env
+test-notebook.ipynb

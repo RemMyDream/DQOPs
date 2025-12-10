@@ -1,79 +1,55 @@
-version: '3.8'
-
 services:
-  # PostgreSQL Database
+  # PostgreSQL - Source Database
   postgres:
     image: postgres:15
-    container_name: postgres
-    hostname: postgres
+    container_name: postgres-source
     environment:
-      POSTGRES_USER: spark
-      POSTGRES_PASSWORD: sparkpass
-      POSTGRES_DB: events_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sourcedb
     ports:
       - "5432:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - ./init-db:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
     networks:
-      - spark-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U spark"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - data-pipeline
 
-  # MinIO Object Storage
+  # MinIO - Object Storage
   minio:
     image: minio/minio:latest
     container_name: minio
-    hostname: minio
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    ports:
-      - "9000:9000"  # API
-      - "9001:9001"  # Console
-    volumes:
-      - minio-data:/data
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password
     command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
     networks:
-      - spark-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - data-pipeline
 
-  # MinIO Client (for bucket creation)
-  minio-setup:
+  # MinIO Client - Initialize buckets
+  minio-init:
     image: minio/mc:latest
-    container_name: minio-setup
+    container_name: minio-init
     depends_on:
-      minio:
-        condition: service_healthy
-    networks:
-      - spark-network
+      - minio
     entrypoint: >
       /bin/sh -c "
-      /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin;
-      /usr/bin/mc mb myminio/lakehouse --ignore-existing;
-      /usr/bin/mc mb myminio/warehouse --ignore-existing;
-      /usr/bin/mc anonymous set download myminio/lakehouse;
-      /usr/bin/mc anonymous set download myminio/warehouse;
-      exit 0;
+      sleep 5;
+      mc alias set myminio http://minio:9000 admin password;
+      mc mb myminio/warehouse --ignore-existing;
+      echo 'Buckets created successfully';
       "
+    networks:
+      - data-pipeline
 
   # Spark Master
   spark-master:
     image: apache/spark:3.5.3
     container_name: spark-master
-    hostname: spark-master
-    depends_on:
-      postgres:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
     environment:
       - SPARK_MODE=master
       - SPARK_MASTER_HOST=spark-master
@@ -85,17 +61,15 @@ services:
       - "4040:4040"  # Application Web UI
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
     networks:
-      - spark-network
+      - data-pipeline
     volumes:
-      - ./spark-data:/tmp/spark-data
-      - ./spark-apps:/opt/spark-apps
-      - ./spark-jars:/opt/spark/jars-extra
+      - ./spark/jobs:/opt/spark/jobs
+      - ./spark/jars:/opt/spark/jars/extra
 
   # Spark Worker
-  spark-worker:
+  spark-worker-1:
     image: apache/spark:3.5.3
-    container_name: spark-worker
-    hostname: spark-worker
+    container_name: spark-worker-1
     depends_on:
       - spark-master
     environment:
@@ -105,19 +79,38 @@ services:
       - SPARK_WORKER_MEMORY=2g
       - SPARK_WORKER_WEBUI_PORT=8081
     ports:
-      - "8081:8081"  # Worker Web UI
+      - "8081:8081"  # Worker-1 Web UI (host:container)
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     networks:
-      - spark-network
+      - data-pipeline
     volumes:
-      - ./spark-data:/tmp/spark-data
-      - ./spark-apps:/opt/spark-apps
-      - ./spark-jars:/opt/spark/jars-extra
+      - ./spark/jobs:/opt/spark/jobs
+      - ./spark/jars:/opt/spark/jars/extra
 
-networks:
-  spark-network:
-    driver: bridge
+  spark-worker-2:
+    image: apache/spark:3.5.3
+    container_name: spark-worker-2
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_MEMORY=2g
+      - SPARK_WORKER_WEBUI_PORT=8081
+    ports:
+      - "8082:8081"  # Worker-2 Web UI (map host 8082 -> container 8081)
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    networks:
+      - data-pipeline
+    volumes:
+      - ./spark/jobs:/opt/spark/jobs
+      - ./spark/jars:/opt/spark/jars/extra
 
 volumes:
-  postgres-data:
-  minio-data:
+  postgres_data:
+  minio_data:
+
+networks:
+  data-pipeline:
+    driver: bridge
