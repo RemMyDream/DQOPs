@@ -42,15 +42,15 @@ echo "Copying Spark job..."
 cp pycode-spark-postgres-to-bronze.py spark/jobs/
 
 # install Python virtual environment
-# echo "Setting up Python virtual environment..."
-# sudo apt update
-# sudo apt install python3-venv
-# python3 -m venv .venv
-# source .venv/bin/activate
+echo "Setting up Python virtual environment..."
+sudo apt update
+sudo apt install python3-venv
+python3 -m venv .venv
+source .venv/bin/activate
 
-# # Install Python dependencies
-# echo "Installing Python dependencies..."
-# pip install -r requirements.txt
+# Install Python dependencies
+echo "Installing Python dependencies..."
+pip install -r requirements.txt
 
 echo "=========================================="
 echo "Setup completed successfully!"
