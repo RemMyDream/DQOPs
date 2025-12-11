@@ -1,6 +1,6 @@
 import json
 from typing import Optional, List, Dict
-from domain.postgres_client import PostgresConnectionClient
+from backend.domain.entity.postgres_client import PostgresConnectionClient
 from utils.helpers import create_logger
 
 logger = create_logger("PostgresConnectionRepository")

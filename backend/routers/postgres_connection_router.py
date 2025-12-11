@@ -1,6 +1,6 @@
 from typing import Dict
 from fastapi import APIRouter, HTTPException, Depends
-from domain.table_connection_client import DBConfig, DBCredential
+from backend.domain.request.table_connection_request import DBConfig, DBCredential
 from utils.helpers import create_logger
 from .dependencies import get_postgres_service, get_config
 from services.postgres_connection_service import PostgresConnectionService

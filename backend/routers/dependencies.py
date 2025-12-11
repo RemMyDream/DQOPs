@@ -97,7 +97,6 @@ class ServiceContainer:
 
         logger.warning(f"No reset logic for service '{service_name}'")
 
-
 # ==================== FastAPI Dependency Functions ====================
 
 def get_postgres_service() -> PostgresConnectionService:

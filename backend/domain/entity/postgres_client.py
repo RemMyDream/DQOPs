@@ -1,7 +1,8 @@
 from dataclasses import dataclass, asdict, field
 from typing import Optional, Dict, Any
+import pandas as pd
 from sqlalchemy import create_engine, inspect, text
-from .table_connection_client import DBConfig
+from ..request.table_connection_request import DBConfig
 import json
 
 @dataclass
@@ -208,3 +209,19 @@ class PostgresConnectionClient:
             })
 
         return {"schemas": schemas, "schema_count": len(schemas)}
+
+    def cal_upper_and_lower_bound(self, schema: str, table_name: str, partition_column: str):
+        """
+        Calculate upper and lower bound partition column.
+        """
+        with self.engine.connect() as conn:
+            query = f'''
+                SELECT 
+                    MIN("{partition_column}") AS lower, 
+                    MAX("{partition_column}") AS upper 
+                FROM "{schema}"."{table_name}"
+            '''
+            result = pd.read_sql_query(query, con=conn)
+            lower_bound = result['lower'].iloc[0]
+            upper_bound = result['upper'].iloc[0]
+            return lower_bound, upper_bound 

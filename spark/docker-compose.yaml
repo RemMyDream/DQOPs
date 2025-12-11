@@ -15,6 +15,7 @@ services:
       - ../data_quality:/opt/spark/data_quality
       - spark-logs:/opt/spark/spark-events
       - ../utils:/opt/spark/utils
+      - ../backend:/opt/spark/backend
     env_file:
       - .env.spark
     ports:
@@ -39,6 +40,7 @@ services:
       - ../data_quality:/opt/spark/data_quality
       - spark-logs:/opt/spark/spark-events
       - ../utils:/opt/spark/utils
+      - ../backend:/opt/spark/backend
     ports:
       - '18080:18080'
     networks:
@@ -60,6 +62,7 @@ services:
       - spark-logs:/opt/spark/spark-events
       - ../data_quality:/opt/spark/data_quality
       - ../utils:/opt/spark/utils
+      - ../backend:/opt/spark/backend
     networks:
       - default
       - spark_network
