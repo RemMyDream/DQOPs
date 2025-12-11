@@ -14,53 +14,8 @@ class FastAPIClient(PostgresSQLClient):
         self._connection_cache: Dict[str, PostgresSQLClient] = {}
 
     def init_fastapi_db(self):
-        """Initialize the postgres_connections table if it doesn't exist"""
 
 
-        # Table 2: jobs
-        query2 = """
-            CREATE TABLE IF NOT EXISTS jobs (
-                job_id SERIAL PRIMARY KEY,
-                job_name VARCHAR(200) UNIQUE NOT NULL,
-                job_type VARCHAR(50) NOT NULL,
-                status VARCHAR(20) DEFAULT 'active',
-                created_by VARCHAR(100),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            
-            CREATE INDEX IF NOT EXISTS idx_jobs_name ON jobs(job_name);
-            CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
-            CREATE INDEX IF NOT EXISTS idx_jobs_status_type ON jobs(status, job_type);
-        """
-        
-        # Table 3: job_versions (generic config)
-        query3 = """
-            CREATE TABLE IF NOT EXISTS job_versions (
-                id SERIAL PRIMARY KEY,
-                job_id INTEGER NOT NULL REFERENCES jobs(job_id) ON DELETE CASCADE,
-                version_id INTEGER NOT NULL,
-                is_active BOOLEAN DEFAULT FALSE,
-                
-                connection_name VARCHAR(100) REFERENCES postgres_connections(connection_name) ON DELETE SET NULL,
-                job_config JSON NOT NULL,
-                
-                schedule_type VARCHAR(20) NOT NULL,
-                schedule_cron VARCHAR(50),
-                
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                created_by VARCHAR(100),
-                
-                UNIQUE(job_id, version_id)
-            );
-            
-            CREATE INDEX IF NOT EXISTS idx_job_versions_active 
-            ON job_versions(job_id, is_active);
-            
-            CREATE INDEX IF NOT EXISTS idx_job_versions_connection 
-            ON job_versions(connection_name);
-        """
-        
         # Table 4: job_history (generic result)
         query4 = """
             CREATE TABLE IF NOT EXISTS job_history (
@@ -100,7 +55,6 @@ class FastAPIClient(PostgresSQLClient):
             ON job_history(dag_run_id);
         """
         
-        self.execute_query(query2)
         self.execute_query(query3)
         self.execute_query(query4)
 
@@ -109,106 +63,7 @@ class FastAPIClient(PostgresSQLClient):
 
     # ==================== Job CRUD Operations ====================    
     
-    def create_job(self, job: AirflowJob) -> int:
-        """Create new job"""
-        query = """
-            INSERT INTO jobs (job_name, job_type, status, created_at, created_by)
-            VALUES (:job_name, :job_type, :status, :created_at, :created_by)
-            RETURNING job_id
-        """
-        
-        params = {
-            "job_name": job.job_name,
-            "job_type": job.job_type.value,
-            "status": job.status.value,
-            "created_at": job.created_at,
-            "created_by": job.created_by
-        }
-        
-        result = self.execute_query(query, params)
-        return result.scalar()
-    
-    def create_version(self, version: JobVersion):
-        """Create new job version"""
-        # Deactivate all previous versions
-        deactivate_query = """
-            UPDATE job_versions 
-            SET is_active = FALSE 
-            WHERE job_id = :job_id
-        """
-        self.execute_query(deactivate_query, {"job_id": version.job_id})
-        
-        # Insert new version
-        insert_query = """
-            INSERT INTO job_versions 
-            (job_id, version_id, is_active, connection_name, job_config, 
-             schedule_type, schedule_cron, created_at, created_by)
-            VALUES 
-            (:job_id, :version_id, :is_active, :connection_name, 
-             :job_config, :schedule_type, :schedule_cron, :created_at, :created_by)
-        """
-        
-        params = {
-            "job_id": version.job_id,
-            "version_id": version.version_id,
-            "is_active": version.is_active,
-            "connection_name": version.connection_name,
-            "job_config": version.job_config,
-            "schedule_type": version.schedule_type.value,
-            "schedule_cron": version.schedule_cron,
-            "created_at": version.created_at,
-            "created_by": version.created_by
-        }
-        
-        self.execute_query(insert_query, params)
-        
-        # Update job timestamp
-        update_query = """
-            UPDATE jobs 
-            SET updated_at = CURRENT_TIMESTAMP 
-            WHERE job_id = :job_id
-        """
-        self.execute_query(update_query, {"job_id": version.job_id})
-    
-    def get_job_versions(self, job_id: int) -> List[JobVersion]:
-        """Get all versions of a job"""
-        query = """
-            SELECT job_id, version_id, is_active, connection_name, job_config,
-                   schedule_type, schedule_cron, created_by, created_at
-            FROM job_versions
-            WHERE job_id = :job_id
-            ORDER BY version_id DESC
-        """
-        
-        rows = self.execute_query(query, {"job_id": job_id}).mappings().all()
-        return [JobVersion(**row) for row in rows]
 
-    def get_next_version_id(self, job_id: int) -> int:
-        """Get next version ID"""
-        query = """
-            SELECT COALESCE(MAX(version_id), 0) + 1 as next_version
-            FROM job_versions
-            WHERE job_id = :job_id
-        """
-        return self.execute_query(query, {"job_id": job_id}).scalar()
-    
-    def get_active_job_by_id(self, job_id: int) -> Optional[Dict]:
-        """Get complete job info"""
-        query = """
-            SELECT 
-                j.job_id, j.job_name, j.job_type, j.status,
-                j.created_by, j.created_at, j.updated_at,
-                jv.version_id, jv.connection_name, jv.job_config,
-                jv.schedule_type, jv.schedule_cron, jv.is_active,
-                c.host, c.port, c.database, c.username, c.password
-            FROM jobs j
-            INNER JOIN job_versions jv ON j.job_id = jv.job_id
-            LEFT JOIN postgres_connections c ON jv.connection_name = c.connection_name
-            WHERE j.job_id = :job_id AND jv.is_active = TRUE
-        """
-        
-        return self.execute_query(query, {"job_id": job_id}).mappings().all()
-    
     def get_all_active_jobs(self) -> List[JobSummary]:
         """Get all active jobs with stats - FIXED: success_rate calculation"""
         query = """
@@ -242,63 +97,6 @@ class FastAPIClient(PostgresSQLClient):
         
         return jobs
 
-    def get_latest_job_version(self, job_id: int) -> Optional[JobVersion]:
-        """Get latest version of a job - NO CHANGES"""
-        query = """
-            SELECT job_id, version_id, is_active, connection_name, job_config,
-                   schedule_type, schedule_cron, created_at, created_by
-            FROM job_versions
-            WHERE job_id = :job_id
-            ORDER BY version_id DESC
-            LIMIT 1
-        """
-        
-        row = self.execute_query(query, {"job_id": job_id}).mappings().one_or_none()
-
-        if row:
-            data = dict(row)
-            if isinstance(data['job_config'], str):
-                data['job_config'] = json.loads(data['job_config'])
-            data['schedule_type'] = ScheduleType(data['schedule_type'])
-            return JobVersion(**data)
-        
-        return None
-        
-    def update_job(self, job_id: int, new_config: Dict, updated_by: str):
-        """Update job (creates new version)"""
-        next_version = self.get_next_version_id(job_id)
-        old_version = self.get_latest_job_version(job_id)
-
-        if not old_version:
-            raise ValueError(f"Job {job_id} not found")
-
-        version = JobVersion(
-            job_id=job_id,
-            version_id=next_version,
-            is_active=True,
-            connection_name=new_config.get("connection_name") or old_version.connection_name,
-            job_config=new_config.get("job_config") or old_version.job_config,
-            schedule_type=ScheduleType(new_config["schedule_type"]) 
-                        if new_config.get("schedule_type") else old_version.schedule_type,
-            schedule_cron=new_config.get("schedule_cron") or old_version.schedule_cron,
-            created_by=updated_by
-        )
-
-        self.create_version(version)
-    
-    def delete_job(self, job_id: int):
-        """Soft delete job"""
-        query = """
-            UPDATE jobs 
-            SET status = 'deleted', updated_at = CURRENT_TIMESTAMP 
-            WHERE job_id = :job_id
-        """
-        self.execute_query(query, {"job_id": job_id})
-        
-        # Deactivate versions
-        deactivate = "UPDATE job_versions SET is_active = FALSE WHERE job_id = :job_id"
-        self.execute_query(deactivate, {"job_id": job_id})    
-    
     # ==================== Job History Operations ====================
     def create_history(self, history: JobHistory) -> int:
         """Create job run record"""

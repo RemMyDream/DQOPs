@@ -2,8 +2,8 @@
 Factory: Job Creation Factory
 """
 from typing import Dict, Any
-from domain.job_client import Job, JobType
-from domain.ingest_job_client import IngestJob
+from backend.domain.entity.job_client import Job, JobType
+from backend.domain.entity.ingest_job_client import IngestJob
 
 
 class JobFactory:
@@ -11,7 +11,6 @@ class JobFactory:
     
     @staticmethod
     def create_job(
-        jobId: int, 
         jobName: str, 
         jobType: str, 
         config: Dict[str, Any], 
@@ -22,7 +21,7 @@ class JobFactory:
         job_type_enum = JobType(jobType)
         
         if job_type_enum == JobType.INGEST:
-            return IngestJob.from_config(jobId, jobName, config, createdBy, **kwargs)
+            return IngestJob.from_config(jobName, config, createdBy, **kwargs)
         
         # Add more job types here as needed
         # elif job_type_enum == JobType.TRANSFORM:

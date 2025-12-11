@@ -1,12 +1,15 @@
 import sys
 import os
 from pyspark.sql import SparkSession, DataFrame
-sys.path.append(os.path.join(os.path.dirname(__file__), "../..")) 
-from utils.helpers import create_logger
+from utils.helpers import create_logger, load_cfg
 
-logger = create_logger(name = "Spark_Connection_Creation")
+sys_conf = load_cfg("utils/config.yaml")
+logger = create_logger(name = "SparkConnectionCreation")
 
-def create_spark_connection(app_name, access_key, secret_key, endpoint):
+def create_spark_connection(app_name=sys_conf['spark']['app'],
+                            access_key=sys_conf['lakehouse']['root_user'],
+                            secret_key=sys_conf['lakehouse']['root_password'],
+                            endpoint=f"http://{sys_conf['lakehouse']['endpoint']}"):
     """
     Initialize or reuse an existing Spark Session with provided configurations.
     

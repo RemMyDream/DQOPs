@@ -1,7 +1,7 @@
 from typing import Optional, List, Dict
-from domain.postgres_client import PostgresConnectionClient
+from backend.domain.entity.postgres_client import PostgresConnectionClient
 from repositories.postgres_connection_repository import PostgresConnectionRepository
-from domain.table_connection_client import (DBConfig, DBCredential)
+from backend.domain.request.table_connection_request import (DBConfig, DBCredential)
 
 from utils.helpers import create_logger
 
