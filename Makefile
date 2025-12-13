@@ -35,7 +35,11 @@ setup:
 # Start services
 start:
 	@echo "🟢 Starting Docker services..."
+	-@docker-compose up -d
+	@sleep 10
 	@docker-compose up -d
+	@sleep 5
+	@docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 	@echo "✅ Services started!"
 	@echo "   - PostgreSQL: localhost:5432"
 	@echo "   - MinIO Console: http://localhost:9001"
@@ -44,6 +48,7 @@ start:
 	@echo "   - Spark Worker 1 UI: http://localhost:8081"
 	@echo "   - Spark Worker 2 UI: http://localhost:8082"
 	@echo "   - Spark Application UI: http://localhost:4040"
+	@echo "   - OpenMetadata UI: http://localhost:8585"
 
 # Stop services
 stop:
@@ -71,7 +76,7 @@ bronze:
 	@echo "✅ Bronze layer processing completed!"
 
 # Run full pipeline
-pipeline: setup start ingest
+pipeline: setup start ingest bronze
 	@echo "✅ Full pipeline completed!"
 
 # Check health

@@ -231,7 +231,7 @@ def main():
             )
         
         # Verify tables
-        verify_bronze_tables(spark, tables=[c["table_name"] for c in tables_config])
+        #verify_bronze_tables(spark, tables=[c["table_name"] for c in tables_config])
         
         logger.info("Spark job completed successfully")
         

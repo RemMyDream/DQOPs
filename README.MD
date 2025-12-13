@@ -1,4 +1,6 @@
-chạy code sau trong wsl để có data trong postgres
+chạy code sau trong wsl để có data trong postgres và lấy data từ postgres vào minio
+
+uncomment phần tạo venv trong setup.sh nếu chưa có .venv trước khi chạy
 
 ```bash
 sudo apt update
