@@ -1,2 +1,0 @@
--- DROP PUBLICATION IF EXISTS debezium_pub;
--- CREATE PUBLICATION debezium_pub FOR TABLE articles;
