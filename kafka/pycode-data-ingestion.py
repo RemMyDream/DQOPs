@@ -71,7 +71,7 @@ def ingest_gdelt_events(days=2, max_records=None):
         combined_df = pd.concat(all_events, ignore_index=True)
         combined_df.columns = [c.lower() for c in combined_df.columns]
 
-        combined_df.to_sql('gdelt_events', engine, if_exists='append', index=False, method='multi')
+        combined_df.to_sql('gdelt_events', engine, if_exists='append', index=False, method='multi', chunksize=1000)
 
         logger.info(f"Successfully ingested {len(combined_df)} GDELT events.")
 
@@ -91,7 +91,7 @@ def ingest_gdelt_gkg(days=2, max_records=None):
 
         for i in range(days):
 
-            date = datetime.utcnow().date() - timedelta(days=i)
+            date = datetime.now(timezone.utc).date() - timedelta(days=i+1)
             logger.info(f"Fetching GDELT GKG for day: {date}")
 
             # loop 96 timestamps
@@ -118,7 +118,7 @@ def ingest_gdelt_gkg(days=2, max_records=None):
         combined_df = pd.concat(all_gkg, ignore_index=True)
         combined_df.columns = [col.lower() for col in combined_df.columns]
 
-        combined_df.to_sql('gdelt_gkg', engine, if_exists='append', index=False, method='multi')
+        combined_df.to_sql('gdelt_gkg', engine, if_exists='append', index=False, method='multi', chunksize=1000)
 
         logger.info(f"Successfully ingested {len(combined_df)} GKG rows")
 

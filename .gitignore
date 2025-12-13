@@ -8,3 +8,5 @@ docker-compose-postgres (reference).yml
 export_to_csv.py
 data-csv/
 useful_command.txt
+data/
+useful_command.txt
