@@ -1,0 +1,14 @@
+project: stock_prediction_project
+registry: data/registry.db
+provider: local
+
+online_store:
+  type: postgres
+  host: localhost
+  port: 5432
+  database: sourcedb
+  user: postgres
+  password: postgres
+
+offline_store:
+  type: file
