@@ -478,7 +478,6 @@ services:
         condition: service_started
       minio:
         condition: service_started
-
 volumes:
   postgres_data:
   postgres_metadata_data:
