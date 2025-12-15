@@ -440,7 +440,9 @@ services:
       KFP_NAMESPACE: kubeflow
       KFP_DEFAULT_EXPERIMENT_NAME: default
   mlflow:
-    image: ghcr.io/mlflow/mlflow:v2.9.2
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
     container_name: mlflow_server
     ports:
       - "5000:5000"
