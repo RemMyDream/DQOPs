@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine, text
 import finnhub
+from pandas_datareader import data as pdr
 import gdelt
 import logging
 
@@ -194,6 +195,62 @@ def ingest_finnhub_stock_data(symbols=['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN'])
     except Exception as e:
         logger.error(f"Error ingesting Finnhub stock data: {str(e)}")
         raise
+
+
+def ingest_stooq_stock_data(symbols=['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN'], days=30):
+    """
+    Ingest historical stock price data from Stooq
+    
+    Args:
+        symbols: List of stock symbols to fetch
+        days: Number of days of historical data to fetch (default: 30)
+    """
+    try:
+        logger.info(f"Starting Stooq stock data ingestion for symbols: {symbols}")
+        
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=days)
+        
+        all_data = []
+        
+        for symbol in symbols:
+            try:
+                logger.info(f"Fetching historical data for {symbol} from {start_date.date()} to {end_date.date()}")
+                
+                # Fetch historical data from Stooq
+                df = pdr.DataReader(symbol, 'stooq', start_date, end_date)
+                
+                if not df.empty:
+                    # Reset index to make Date a column
+                    df = df.reset_index()
+                    
+                    # Add symbol column
+                    df['symbol'] = symbol
+                    
+                    # Rename columns to lowercase and more descriptive names
+                    df.columns = [col.lower() for col in df.columns]
+                    df = df.rename(columns={'date': 'timestamp'})
+                    
+                    all_data.append(df)
+                    logger.info(f"Fetched {len(df)} records for {symbol}")
+                else:
+                    logger.warning(f"No data available for {symbol}")
+                        
+            except Exception as e:
+                logger.error(f"Error fetching data for {symbol}: {str(e)}")
+                continue
+        
+        # Convert to DataFrame and insert
+        if all_data:
+            combined_df = pd.concat(all_data, ignore_index=True)
+            combined_df.to_sql('stooq_stock_prices', engine, if_exists='append', index=False, method='multi')
+            logger.info(f"Successfully ingested {len(combined_df)} stock price records from Stooq")
+        else:
+            logger.warning("No Stooq stock data to ingest")
+            
+    except Exception as e:
+        logger.error(f"Error ingesting Stooq stock data: {str(e)}")
+        raise
     
 
 def main():
@@ -201,9 +258,10 @@ def main():
     logger.info("Starting data ingestion pipeline")
     
 
-    ingest_gdelt_events(days=1,max_records=50)
-    ingest_gdelt_gkg(days=1,max_records=50)
+    ingest_gdelt_events(days=30,max_records=100)
+    ingest_gdelt_gkg(days=30,max_records=100)
     ingest_finnhub_stock_data(symbols=['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META'])
+    ingest_stooq_stock_data(symbols=['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META'], days=30)
     
     logger.info("Data ingestion pipeline completed successfully")
 
