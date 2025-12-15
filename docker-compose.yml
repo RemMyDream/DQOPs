@@ -415,6 +415,28 @@ services:
     depends_on:
       - clickhouse
 
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.9.2
+    container_name: mlflow_server
+    ports:
+      - "5000:5000"
+    environment:
+      # Lưu Metadata vào Postgres
+      MLFLOW_BACKEND_STORE_URI: postgresql://postgres:postgres@postgres:5432/mlflow_db
+      # Lưu Artifacts (Model file) vào MinIO
+      MLFLOW_ARTIFACT_ROOT: s3://mlflow/
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+    networks:
+      - data-pipeline
+    depends_on:
+      postgres:
+        condition: service_started
+      minio:
+        condition: service_started
+    command: >
+      mlflow server --backend-store-uri postgresql://postgres:postgres@postgres:5432/mlflow_db --default-artifact-root s3://mlflow/ --host 0.0.0.0 --serve-artifacts
 volumes:
   postgres_data:
   postgres_metadata_data:
