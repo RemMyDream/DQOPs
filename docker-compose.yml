@@ -381,6 +381,13 @@ services:
     image: apache/superset:latest
     container_name: superset
     user: root
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
+    container_name: mlflow_server
+    ports:
+      - "5000:5000"
     environment:
       SUPERSET_SECRET_KEY: "demo_secret_key"
       FEATURE_FLAGS: '{"ALLOW_DATA_UPLOAD": true}'
