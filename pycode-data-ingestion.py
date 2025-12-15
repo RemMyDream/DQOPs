@@ -1,7 +1,7 @@
 import os
 import requests
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import create_engine, text
 import finnhub
 from pandas_datareader import data as pdr
@@ -32,113 +32,99 @@ DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NA
 engine = create_engine(DATABASE_URL)
 
 
-def ingest_gdelt_events(days=1, max_records=None):
+def ingest_gdelt_events(days=2, max_records=None):
     """
-    Ingest GDELT Events data from the last M days
-    
-    Args:
-        days: Number of days to fetch data for (default: 1)
-        max_records: Maximum number of records to fetch per day
+    Ingest toàn bộ dữ liệu GDELT Events trong n ngày gần đây.
     """
     try:
         logger.info(f"Starting GDELT Events ingestion for the last {days} days")
-        
-        gd = gdelt.gdelt(version=2)
-        
-        all_events = []
-        
-        # Fetch events for each day in the range
-        for i in range(days):
-            date = (datetime.now() - timedelta(days=i)).strftime('%Y %m %d')
-            logger.info(f"Fetching GDELT events for {date}")
-            
-            try:
-                results = gd.Search(date, table='events', coverage=True)
-                
-                if results is not None and not results.empty:
-                    
-                    if max_records is not None:
-                        df = results.head(max_records)
-                    else:
-                        df = results
 
-                    all_events.append(df)
-                    logger.info(f"Fetched {len(df)} events for {date}")
-                else:
-                    logger.warning(f"No GDELT events found for {date}")
-            except Exception as e:
-                logger.error(f"Error fetching events for {date}: {str(e)}")
-                continue
-        
+        gd = gdelt.gdelt(version=2)
+        all_events = []
+
+        # Loop từng ngày
+        for i in range(days):
+
+            day = datetime.now(timezone.utc).date() - timedelta(days=i + 1)
+            logger.info(f"Fetching GDELT events for day: {day}")
+
+            # Tạo 96 timestamps trong ngày
+            for minutes in range(0, 24*60, 15):
+                dt = datetime.combine(day, datetime.min.time()) + timedelta(minutes=minutes)
+                timestamp = dt.strftime('%Y%m%d%H%M%S')
+
+                try:
+                    results = gd.Search(timestamp, table='events')
+
+                    if results is not None and not results.empty:
+                        df = results.head(max_records) if max_records else results
+                        all_events.append(df)
+                        logger.info(f"Fetched {len(df)} rows for {timestamp}")
+
+                except Exception as e:
+                    logger.warning(f"No data or error for timestamp {timestamp}: {e}")
+                    continue
+
         if not all_events:
-            logger.warning("No GDELT events found for the specified period")
+            logger.warning("No GDELT events found for the specified period.")
             return
-        
-        
+
+        # Gộp và ghi database
         combined_df = pd.concat(all_events, ignore_index=True)
-        combined_df.columns = [col.lower() for col in combined_df.columns]
-        
-        combined_df.to_sql('gdelt_events', engine, if_exists='append', index=False, method='multi')
-        
-        logger.info(f"Successfully ingested {len(combined_df)} GDELT events from the last {days} days")
-        
+        combined_df.columns = [c.lower() for c in combined_df.columns]
+        combined_df.to_sql('gdelt_events', engine, if_exists='append', index=False, method='multi', chunksize=1000)
+
+        logger.info(f"Successfully ingested {len(combined_df)} GDELT events.")
+
     except Exception as e:
         logger.error(f"Error ingesting GDELT events: {str(e)}")
         raise
 
 
-def ingest_gdelt_gkg(days=1, max_records=None):
+def ingest_gdelt_gkg(days=2, max_records=None):
     """
-    Ingest GDELT GKG (Global Knowledge Graph) data from the last M days
-    
-    Args:
-        days: Number of days to fetch data for (default: 1)
-        max_records: Maximum number of records to fetch per day
+    Ingest GDELT GKG (Global Knowledge Graph) data from the last n days
     """
     try:
         logger.info(f"Starting GDELT GKG ingestion for the last {days} days")
-        
-        gd = gdelt.gdelt(version=2)
-        
-        all_gkg = []
-        
-        # Fetch GKG data for each day in the range
-        for i in range(days):
-            date = (datetime.now() - timedelta(days=i)).strftime('%Y %m %d')
-            logger.info(f"Fetching GDELT GKG data for {date}")
-            
-            try:
-                results = gd.Search(date, table='gkg', coverage=True)
-                
-                if results is not None and not results.empty:
-                    # Limit records per day
-                    if max_records is not None:
-                        df = results.head(max_records)
-                    else:
-                        df = results
 
-                    all_gkg.append(df)
-                    logger.info(f"Fetched {len(df)} GKG records for {date}")
-                else:
-                    logger.warning(f"No GDELT GKG data found for {date}")
-            except Exception as e:
-                logger.error(f"Error fetching GKG data for {date}: {str(e)}")
-                continue
-        
+        gd = gdelt.gdelt(version=2)
+        all_gkg = []
+
+        for i in range(days):
+
+            date = datetime.now(timezone.utc).date() - timedelta(days=i+1)
+            logger.info(f"Fetching GDELT GKG for day: {date}")
+
+            # loop 96 timestamps
+            for minutes in range(0, 24*60, 15):
+                dt = datetime.combine(date, datetime.min.time()) + timedelta(minutes=minutes)
+                timestamp = dt.strftime('%Y%m%d%H%M%S')
+
+                try:
+                    results = gd.Search(timestamp, table='gkg')
+
+                    if results is not None and not results.empty:
+                        df = results.head(max_records) if max_records else results
+                        all_gkg.append(df)
+                        logger.info(f"Fetched {len(df)} GKG rows for {timestamp}")
+
+                except Exception as e:
+                    logger.warning(f"No GKG data for timestamp {timestamp}: {e}")
+                    continue
+
         if not all_gkg:
             logger.warning("No GDELT GKG data found for the specified period")
             return
-        
-        
+
         combined_df = pd.concat(all_gkg, ignore_index=True)
         combined_df.columns = [col.lower() for col in combined_df.columns]
-        
-        combined_df.to_sql('gdelt_gkg', engine, if_exists='append', index=False, method='multi')
-        
-        logger.info(f"Successfully ingested {len(combined_df)} GDELT GKG records from the last {days} days")
-        
+        combined_df.to_sql('gdelt_gkg', engine, if_exists='append', index=False, method='multi', chunksize=1000)
+
+        logger.info(f"Successfully ingested {len(combined_df)} GKG rows")
+
     except Exception as e:
-        logger.error(f"Error ingesting GDELT GKG data: {str(e)}")
+        logger.error(f"Error ingesting GDELT GKG: {str(e)}")
         raise
 
 
