@@ -376,7 +376,9 @@ services:
       - ingestion-volume-dags:/opt/airflow/dags
       - ingestion-volume-tmp:/tmp
   mlflow:
-    image: ghcr.io/mlflow/mlflow:v2.9.2
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
     container_name: mlflow_server
     ports:
       - "5000:5000"
