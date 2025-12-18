@@ -5,13 +5,12 @@ from typing import Dict, List, Any
 from dataclasses import dataclass, asdict
 from domain.entity.job_client import Job, JobType, JobStatus
 
-
 @dataclass
 class IngestJobSource:
     """Ingest source configuration"""
-    schemaName: str
-    tableName: str
-    primaryKeys: List[str]
+    schema_name: str
+    table_name: str
+    primary_keys: List[str]
     
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -20,7 +19,6 @@ class IngestJobSource:
     def from_dict(cls, data: Dict[str, Any]):
         """Create from dictionary with key mapping"""
         return cls(**data)
-
 
 @dataclass
 class IngestJobTarget:
@@ -46,8 +44,8 @@ class IngestJob(Job):
 
     def __post_init__(self):
         """Ensure job type is always INGEST"""
-        if self.jobType != JobType.INGEST:
-            self.jobType = JobType.INGEST
+        if self.job_type != JobType.INGEST:
+            self.job_type = JobType.INGEST
     
     def to_config(self) -> Dict[str, Any]:
         """Convert to config dict for storage"""
@@ -59,9 +57,9 @@ class IngestJob(Job):
     @classmethod
     def from_config(
         cls, 
-        jobName: str, 
+        job_name: str, 
         config: Dict[str, Any], 
-        createdBy: str = "system",
+        created_by: str = "system",
         **kwargs
     ):
         """Create new IngestJob from config dictionary"""
@@ -69,9 +67,9 @@ class IngestJob(Job):
         target_data = config.get('target', {})
 
         return cls(
-            jobName=jobName,
-            jobType=JobType.INGEST,
-            createdBy=createdBy,
+            job_name=job_name,
+            job_type=JobType.INGEST,
+            created_by=created_by,
             source=IngestJobSource.from_dict(source_data) if source_data else None,
             target=IngestJobTarget.from_dict(target_data) if target_data else None,
             **kwargs
@@ -84,11 +82,11 @@ class IngestJob(Job):
         if not self.source:
             errors.append("Source configuration is required")
         else:
-            if not self.source.schemaName:
+            if not self.source.schema_name:
                 errors.append("Source schema name is required")
-            if not self.source.tableName:
+            if not self.source.table_name:
                 errors.append("Source table name is required")
-            if not self.source.primaryKeys or len(self.source.primaryKeys) == 0:
+            if not self.source.primary_keys or len(self.source.primary_keys) == 0:
                 errors.append("At least one primary key is required")
         
         if not self.target:
@@ -106,24 +104,10 @@ class IngestJob(Job):
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]):
-        """Reconstruct Ingest Job from database"""
-        key_mapping = {
-            'job_id': 'jobId',
-            'job_name': 'jobName',
-            'job_type': 'jobType',
-            'created_by': 'createdBy',
-            'created_at': 'createdAt',
-            'updated_at': 'updatedAt'
-        }
-        
-        normalized_data = {}
-        for key, value in data.items():
-            normalized_key = key_mapping.get(key, key)
-            normalized_data[normalized_key] = value
-        
+        """Reconstruct Ingest Job from database"""        
         # Handle config field
-        if 'config' in normalized_data:
-            config = normalized_data.pop('config')
+        if 'config' in data:
+            config = data.pop('config')
             if isinstance(config, str):
                 import json
                 config = json.loads(config)
@@ -131,13 +115,13 @@ class IngestJob(Job):
             source_data = config.get('source', {})
             target_data = config.get('target', {})
             
-            normalized_data['source'] = IngestJobSource.from_dict(source_data) if source_data else None
-            normalized_data['target'] = IngestJobTarget.from_dict(target_data) if target_data else None
+            data['source'] = IngestJobSource.from_dict(source_data) if source_data else None
+            data['target'] = IngestJobTarget.from_dict(target_data) if target_data else None
         
         # Convert enums
-        if 'jobType' in normalized_data and isinstance(normalized_data['jobType'], str):
-            normalized_data['jobType'] = JobType(normalized_data['jobType'])
-        if 'status' in normalized_data and isinstance(normalized_data['status'], str):
-            normalized_data['status'] = JobStatus(normalized_data['status'])
+        if 'job_type' in data and isinstance(data['job_type'], str):
+            data['job_type'] = JobType(data['job_type'])
+        if 'status' in data and isinstance(data['status'], str):
+            data['status'] = JobStatus(data['status'])
         
-        return cls(**normalized_data)
+        return cls(**data)

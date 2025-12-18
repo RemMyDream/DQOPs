@@ -5,8 +5,9 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 from domain.entity.postgres_client import PostgresConnectionClient
+from domain.entity.source_client import SourceClient
 from domain.entity.job_client import Job, JobStatus, JobType
-from domain.entity.job_schemas import JobSummary
+
 from utils.helpers import create_logger
 
 logger = create_logger("JobRepository")
@@ -41,34 +42,23 @@ class JobRepository(PostgresConnectionClient):
         logger.info("Successfully initialized jobs table")
 
     def _serialize_job(self, job: Job) -> Dict[str, Any]:
-        """
-        Convert Job object to database parameters
-        Maps camelCase to snake_case
-        """
-        logger.debug(f"Serializing job: {job.jobName}")
+        """Convert Job object to database parameters"""
+        logger.debug(f"Serializing job: {job.job_name}")
         
         data = job.to_dict()
         
         return {
-            "job_name": data.get("jobName"),
-            "job_type": data.get("jobType").value if isinstance(data.get("jobType"), JobType) else data.get("jobType"),
-            "created_by": data.get("createdBy"),
-            "status": data.get("status").value if isinstance(data.get("status"), JobStatus) else data.get("status"),
-            "job_id": data.get("jobId"),
-            "created_at": data.get("createdAt") or datetime.now(),
-            "updated_at": data.get("updatedAt") or datetime.now()
+            "job_name": data.get("job_name"),
+            "job_type": data.get("job_type"),
+            "created_by": data.get("created_by"),
+            "status": data.get("status"),
+            "job_id": data.get("job_id"),
+            "created_at": data.get("created_at") or datetime.now(),
+            "updated_at": data.get("updated_at") or datetime.now()
         }
 
     def insert_job(self, job: Job) -> int:
-        """
-        Create new job record in database and return job_id
-        
-        Args:
-            job: Job object to insert
-            
-        Returns:
-            int: Generated job_id
-        """
+        """Create new job record in database and return job_id"""
         query = """
             INSERT INTO jobs (job_name, job_type, status, created_by, created_at, updated_at)
             VALUES (:job_name, :job_type, :status, :created_by, :created_at, :updated_at)
@@ -76,27 +66,13 @@ class JobRepository(PostgresConnectionClient):
         """
         
         params = self._serialize_job(job)
-        result = self.execute_query(query, params)
+        job_id = self.execute_query(query, params)
         
-        # Handle different return formats
-        if isinstance(result, list) and len(result) > 0:
-            job_id = result[0].get('job_id') if isinstance(result[0], dict) else result[0]
-        else:
-            job_id = result
-        
-        logger.info(f"Successfully inserted job '{job.jobName}' with job_id: {job_id}")
+        logger.info(f"Successfully inserted job '{job.job_name}' with job_id: {job_id}")
         return job_id
 
     def get_active_job_by_id(self, job_id: int) -> Optional[Dict[str, Any]]:
-        """
-        Get complete job info with active version
-        
-        Args:
-            job_id: Job identifier
-            
-        Returns:
-            Dict with job and version data, or None if not found
-        """
+        """Get complete job info with active version"""
         query = """
             SELECT 
                 j.job_id, j.job_name, j.job_type, j.status,
@@ -124,16 +100,7 @@ class JobRepository(PostgresConnectionClient):
         status: Optional[JobStatus] = None,
         job_type: Optional[JobType] = None
     ) -> List[Dict[str, Any]]:
-        """
-        Get all jobs with optional filters
-        
-        Args:
-            status: Filter by job status
-            job_type: Filter by job type
-            
-        Returns:
-            List of job dicts
-        """
+        """Get all jobs with optional filters"""
         conditions = ["j.status != 'deleted'"]
         params = {}
         
@@ -162,12 +129,7 @@ class JobRepository(PostgresConnectionClient):
         return result or []
     
     def update_timestamp(self, job_id: int):
-        """
-        Update job's updated_at timestamp    
-        
-        Args:
-            job_id: Job identifier
-        """
+        """Update job's updated_at timestamp"""
         query = """
             UPDATE jobs 
             SET updated_at = CURRENT_TIMESTAMP 
@@ -177,13 +139,7 @@ class JobRepository(PostgresConnectionClient):
         logger.debug(f"Updated timestamp for job_id: {job_id}")
     
     def update_status(self, job_id: int, status: JobStatus):
-        """
-        Update job status
-        
-        Args:
-            job_id: Job identifier
-            status: New status
-        """
+        """Update job status"""
         query = """
             UPDATE jobs 
             SET status = :status, updated_at = CURRENT_TIMESTAMP 
@@ -194,25 +150,12 @@ class JobRepository(PostgresConnectionClient):
         logger.info(f"Updated status for job_id {job_id} to {status_value}")
     
     def soft_delete(self, job_id: int):
-        """
-        Soft delete job by setting status to deleted
-        
-        Args:
-            job_id: Job identifier
-        """
+        """Soft delete job by setting status to deleted"""
         self.update_status(job_id, JobStatus.DELETED)
         logger.info(f"Soft deleted job with job_id: {job_id}")
     
     def exists(self, job_name: str) -> bool:
-        """
-        Check if a job with given name exists (not deleted)
-        
-        Args:
-            job_name: Name to check
-            
-        Returns:
-            bool: True if exists, False otherwise
-        """
+        """Check if a job with given name exists (not deleted)"""
         query = """
             SELECT COUNT(*) as count
             FROM jobs
@@ -220,24 +163,10 @@ class JobRepository(PostgresConnectionClient):
         """
         result = self.execute_query(query, {"job_name": job_name})
         
-        # Handle different return formats
-        if isinstance(result, list) and len(result) > 0:
-            count = result[0].get('count', 0) if isinstance(result[0], dict) else result[0]
-        else:
-            count = result or 0
-            
-        return count > 0
+        return result[0] > 0
     
     def get_job_by_name(self, job_name: str) -> Optional[Dict[str, Any]]:
-        """
-        Get job by name
-        
-        Args:
-            job_name: Job name
-            
-        Returns:
-            Dict with job data or None
-        """
+        """Get job by name"""
         query = """
             SELECT job_id, job_name, job_type, status, 
                    created_by, created_at, updated_at
@@ -248,6 +177,5 @@ class JobRepository(PostgresConnectionClient):
         result = self.execute_query(query, {"job_name": job_name})
         
         if result and len(result) > 0:
-            return result[0] if isinstance(result, list) else result
-        
+            return result[0]
         return None

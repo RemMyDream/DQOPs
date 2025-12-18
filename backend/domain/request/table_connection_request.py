@@ -1,35 +1,31 @@
-from dataclasses import field
 from typing import Optional, Dict, List, Any
-from pydantic import BaseModel, field_validator
-
+from pydantic import BaseModel, Field, field_validator
 
 class DBConfig(BaseModel):
     """Database connection configuration"""
-    connectionName: str
+    connection_name: str
     host: str
     port: str
     username: str
     password: str
     database: str
-    jdbcProperties: Dict[str, str] = field(default_factory=dict)
-    savedAt: Optional[str] = None 
+    jdbc_properties: Dict[str, str] = Field(default_factory=dict)
+    saved_at: Optional[str] = None 
 
-    @field_validator('connectionName')
+    @field_validator('connection_name')
     def validate_connection_name(cls, v):
         if not v or not v.strip():
             raise ValueError('Connection name cannot be empty')
         return v.strip()
-    
-    def to_dict(self):
-        return self.model_dump()
 
 class DBCredential(BaseModel):
     """Database credentials for queries"""
-    connectionName: str
-    schemaName: Optional[str] = None
-    tableName: Optional[str] = None
+    connection_name: str
+    schema_name: Optional[str] = None
+    table_name: Optional[str] = None
+
 
 class TableSubmission(BaseModel):
-    """Table submission for profilling, monitoring"""
-    connectionName: str
+    """Table submission for profiling, monitoring"""
+    connection_name: str
     tables: List[Dict[str, str]]

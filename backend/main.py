@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from utils.helpers import create_logger
 from routers.postgres_connection_router import router as postgres_router
+from routers.job_trigger_router import router as job_trigger_router
 
 logger = create_logger("Main")
 
@@ -18,7 +19,7 @@ app.add_middleware(
 # ==================== Include Routers ====================
 
 app.include_router(postgres_router)
-# ServiceContainer.get_postgres_service()  # Init ngay lúc startup
+app.include_router(job_trigger_router)
 
 # app.include_router(mysql_router)
 # app.include_router(mongodb_router)

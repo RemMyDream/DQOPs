@@ -2,8 +2,8 @@
 Factory: Job Creation Factory
 """
 from typing import Dict, Any
-from backend.domain.entity.job_client import Job, JobType
-from backend.domain.entity.ingest_job_client import IngestJob
+from domain.entity.job_client import Job, JobType
+from domain.entity.ingest_job_client import IngestJob
 
 
 class JobFactory:
@@ -11,23 +11,16 @@ class JobFactory:
     
     @staticmethod
     def create_job(
-        jobName: str, 
-        jobType: str, 
+        job_name: str, 
+        job_type: str, 
         config: Dict[str, Any], 
-        createdBy: str = "system", 
+        created_by: str = "system", 
         **kwargs
     ) -> Job:
         """Create job instance based on type"""
-        job_type_enum = JobType(jobType)
+        job_type_enum = JobType(job_type)
         
         if job_type_enum == JobType.INGEST:
-            return IngestJob.from_config(jobName, config, createdBy, **kwargs)
+            return IngestJob.from_config(job_name, config, created_by, **kwargs)
         
-        # Add more job types here as needed
-        # elif job_type_enum == JobType.TRANSFORM:
-        #     return TransformJob.from_config(job_id, job_name, config, created_by, **kwargs)
-        # elif job_type_enum == JobType.QUALITY:
-        #     return QualityJob.from_config(job_id, job_name, config, created_by, **kwargs)
-        
-        else:
-            raise ValueError(f"Unknown job type: {jobType}")
+        raise ValueError(f"Unknown job type: {job_type}")
