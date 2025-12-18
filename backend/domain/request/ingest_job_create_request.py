@@ -7,34 +7,30 @@ from domain.entity.job_client import JobType
 from domain.entity.job_schemas import ScheduleType
 from domain.request.job_request import JobCreateRequest
 
-# ==================== Ingest Job Configs ====================
-
 class IngestSourceConfig(BaseModel):
     """Type-safe configuration for ingest source"""
-    schemaName: str = Field(..., min_length=1, description="Database schema name")
-    tableName: str = Field(..., min_length=1, description="Table name to ingest")
-    primaryKeys: List[str] = Field(..., min_length=1, description="Primary key columns")
+    schema_name: str = Field(..., min_length=1, description="Database schema name")
+    table_name: str = Field(..., min_length=1, description="Table name to ingest")
+    primary_keys: List[str] = Field(..., min_length=1, description="Primary key columns")
     
-    @field_validator('schemaName', 'tableName')
+    @field_validator('schema_name', 'table_name')
     def validate_names(cls, v):
         """Validate schema and table names"""
         if not v or not v.strip():
             raise ValueError('Name cannot be empty')
         
-        # Check for SQL injection characters
         dangerous_chars = [';', '--', '/*', '*/', 'xp_', 'sp_']
         if any(char in v.lower() for char in dangerous_chars):
             raise ValueError(f'Invalid characters in name')
         
         return v.strip()
     
-    @field_validator('primaryKeys')
+    @field_validator('primary_keys')
     def validate_primary_keys(cls, v):
         """Validate primary keys list"""
         if not v or len(v) == 0:
             raise ValueError('At least one primary key is required')
         
-        # Remove empty strings and duplicates
         v = list(set(k.strip() for k in v if k.strip()))
         
         if len(v) == 0:
@@ -57,7 +53,6 @@ class IngestTargetConfig(BaseModel):
         
         v = v.strip()
         
-        # Basic S3 path validation
         if not (v.startswith('s3://') or v.startswith('s3a://')):
             raise ValueError('Path must start with s3:// or s3a://')
         
@@ -66,61 +61,55 @@ class IngestTargetConfig(BaseModel):
 
 class IngestJobCreateRequest(BaseModel):
     """Type-safe request for creating ingest jobs"""
-    jobName: str = Field(..., min_length=1, max_length=200, description="Unique job name")
-    connectionName: str = Field(..., min_length=1, description="Database connection name")
+    job_name: str = Field(None, min_length=1, max_length=200, description="Unique job name")
+    connection_name: str = Field(..., min_length=1, description="Database connection name")
     source: IngestSourceConfig = Field(..., description="Source configuration")
     target: IngestTargetConfig = Field(..., description="Target configuration")
-    scheduleType: ScheduleType = Field(default=ScheduleType.ON_DEMAND, description="Schedule type")
-    scheduleCron: Optional[str] = Field(None, description="Cron expression for scheduled jobs")
-    createdBy: str = Field(default="admin", description="User who created the job")
+    schedule_type: ScheduleType = Field(default=ScheduleType.ON_DEMAND, description="Schedule type")
+    schedule_cron: Optional[str] = Field(None, description="Cron expression for scheduled jobs")
+    created_by: str = Field(default="admin", description="User who created the job")
     
-    @field_validator('jobName')
+    @field_validator('job_name')
     def validate_job_name(cls, v):
         """Validate job name format"""
         if not v or not v.strip():
             raise ValueError('Job name cannot be empty')
         
-        v = v.strip()
-        
-        return v
+        return v.strip()
     
-    @field_validator('scheduleCron')
+    @field_validator('schedule_cron')
     def validate_cron(cls, v, info):
         """Validate cron expression for scheduled jobs"""
         values = info.data
-        schedule_type = values.get('scheduleType')
+        schedule_type = values.get('schedule_type')
         
         if schedule_type in [ScheduleType.SCHEDULED, ScheduleType.BOTH]:
             if not v or not v.strip():
-                raise ValueError('scheduleCron is required for scheduled jobs')
+                raise ValueError('schedule_cron is required for scheduled jobs')
         
         return v
     
     def to_generic(self) -> JobCreateRequest:
-        """
-        Convert to generic JobCreateRequest for internal processing
-        """
+        """Convert to generic JobCreateRequest (used for database)"""
         config = {
             "source": self.source.model_dump(),
             "target": self.target.model_dump(),
         }
         
         return JobCreateRequest(
-            jobName=self.jobName,
-            jobType=JobType.INGEST,
-            connectionName=self.connectionName,
+            job_name=self.job_name,
+            job_type=JobType.INGEST,
+            connection_name=self.connection_name,
             config=config,
-            scheduleType=self.scheduleType,
-            scheduleCron=self.scheduleCron,
-            createdBy=self.createdBy
+            schedule_type=self.schedule_type,
+            schedule_cron=self.schedule_cron,
+            created_by=self.created_by
         )
     
     def to_dag_conf(self) -> Dict[str, Any]:
-        """
-        Convert to DAG conf dict
-        """
-        dag_conf = {
-            "jobName": self.jobName, 
-            "connectionName": self.connectionName,
-            "createdBy": self.createdBy
-        } | self.source.model_dump() | self.target.model_dump() 
+        """Convert to DAG conf dict"""
+        return {
+            "job_name": self.job_name, 
+            "connection_name": self.connection_name,
+            "created_by": self.created_by
+        } | self.source.model_dump() | self.target.model_dump()

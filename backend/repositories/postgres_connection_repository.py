@@ -1,6 +1,8 @@
 import json
-from typing import Optional, List, Dict
-from backend.domain.entity.postgres_client import PostgresConnectionClient
+from typing import Optional, List
+from domain.entity.postgres_client import PostgresConnectionClient
+from domain.entity.source_client import SourceClient
+
 from utils.helpers import create_logger
 
 logger = create_logger("PostgresConnectionRepository")
@@ -15,7 +17,7 @@ class PostgresConnectionRepository(PostgresConnectionClient):
         logger.info("Initializing postgres_connections table")
         query = """
             CREATE TABLE IF NOT EXISTS postgres_connections (
-                connection_id SERIAL PRIMARY KEY,
+                connection_id SERIAL PRIMARY KEY,   
                 connection_name VARCHAR(100) NOT NULL,
                 host VARCHAR(100) NOT NULL,
                 port VARCHAR(50) NOT NULL,
@@ -37,28 +39,25 @@ class PostgresConnectionRepository(PostgresConnectionClient):
         self.execute_query(query)
         logger.info("Table initialization completed")
 
-    def _serialize_params(self, pc: PostgresConnectionClient) -> dict:
-        logger.debug(f"Serializing params for connection: {pc.connectionName}")
+    def _serialize_params(self, pc: SourceClient) -> dict:
+        """Convert SourceClient to database parameters"""
+        logger.debug(f"Serializing params for connection: {pc.connection_name}")
         
         data = pc.to_dict()
-        logger.debug(f"to_dict() result: {data}")
-
-        mapped = {
-            "connection_name": data.get("connectionName"),
+        
+        return {
+            "connection_name": data.get("connection_name"),
             "host": data.get("host"),
             "port": data.get("port"),
             "username": data.get("username"),
             "password": data.get("password"),
             "database": data.get("database"),
-            "jdbc_properties": json.dumps(data.get("jdbcProperties", {})),
+            "jdbc_properties": json.dumps(data.get("jdbc_properties", {})),
         }
 
-        logger.debug(f"Serialized params (port={mapped.get('port')}): connection_name={mapped.get('connection_name')}")
-        return mapped
-
-    def insert_connection(self, pc: PostgresConnectionClient) -> bool:
+    def insert_connection(self, pc: SourceClient) -> bool:
         """Insert a new connection into the database"""
-        logger.info(f"Attempting to insert connection: {pc.connectionName}")
+        logger.info(f"Attempting to insert connection: {pc.connection_name}")
         
         query = """
             INSERT INTO postgres_connections 
@@ -68,17 +67,17 @@ class PostgresConnectionRepository(PostgresConnectionClient):
         """
 
         params = self._serialize_params(pc)
-        logger.debug(f"Executing insert with params: {params}")
 
         try:
             self.execute_query(query, params)
-            logger.info(f"Successfully inserted connection: {pc.connectionName}")
+            logger.info(f"Successfully inserted connection: {pc.connection_name}")
             return True
         except Exception as e:
-            logger.error(f"Failed to insert connection {pc.connectionName}: {str(e)}", exc_info=True)
+            logger.error(f"Failed to insert connection {pc.connection_name}: {str(e)}", exc_info=True)
             raise e
 
-    def get_active_connection(self, connection_name: str) -> Optional[PostgresConnectionClient]:
+    def get_active_connection(self, connection_name: str) -> Optional[SourceClient]:
+        """Get an active connection by name"""
         logger.info(f"Fetching active connection: {connection_name}")
         
         query = """
@@ -88,18 +87,17 @@ class PostgresConnectionRepository(PostgresConnectionClient):
             LIMIT 1
         """
         res = self.execute_query(query, {"connection_name": connection_name})
-        logger.debug(f"Query result for {connection_name}: {res}")
         
         if not res:
             logger.info(f"No active connection found for: {connection_name}")
             return None
 
-        logger.debug(f"Calling from_dict with data: {res}")
-        pc = PostgresConnectionClient.from_dict(res[0])
+        pc = SourceClient.from_dict(res[0])
         logger.info(f"Successfully retrieved connection: {connection_name}")
         return pc
     
-    def get_all_active_connections(self) -> List[PostgresConnectionClient]:
+    def get_all_active_connections(self) -> List[SourceClient]:
+        """Get all active connections"""
         logger.info("Fetching all active connections")
         
         query = """
@@ -109,23 +107,17 @@ class PostgresConnectionRepository(PostgresConnectionClient):
             ORDER BY created_at
         """
         rows = self.execute_query(query)
-        logger.debug(f"Query returned {len(rows) if rows else 0} rows")
-        print(rows)
         
         if not rows:
             logger.info("No active connections found")
             return []
 
-        result = []
-        for idx, row in enumerate(rows):
-            logger.debug(f"Processing row {idx}: {row}")
-            pc = PostgresConnectionClient.from_dict(row)
-            result.append(pc)
-        
+        result = [SourceClient.from_dict(row) for row in rows]
         logger.info(f"Successfully retrieved {len(result)} active connections")
         return result
     
     def soft_delete_connection(self, connection_name: str) -> bool:
+        """Soft delete a connection by setting status to deleted"""
         logger.info(f"Soft deleting connection: {connection_name}")
         
         query = """

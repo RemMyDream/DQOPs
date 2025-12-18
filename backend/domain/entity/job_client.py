@@ -24,13 +24,13 @@ class JobStatus(str, Enum):
 @dataclass
 class Job(ABC):
     """Base Job Domain Entity"""
-    jobName: str
-    jobType: JobType
-    createdBy: str
+    job_name: str
+    job_type: JobType
+    created_by: str
     status: JobStatus = JobStatus.ACTIVE
-    jobId: Optional[int] = None
-    createdAt: Optional[datetime] = field(default_factory=datetime.now)
-    updatedAt: Optional[datetime] = None
+    job_id: Optional[int] = None
+    created_at: Optional[datetime] = field(default_factory=datetime.now)
+    updated_at: Optional[datetime] = None
 
     @abstractmethod
     def to_config(self) -> Dict[str, Any]:
@@ -39,7 +39,7 @@ class Job(ABC):
 
     @classmethod
     @abstractmethod
-    def from_config(cls, jobName: str, config: Dict[str, Any], **kwargs):
+    def from_config(cls, job_name: str, config: Dict[str, Any], **kwargs):
         """Build job instance from config dict"""
         pass
 
@@ -51,17 +51,12 @@ class Job(ABC):
     def to_dict(self) -> Dict[str, Any]:
         """Convert job to dictionary with proper serialization"""
         data = asdict(self)
-        data['jobType'] = self.jobType.value
+        data['job_type'] = self.job_type.value
         data['status'] = self.status.value
         
-        if self.createdAt:
-            data['createdAt'] = self.createdAt.isoformat()
-        if self.updatedAt:
-            data['updatedAt'] = self.updatedAt.isoformat()
+        if self.created_at:
+            data['created_at'] = self.created_at.isoformat()
+        if self.updated_at:
+            data['updated_at'] = self.updated_at.isoformat()
             
         return data
-    
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]):
-        """Create Job instance from dictionary"""
-        raise NotImplementedError("Use specific job type from_dict method")

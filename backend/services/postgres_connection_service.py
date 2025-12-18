@@ -1,59 +1,51 @@
 from typing import Optional, List, Dict
-from backend.domain.entity.postgres_client import PostgresConnectionClient
+from domain.entity.source_client import SourceClient
+from domain.entity.airflow_client import Airflow
 from repositories.postgres_connection_repository import PostgresConnectionRepository
-from backend.domain.request.table_connection_request import (DBConfig, DBCredential)
-
+from domain.request.table_connection_request import DBConfig, DBCredential
 from utils.helpers import create_logger
 
 logger = create_logger("Postgres Connection Service")
 
+
 class PostgresConnectionService:
-    def __init__(self, repo: PostgresConnectionRepository):
+    def __init__(self, 
+                 repo: PostgresConnectionRepository, 
+                 airflow: Airflow
+                 ):
         self.repo = repo
-        self._connection_cache: Dict[str, PostgresConnectionClient] = {}
+        self.airflow = airflow
+        self._connection_cache: Dict[str, SourceClient] = {}
     
     def upsert_connection(self, config: DBConfig) -> Dict:
-        """
-        Create new connection or update existing one.
-        If connection exists with changes, mark old as deleted and create new.
-        If unchanged, return existing.
-        
-        Args:
-            config: Config of PostgresConnectionClient
-        Returns:
-            Dict with status and message
-        """     
-
-        # Check if connection already exists
+        """Create new connection or update existing one."""
         logger.info(f"Received config: {config}")
-        logger.debug(f"config.model_dump() = {config.model_dump()}")
         
-        connection_name = config.connectionName
+        connection_name = config.connection_name
         existing_conn = self.repo.get_active_connection(connection_name)
         
+        # Test connection first
+        pc = SourceClient.from_dict(config.model_dump())
+        try:
+            pc.test_connection()
+        except Exception as e:
+            raise ValueError(f"Connection test failed: {e}")
+        
+        # Sync to Airflow BEFORE saving to database
+        airflow_synced = self._sync_to_airflow(config)
+        if not airflow_synced:
+            raise ValueError(
+                "Failed to sync connection to Airflow. "
+                "Please check Airflow connectivity and try again."
+            )
+        
         if existing_conn:
-            logger.debug(f"existing_conn found: {existing_conn.to_dict()}")
-            is_same = existing_conn.has_same_config(config)
-            logger.info(f"is_same = {is_same}")
-            
-            if not is_same:
+            if not existing_conn.has_same_config(config.model_dump()):
                 logger.info("Config changed, creating new connection")
-                logger.debug(f"About to call from_dict with: {config.model_dump()}")
                 
-                pc = PostgresConnectionClient.from_dict(config.model_dump())
-                # Test connection
-                try:
-                    pc.test_connection()
-                except Exception as e:
-                    raise ValueError(f"Connection test failed: {e}")
-                
-                # Mark old connection as deleted
                 self.repo.soft_delete_connection(connection_name)
-                # Clear cache
                 self.clear_connection_cache(connection_name)
-                # Insert new connection
                 self.repo.insert_connection(pc)
-                # Add to cache
                 self._connection_cache[connection_name] = pc
 
                 return {
@@ -67,30 +59,18 @@ class PostgresConnectionService:
                     "message": "Using existing connection",
                     "action": "Existed"
                 }
-
-        # Create new connection (no existing connection found)
-        pc = PostgresConnectionClient.from_dict(config.model_dump())
-        # Test connection
-        try:
-            pc.test_connection()
-        except Exception as e:
-            raise ValueError(f"Connection test failed: {e}")
-        # Save to database
+        
         self.repo.insert_connection(pc)
-        # Add to cache
-        self._connection_cache[connection_name] = pc      
+        self._connection_cache[connection_name] = pc
+
         return {
             "status": "Success",
             "message": "Connection established successfully",
             "action": "Created"
         }        
 
-    def get_postgres_client(self, connection_name: str) -> Optional[PostgresConnectionClient]:
-        """
-        Get or create a PostgreSQLClient instance for the given connection name.
-        Returns:
-            PostgreSQLClient instance if connection exists and is active, None otherwise
-        """
+    def get_postgres_client(self, connection_name: str) -> Optional[SourceClient]:
+        """Get or create a PostgreSQLClient instance for the given connection name."""
         if connection_name in self._connection_cache:
             cached_client = self._connection_cache[connection_name]
             try:
@@ -99,16 +79,15 @@ class PostgresConnectionService:
             except:
                 del self._connection_cache[connection_name]
             
-        # No connection in cache
         try:
             pc = self.repo.get_active_connection(connection_name)
             pc.test_connection()
             self._connection_cache[connection_name] = pc
             return pc
-        except Exception as e:
+        except Exception:
             return None
 
-    def get_all_active_connections(self) -> List[PostgresConnectionClient]:
+    def get_all_active_connections(self) -> List[SourceClient]:
         """Get all active connections, skipping ones that cannot connect"""
         res = self.repo.get_all_active_connections()
         connections = []
@@ -119,63 +98,46 @@ class PostgresConnectionService:
                 connections.append(connection)
             except Exception as e:
                 logger.warning(
-                    f"Skipping connection '{connection.connectionName}' "
+                    f"Skipping connection '{connection.connection_name}' "
                     f"because test_connection() failed: {e}"
                 )
-                continue
         return connections
 
     def delete_connection(self, connection_name: str) -> bool:
-        """
-        Soft delete a connection (mark as deleted)
-        Args:
-            connection_name: Name of the connection to delete 
-        Returns:
-            bool: True if successful
-        """
+        """Soft delete a connection (mark as deleted)"""
         existing_conn = self.get_postgres_client(connection_name)
         if not existing_conn:
             raise ValueError(f"No active connection found with name: {connection_name}")
         
-        # Clear from cache first
         self.clear_connection_cache(connection_name)
+        
+        # Delete from Airflow first
+        airflow_deleted = self._delete_from_airflow(connection_name)
+        if not airflow_deleted:
+            logger.warning(f"Failed to delete connection from Airflow: {connection_name}")
+        
         existing_conn.engine.dispose()
-        # Soft clear connection in database
         return self.repo.soft_delete_connection(connection_name)
 
     def clear_connection_cache(self, connection_name: Optional[str] = None):
-        """
-        Clear connection cache.
-        If connection_name is provided, clear only that connection.
-        Otherwise clear all.
-        """
+        """Clear connection cache. If connection_name provided, clear only that connection."""
         if connection_name:
             if connection_name in self._connection_cache:
-                # Close connection before removing
                 try:
-                    self._connection_cache[connection_name].close()
+                    self._connection_cache[connection_name].engine.dispose()
                 except:
                     pass
                 del self._connection_cache[connection_name]
         else:
-            # Close all connections
             for client in self._connection_cache.values():
                 try:
                     client.engine.dispose()
                 except:
                     pass
             self._connection_cache.clear()
-#============== Metadata ===============
+
     def get_schemas_and_tables(self, connection_name: str) -> Dict:
-        """
-        Get all schemas and tables for a connection.
-        Args:
-            connection_name: Name of the connection
-        Returns:
-            Dict with schemas and tables 
-        Raises:
-            ValueError: If connection not found
-        """
+        """Get all schemas and tables for a connection."""
         logger.info(f"Fetching schemas for connection: {connection_name}")
 
         pc = self.get_postgres_client(connection_name)
@@ -185,96 +147,118 @@ class PostgresConnectionService:
         return pc.get_schema_and_table()
 
     def preview_table(self, credential: DBCredential):
-        """
-        Preview table data (first 15 rows).       
-        Args:
-            credential: DBCredential
-        Returns:
-            Dict with schema, table, columns, rows and number of rows
-        Raises:
-            ValueError: If connection not found or invalid parameters
-        """
-
-        if not credential.schemaName or not credential.tableName:
+        """Preview table data (first 15 rows)."""
+        if not credential.schema_name or not credential.table_name:
             raise ValueError("Schema and table names are required")
 
-        pc = self.get_postgres_client(credential.connectionName)
+        pc = self.get_postgres_client(credential.connection_name)
         if not pc:
-            raise ValueError(f"No active connection found with name: {credential.connectionName}")
+            raise ValueError(f"No active connection found with name: {credential.connection_name}")
         
         limit = 15
-        logger.info(f"Previewing table: {credential.schemaName}.{credential.tableName}")
+        logger.info(f"Previewing table: {credential.schema_name}.{credential.table_name}")
         
-        query = f"""SELECT * FROM "{credential.schemaName}"."{credential.tableName}" LIMIT {limit}"""
+        query = f"""SELECT * FROM "{credential.schema_name}"."{credential.table_name}" LIMIT {limit}"""
         result = pc.execute_query(query)
         
-        columns = pc.get_columns(table_name=credential.tableName, schema_name=credential.schemaName)
+        columns = pc.get_columns(table_name=credential.table_name, schema_name=credential.schema_name)
         
         return {
-            "schema": credential.schemaName,
-            "table": credential.tableName,
+            "schema": credential.schema_name,
+            "table": credential.table_name,
             "columns": columns,
             "rows": result,
-            "rowCount": len(result)
+            "row_count": len(result) if result else 0
         }            
-    
 
     def get_table_columns(self, credential: DBCredential):
-        """
-        Get column information for a table.
-        Args:
-            credential: DBCredential
-        Returns:
-            Dict with column information 
-        Raises:
-            ValueError: If connection not found or invalid parameters
-        """
-
-        if not credential.schemaName or not credential.tableName:
+        """Get column information for a table."""
+        if not credential.schema_name or not credential.table_name:
             raise ValueError("Schema and table names are required")
 
-        pc = self.get_postgres_client(credential.connectionName)
+        pc = self.get_postgres_client(credential.connection_name)
         if not pc:
-            raise ValueError(f"No active connection found with name: {credential.connectionName}")
-        columns = pc.get_columns(credential.schemaName, credential.tableName)
+            raise ValueError(f"No active connection found with name: {credential.connection_name}")
+        
+        columns = pc.get_columns(credential.table_name, credential.schema_name)
+        
         return {
-            "schema": credential.schemaName,
-            "table": credential.tableName,
+            "schema": credential.schema_name,
+            "table": credential.table_name,
             "columns": columns,
             "count": len(columns)
         }
     
     def get_primary_keys(self, credential: DBCredential):
-        """
-        Get primary keys for a table, with detection if none exist.
-        Args:
-            credential: DBCredential
-        Returns:
-            Dict with primary key information
-        Raises:
-            ValueError: If connection not found or invalid parameters
-        """        
-        if not credential.schemaName or not credential.tableName:
+        """Get primary keys for a table, with detection if none exist."""
+        if not credential.schema_name or not credential.table_name:
             raise ValueError("Schema and table names are required")
 
-        pc = self.get_postgres_client(credential.connectionName)
+        pc = self.get_postgres_client(credential.connection_name)
         if not pc:
-            raise ValueError(f"No active connection found with name: {credential.connectionName}")
-        logger.info(f"Getting primary keys for table: {credential.schemaName}.{credential.tableName}")
+            raise ValueError(f"No active connection found with name: {credential.connection_name}")
         
-        # Get existing primary keys
-        existing_pks = pc.get_primary_keys(credential.schemaName, credential.tableName)
-        has_pks = True if existing_pks else False
+        logger.info(f"Getting primary keys for table: {credential.schema_name}.{credential.table_name}")
         
-        # Detect potential primary keys if none exist
+        existing_pks = pc.get_primary_keys(credential.schema_name, credential.table_name)
+        has_pks = bool(existing_pks)
+        
         detected_pks = []
         if not has_pks:
-            detected_pks = pc.detect_primary_keys(credential.schemaName, credential.tableName)
-            print(detected_pks)
+            detected_pks = pc.detect_primary_keys(credential.schema_name, credential.table_name)
+        
         return {
-            "schema": credential.schemaName,
-            "table": credential.tableName,
+            "schema": credential.schema_name,
+            "table": credential.table_name,
             "primary_keys": existing_pks,
             "detected_keys": detected_pks,
             "has_primary_keys": has_pks
         }
+    
+    def _sync_to_airflow(self, config: DBConfig) -> bool:
+        """Sync connection to Airflow - returns True if successful"""
+        if not self.airflow:
+            logger.error("Airflow client is not configured!")
+            return False
+        
+        try:
+            result = self.airflow.upsert_connection(config.model_dump())
+            logger.info(f"Successfully synced connection '{config.connection_name}' to Airflow")
+            return result
+        except Exception as e:
+            logger.error(f"Failed to sync to Airflow: {type(e).__name__}: {e}")
+            return False
+    
+    def _delete_from_airflow(self, connection_name: str) -> bool:
+        """Delete connection from Airflow - returns True if successful"""
+        if not self.airflow:
+            logger.error("Airflow client is not configured!")
+            return False
+        
+        try:
+            result = self.airflow.delete_connection(connection_name)
+            logger.info(f"Deleted connection '{connection_name}' from Airflow")
+            return result
+        except Exception as e:
+            logger.error(f"Failed to delete from Airflow: {type(e).__name__}: {e}")
+            return False
+    
+    def verify_airflow_connection(self, connection_name: str) -> Dict:
+        """Verify if connection exists in Airflow"""
+        if not self.airflow:
+            return {
+                "exists": False,
+                "error": "Airflow client not configured"
+            }
+        
+        try:
+            conn = self.airflow.get_connection(connection_name)
+            return {
+                "exists": conn is not None,
+                "connection": conn
+            }
+        except Exception as e:
+            return {
+                "exists": False,
+                "error": str(e)
+            }
