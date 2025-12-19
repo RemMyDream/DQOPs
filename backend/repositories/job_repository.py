@@ -66,8 +66,7 @@ class JobRepository(PostgresConnectionClient):
         """
         
         params = self._serialize_job(job)
-        job_id = self.execute_query(query, params)
-        
+        job_id = self.execute_query(query, params)[0]
         logger.info(f"Successfully inserted job '{job.job_name}' with job_id: {job_id}")
         return job_id
 

@@ -83,17 +83,17 @@ def trigger_ingest(
         
         job_id = None
         
-        # # 2. SAVE TO DB
-        # if not request.jobName:
-        #     request.jobName = f"ingest_{request.source.schemaName}_{request.source.tableName}"
+        # 2. SAVE TO DB
+        if not request.job_name:
+            request.job_name = f"ingest_{request.source.schema_name}_{request.source.table_name}"
         
-        # try:
-        #     job_result = job_service.create_job(request)
-        #     job_id = job_result.get("jobId")
-        #     logger.info(f"Saved job to DB: job_id={job_id}")
+        try:
+            job_result = job_service.create_job(request)
+            job_id = job_result.get("job_id")
+            logger.info(f"Saved job to DB: job_id={job_id}")
             
-        # except Exception as e:
-        #     logger.warning(f"Trigger succeeded but failed to save job: {e}")
+        except Exception as e:
+            logger.warning(f"Trigger succeeded but failed to save job: {e}")
     
         return { 
             "status" : trigger_result['status'],

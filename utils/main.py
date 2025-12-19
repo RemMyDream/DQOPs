@@ -133,68 +133,6 @@ def trigger_airflow_dag(dag_id: str, dag_run_id: str, dag_conf: Dict) -> Dict:
     
     return response.json()
 
-@app.post("/job/create", tags = ["Jobs"])
-def create_job(request: CreateJobRequest):
-    try:
-        logger.info(f"Start creating jobs: {request.job_name} with type {request.job_type}")
-
-        # Validate connection exist
-        conn_info = fastapi_client.get_active_connection(connection_name = request.connection_name)
-        if not conn_info:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Connection '{request.connection_name}' not found"
-            )
-        
-        temp_job = JobFactory.create_job(job_type = request.job_type,
-                                         job_id = 0,
-                                         job_name = request.job_name,
-                                         config = request.config,
-                                         created_by=request.created_by)
-
-        temp_job.validate()
-
-        # Create Job
-        job = AirflowJob(job_name = request.job_name, 
-                         job_type = JobType(request.job_type),
-                         status = JobStatus.ACTIVE,
-                         created_at = datetime.now(),
-                         created_by = request.created_by)
-        
-        job_id = fastapi_client.create_job(job)
-        if not job_id:
-            raise HTTPException(status_code=500, detail="Failed to create job")
-
-        # Create first version of job
-        version = JobVersion(job_id = job_id,
-                            version_id=1,
-                            is_active=True,
-                            connection_name=request.connection_name,
-                            job_config=request.config,
-                            schedule_type=ScheduleType(request.schedule_type),
-                            schedule_cron=request.schedule_cron,
-                            created_by=request.created_by,
-                            created_at=datetime.now())
-        
-        fastapi_client.create_version(version)
-        
-        logger.info(f"Create job {job_id}")
-        return {
-            "status": "success",
-            "message": "Job created successfully",
-            "job_id": job_id,
-            "job_name": request.job_name,
-            "version_id": 1
-        }
-    except ValueError as ve:
-        # Validation error
-        logger.error(f"Validation error: {str(ve)}")
-        raise HTTPException(status_code=400, detail=f"Validation error: {str(ve)}")
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Failed to create job: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/jobs", tags=["Jobs"])
 def list_jobs():
@@ -653,26 +591,6 @@ def submit_tables(submission: TableSubmission):
 
 
 # ==================== Utility Endpoints ====================
-@app.post("/clear_cache")
-def clear_cache(cache_clear: CacheClear):
-    """Clear connection cache for testing or maintenance"""
-    try:
-        connection_name = cache_clear.connection_name
-        fastapi_client.clear_connection_cache(connection_name)
-        
-        msg = (f"Cache cleared for connection: {connection_name}" 
-               if connection_name 
-               else "All connection cache cleared")
-        logger.info(msg)
-        
-        return {
-            "status": "success",
-            "message": msg
-        }
-        
-    except Exception as e:
-        logger.error(f"Failed to clear cache: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/health")
 def health_check():
