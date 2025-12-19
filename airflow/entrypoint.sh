@@ -13,6 +13,6 @@ airflow users create \
     --firstname Admin \
     --lastname User \
     --role Admin \
-    --email admin@example.com
+    --email admin@example.com 2>/dev/null || true
 
 exec "$@"

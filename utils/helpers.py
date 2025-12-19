@@ -1,3 +1,4 @@
+import json
 import logging
 from sqlalchemy import text
 import yaml
@@ -19,9 +20,9 @@ def load_cfg(cfg_file):
             print(e)
     return cfg
 
-def parse_args(description: str, help: str):
-    """Parse command line arguments"""
-    parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('--config', type=str, required=True,
-                       help=help)
-    return parser.parse_args()
+def parse_config_args():
+    """Standard config parser for all Spark apps"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type=str, required=True)
+    args = parser.parse_args()
+    return json.loads(args.config)

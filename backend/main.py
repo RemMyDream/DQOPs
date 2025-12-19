@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from utils.helpers import create_logger
 from routers.postgres_connection_router import router as postgres_router
 from routers.job_trigger_router import router as job_trigger_router
-
 logger = create_logger("Main")
 
 # ==================== Create FastAPI Application ====================

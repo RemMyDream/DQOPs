@@ -58,30 +58,34 @@ class PostgresConnectionClient:
             props.update(self.jdbc_properties)
         return props
 
-    def execute_query(self, query: str, params: dict = None):
+    def execute_query(self, query: str, params: dict = None) -> list:
         """
-        Execute query and return results in predictable format:
-        - SELECT queries -> always return list (of dicts or values)
-        - Non-SELECT or no results -> None
+        Execute query and ALWAYS return list:
+        - 1 column  -> list[value]
+        - many cols -> list[dict]
+        - no rows   -> []
         """
         with self.engine.begin() as conn:
             result = conn.execute(text(query), params or {})
 
-            if query.strip().lower().startswith("select"):
-                rows = result.mappings().all()
+            if not result.returns_rows:
+                return []
 
-                if not rows:
-                    return None
+            rows = result.mappings().all()
 
-                rows = [dict(row) for row in rows]
+            if not rows:
+                return []
 
-                if len(rows[0]) == 1:
-                    col_name = next(iter(rows[0].keys()))
-                    return [r[col_name] for r in rows]
+            rows = [dict(row) for row in rows]
 
-                return rows
+            # 1 column → list[value]
+            if len(rows[0]) == 1:
+                col_name = next(iter(rows[0].keys()))
+                return [r[col_name] for r in rows]
 
-            return None
+            # many columns → list[dict]
+            return rows
+
     
     def test_connection(self):
         with self.engine.connect() as conn:

@@ -15,7 +15,6 @@ export default function DatabaseConnectionForm({
 
   const updateConfig = (field, value) => {
     setDbConfig(prev => ({ ...prev, [field]: value }));
-    // Reset connection status when config changes
     if (connectionStatus) {
       setConnectionStatus(null);
     }
@@ -25,7 +24,7 @@ export default function DatabaseConnectionForm({
     if (newJdbcKey && newJdbcValue) {
       setDbConfig(prev => ({
         ...prev,
-        jdbcProperties: [...(prev.jdbcProperties || []), { key: newJdbcKey, value: newJdbcValue }]
+        jdbc_properties: [...(prev.jdbc_properties || []), { key: newJdbcKey, value: newJdbcValue }]
       }));
       setNewJdbcKey('');
       setNewJdbcValue('');
@@ -35,7 +34,7 @@ export default function DatabaseConnectionForm({
   const removeJdbcProperty = (index) => {
     setDbConfig(prev => ({
       ...prev,
-      jdbcProperties: prev.jdbcProperties.filter((_, i) => i !== index)
+      jdbc_properties: prev.jdbc_properties.filter((_, i) => i !== index)
     }));
   };
 
@@ -44,37 +43,31 @@ export default function DatabaseConnectionForm({
     setConnectionStatus(null);
 
     try {
-      // Validate required fields
-      if (!dbConfig.connectionName || !dbConfig.host || !dbConfig.port || !dbConfig.username || !dbConfig.database) {
+      if (!dbConfig.connection_name || !dbConfig.host || !dbConfig.port || !dbConfig.username || !dbConfig.database) {
         throw new Error('Please fill in all required fields');
       }
 
-      // Convert jdbcProperties array to object
-      const jdbcPropertiesObj = dbConfig.jdbcProperties && dbConfig.jdbcProperties.length > 0
-        ? dbConfig.jdbcProperties.reduce((acc, prop) => {
+      const jdbcPropertiesObj = dbConfig.jdbc_properties?.length > 0
+        ? dbConfig.jdbc_properties.reduce((acc, prop) => {
             acc[prop.key] = prop.value;
             return acc;
           }, {})
         : {};
 
       const payload = {
-        connectionName: dbConfig.connectionName,
+        connection_name: dbConfig.connection_name,
         host: dbConfig.host,
         port: dbConfig.port,
         username: dbConfig.username,
         password: dbConfig.password,
         database: dbConfig.database,
-        jdbcProperties: jdbcPropertiesObj,
-        savedAt: new Date().toISOString()
+        jdbc_properties: jdbcPropertiesObj,
+        saved_at: new Date().toISOString()
       };
-
-      console.log('Testing connection with payload:', payload);
 
       const response = await fetch('http://localhost:8000/postgres/connections', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
@@ -84,11 +77,8 @@ export default function DatabaseConnectionForm({
         throw new Error(data.detail || 'Connection failed');
       }
 
-      console.log('Connection successful:', data);
       setConnectionStatus('success');
-
     } catch (error) {
-      console.error('Connection error:', error);
       setConnectionStatus('error');
       alert(`Connection failed: ${error.message}`);
     } finally {
@@ -99,7 +89,6 @@ export default function DatabaseConnectionForm({
   return (
     <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
       <div className="space-y-6">
-        {/* Connection Name */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">
             Connection Name *
@@ -108,8 +97,8 @@ export default function DatabaseConnectionForm({
             <Database className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
-              value={dbConfig.connectionName}
-              onChange={(e) => updateConfig('connectionName', e.target.value)}
+              value={dbConfig.connection_name}
+              onChange={(e) => updateConfig('connection_name', e.target.value)}
               placeholder="e.g., production-db"
               className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
@@ -117,7 +106,6 @@ export default function DatabaseConnectionForm({
           </div>
         </div>
 
-        {/* Host and Port */}
         <div className="grid grid-cols-3 gap-4">
           <div className="col-span-2">
             <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -150,7 +138,6 @@ export default function DatabaseConnectionForm({
           </div>
         </div>
 
-        {/* Database Name */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">
             Database Name *
@@ -168,7 +155,6 @@ export default function DatabaseConnectionForm({
           </div>
         </div>
 
-        {/* Username and Password */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -204,16 +190,14 @@ export default function DatabaseConnectionForm({
           </div>
         </div>
 
-        {/* JDBC Properties */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">
             JDBC Properties (Optional)
           </label>
           
-          {/* Existing Properties */}
-          {dbConfig.jdbcProperties && dbConfig.jdbcProperties.length > 0 && (
+          {dbConfig.jdbc_properties?.length > 0 && (
             <div className="space-y-2 mb-3">
-              {dbConfig.jdbcProperties.map((prop, index) => (
+              {dbConfig.jdbc_properties.map((prop, index) => (
                 <div key={index} className="flex items-center space-x-2 bg-slate-50 p-3 rounded-lg">
                   <span className="flex-1 text-sm font-mono text-slate-700">
                     {prop.key} = {prop.value}
@@ -229,7 +213,6 @@ export default function DatabaseConnectionForm({
             </div>
           )}
 
-          {/* Add New Property */}
           <div className="flex space-x-2">
             <input
               type="text"
@@ -255,7 +238,6 @@ export default function DatabaseConnectionForm({
           </div>
         </div>
 
-        {/* Connection Status */}
         {connectionStatus && (
           <div className={`p-4 rounded-lg flex items-center space-x-3 ${
             connectionStatus === 'success' 
@@ -276,7 +258,6 @@ export default function DatabaseConnectionForm({
           </div>
         )}
 
-        {/* Action Buttons */}
         <div className="flex justify-end space-x-3 pt-4">
           <button
             onClick={testConnection}

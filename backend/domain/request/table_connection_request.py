@@ -23,9 +23,3 @@ class DBCredential(BaseModel):
     connection_name: str
     schema_name: Optional[str] = None
     table_name: Optional[str] = None
-
-
-class TableSubmission(BaseModel):
-    """Table submission for profiling, monitoring"""
-    connection_name: str
-    tables: List[Dict[str, str]]

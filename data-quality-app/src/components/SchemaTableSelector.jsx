@@ -1,6 +1,5 @@
-// SchemaTableSelector.jsx
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Database, Check, ChevronDown, ChevronRight, RefreshCw, Loader2, Search, X, Eye, CheckSquare, AlertTriangle, Key } from 'lucide-react';
+import { Trash2, Database, Check, ChevronDown, ChevronRight, RefreshCw, Loader2, Search, X, Eye, CheckSquare, AlertTriangle, Key } from 'lucide-react';
 
 export default function SchemaTableSelector({
   schemas,
@@ -8,9 +7,9 @@ export default function SchemaTableSelector({
   selectedTables,
   setSelectedTables,
   setStep,
-  submitSelectedTables,
   isLoadingSchemas,
-  dbConfig
+  dbConfig,
+  onIngestionComplete  // THÊM prop này
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,14 +20,16 @@ export default function SchemaTableSelector({
   const [primaryKeyData, setPrimaryKeyData] = useState(null);
   const [confirmedPrimaryKeys, setConfirmedPrimaryKeys] = useState({});
   const [loadingPrimaryKeys, setLoadingPrimaryKeys] = useState({});
+  
+  const [ingestionProgress, setIngestionProgress] = useState({});
+  const [showProgressModal, setShowProgressModal] = useState(false);
 
-  // Auto-check primary keys when table is selected
   useEffect(() => {
     const checkNewlySelectedTables = async () => {
       for (const tableId of selectedTables) {
         if (!confirmedPrimaryKeys[tableId] && !loadingPrimaryKeys[tableId]) {
           const [schema, table] = tableId.split('.');
-          await checkPrimaryKeys(schema, table, true); // Silent check
+          await checkPrimaryKeys(schema, table, true);
         }
       }
     };
@@ -38,9 +39,7 @@ export default function SchemaTableSelector({
 
   const toggleSchema = (schemaName) => {
     setSchemas(schemas.map(s => 
-      s.name === schemaName 
-        ? { ...s, expanded: !s.expanded }
-        : s
+      s.name === schemaName ? { ...s, expanded: !s.expanded } : s
     ));
   };
 
@@ -48,7 +47,6 @@ export default function SchemaTableSelector({
     const tableId = `${schemaName}.${tableName}`;
     if (selectedTables.includes(tableId)) {
       setSelectedTables(selectedTables.filter(id => id !== tableId));
-      // Remove confirmed PK when deselecting
       const newConfirmedPKs = { ...confirmedPrimaryKeys };
       delete newConfirmedPKs[tableId];
       setConfirmedPrimaryKeys(newConfirmedPKs);
@@ -62,10 +60,7 @@ export default function SchemaTableSelector({
     if (!schema) return;
 
     const tablesToAdd = schema.tables
-      .filter(table => {
-        const tableId = `${schemaName}.${table}`;
-        return !selectedTables.includes(tableId);
-      })
+      .filter(table => !selectedTables.includes(`${schemaName}.${table}`))
       .map(table => `${schemaName}.${table}`);
 
     setSelectedTables([...selectedTables, ...tablesToAdd]);
@@ -78,18 +73,14 @@ export default function SchemaTableSelector({
 
     try {
       const payload = {
-        connectionName: dbConfig.connectionName,
-        schemaName: schemaName,
-        tableName: tableName
+        connection_name: dbConfig.connection_name,
+        schema_name: schemaName,
+        table_name: tableName
       };
-      
-      console.log('Preview table payload:', payload);
       
       const response = await fetch('http://localhost:8000/postgres/tables/preview', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
@@ -100,18 +91,16 @@ export default function SchemaTableSelector({
 
       const data = await response.json();
       
-      if (data.rows && data.rows.length > 0) {
-        const columns = Object.keys(data.rows[0]); // Extract column names
-        const rowsAsArrays = data.rows.map(row => 
-          columns.map(col => row[col])
-        );
+      if (data.rows?.length > 0) {
+        const columns = Object.keys(data.rows[0]);
+        const rowsAsArrays = data.rows.map(row => columns.map(col => row[col]));
         
         setPreviewData({
           schema: schemaName,
           table: tableName,
-          columns: columns,
+          columns,
           rows: rowsAsArrays,
-          rowCount: data.rows.length
+          row_count: data.rows.length
         });
       } else {
         setPreviewData({
@@ -119,12 +108,10 @@ export default function SchemaTableSelector({
           table: tableName,
           columns: [],
           rows: [],
-          rowCount: 0
+          row_count: 0
         });
       }
-
     } catch (error) {
-      console.error('Error previewing table:', error);
       alert(`Failed to preview table: ${error.message}`);
       setShowPreviewModal(false);
     } finally {
@@ -134,24 +121,18 @@ export default function SchemaTableSelector({
 
   const checkPrimaryKeys = async (schemaName, tableName, silent = false) => {
     const tableId = `${schemaName}.${tableName}`;
-    
-    // Set loading state
     setLoadingPrimaryKeys(prev => ({ ...prev, [tableId]: true }));
     
     try {
       const payload = {
-        connectionName: dbConfig.connectionName,
-        schemaName: schemaName,
-        tableName: tableName
+        connection_name: dbConfig.connection_name,
+        schema_name: schemaName,
+        table_name: tableName
       };
-      
-      console.log('Check primary keys payload:', payload);
       
       const response = await fetch('http://localhost:8000/postgres/tables/primary-keys', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
@@ -162,31 +143,22 @@ export default function SchemaTableSelector({
 
       const data = await response.json();
       
-      // If table has existing primary keys, auto-confirm them
       if (data.has_primary_keys && data.primary_keys.length > 0) {
         setConfirmedPrimaryKeys(prev => ({
           ...prev,
           [tableId]: data.primary_keys
         }));
-        if (!silent) {
-          console.log(`Auto-confirmed existing primary keys for ${tableId}:`, data.primary_keys);
-        }
-      } else {
-        // Show modal for user to select
-        if (!silent) {
-          setPrimaryKeyData({
-            schema: schemaName,
-            table: tableName,
-            existingKeys: data.primary_keys || [],
-            detectedKeys: data.detected_keys || [],
-            hasKeys: data.has_primary_keys
-          });
-          setShowPrimaryKeyModal(true);
-        }
+      } else if (!silent) {
+        setPrimaryKeyData({
+          schema: schemaName,
+          table: tableName,
+          existing_keys: data.primary_keys || [],
+          detected_keys: data.detected_keys || [],
+          has_keys: data.has_primary_keys
+        });
+        setShowPrimaryKeyModal(true);
       }
-
     } catch (error) {
-      console.error('Error checking primary keys:', error);
       if (!silent) {
         alert(`Failed to check primary keys: ${error.message}`);
       }
@@ -209,7 +181,6 @@ export default function SchemaTableSelector({
   };
 
   const handleSubmit = async () => {
-    // Check if all selected tables have primary keys confirmed
     const tablesWithoutPK = selectedTables.filter(
       tableId => !confirmedPrimaryKeys[tableId] || confirmedPrimaryKeys[tableId].length === 0
     );
@@ -220,12 +191,114 @@ export default function SchemaTableSelector({
     }
 
     setIsSubmitting(true);
+    setShowProgressModal(true);
+    
+    // Initialize progress tracking
+    const initialProgress = {};
+    selectedTables.forEach(tableId => {
+      initialProgress[tableId] = { status: 'pending', message: 'Waiting...' };
+    });
+    setIngestionProgress(initialProgress);
+
     try {
-      await submitSelectedTables();
+      // Trigger ingest cho từng bảng sequentially
+      for (const tableId of selectedTables) {
+        const [schemaName, tableName] = tableId.split('.');
+        const primaryKeys = confirmedPrimaryKeys[tableId];
+
+        // Update status: processing
+        setIngestionProgress(prev => ({
+          ...prev,
+          [tableId]: { status: 'processing', message: 'Triggering ingestion...' }
+        }));
+
+        try {
+          const payload = {
+            connection_name: dbConfig.connection_name,
+            source: {
+              schema_name: schemaName,
+              table_name: tableName,
+              primary_keys: primaryKeys
+            },
+            target: {
+              layer: 'bronze',
+              path: `s3a://${dbConfig.database}/bronze/${schemaName}/${tableName}`,
+              format: 'delta'
+            },
+            schedule_type: 'on_demand',
+            created_by: 'admin'
+          };
+
+          const response = await fetch('http://localhost:8000/trigger/ingest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Failed to trigger ingestion');
+          }
+
+          const result = await response.json();
+
+          // Update status: success
+          setIngestionProgress(prev => ({
+            ...prev,
+            [tableId]: { 
+              status: 'success', 
+              message: `Triggered successfully`,
+              dag_run_id: result.dag_run_id,
+              job_id: result.job_id
+            }
+          }));
+
+          // Small delay between triggers
+          await new Promise(resolve => setTimeout(resolve, 500));
+
+        } catch (error) {
+          // Update status: error
+          setIngestionProgress(prev => ({
+            ...prev,
+            [tableId]: { 
+              status: 'error', 
+              message: error.message 
+            }
+          }));
+        }
+      }
+
+      // All done - PHẦN NÀY ĐÃ ĐƯỢC SỬA
+      setTimeout(() => {
+        const allSuccess = Object.values(ingestionProgress).every(p => p.status === 'success');
+        if (allSuccess) {
+          // Chuẩn bị dữ liệu các bảng đã ingest
+          const ingestedTablesData = selectedTables.map(tableId => {
+            const [schema, table] = tableId.split('.');
+            return {
+              schema: schema,
+              table: table,
+              primary_keys: confirmedPrimaryKeys[tableId]
+            };
+          });
+          
+          alert('All tables triggered successfully! Redirecting to dashboard...');
+          
+          // Gọi callback để chuyển sang dashboard và truyền dữ liệu
+          if (onIngestionComplete) {
+            onIngestionComplete(ingestedTablesData);
+          }
+        } else {
+          alert('Some tables failed to ingest. Please check the progress modal.');
+        }
+      }, 1000);
+
+    } catch (error) {
+      alert(`Failed to trigger ingestion: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }
 
   const filterTables = (tables) => {
     if (!searchTerm) return tables;
@@ -257,13 +330,12 @@ export default function SchemaTableSelector({
 
   return (
     <div className="space-y-6">
-      {/* Connection Info Banner */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="flex items-center space-x-3">
           <Database className="w-5 h-5 text-blue-600" />
           <div>
             <p className="text-sm font-medium text-blue-900">
-              Connected: <span className="font-bold">{dbConfig.connectionName}</span>
+              Connected: <span className="font-bold">{dbConfig.connection_name}</span>
             </p>
             <p className="text-xs text-blue-700">
               {dbConfig.database} @ {dbConfig.host}:{dbConfig.port}
@@ -311,11 +383,9 @@ export default function SchemaTableSelector({
           <div className="space-y-3">
             {schemas.map((schema) => {
               const filteredTables = filterTables(schema.tables);
-              const visibleTables = filteredTables;
 
               return (
                 <div key={schema.name} className="border border-slate-200 rounded-lg overflow-hidden">
-                  {/* Schema Header */}
                   <div className="flex items-center justify-between bg-slate-50 px-4 py-3">
                     <div
                       onClick={() => toggleSchema(schema.name)}
@@ -346,7 +416,6 @@ export default function SchemaTableSelector({
                     )}
                   </div>
 
-                  {/* Tables List */}
                   {schema.expanded && (
                     <div className="bg-white">
                       {filteredTables.length === 0 ? (
@@ -355,7 +424,7 @@ export default function SchemaTableSelector({
                         </div>
                       ) : (
                         <div className="divide-y divide-slate-100 max-h-96 overflow-y-auto">
-                          {visibleTables.map((table) => {
+                          {filteredTables.map((table) => {
                             const tableId = `${schema.name}.${table}`;
                             const isSelected = selectedTables.includes(tableId);
                             const hasPrimaryKeys = confirmedPrimaryKeys[tableId];
@@ -376,7 +445,6 @@ export default function SchemaTableSelector({
                                 />
                                 <span className="flex-1 text-sm text-slate-700 font-medium">{table}</span>
                                 
-                                {/* Loading Primary Keys */}
                                 {isSelected && isLoadingPK && (
                                   <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center space-x-1">
                                     <Loader2 className="w-3 h-3 animate-spin" />
@@ -384,7 +452,6 @@ export default function SchemaTableSelector({
                                   </span>
                                 )}
                                 
-                                {/* No Primary Keys */}
                                 {isSelected && !isLoadingPK && !hasPrimaryKeys && (
                                   <button
                                     onClick={() => checkPrimaryKeys(schema.name, table, false)}
@@ -395,7 +462,6 @@ export default function SchemaTableSelector({
                                   </button>
                                 )}
                                 
-                                {/* Has Primary Keys */}
                                 {isSelected && !isLoadingPK && hasPrimaryKeys && (
                                   <div className="flex items-center space-x-2">
                                     <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded flex items-center space-x-1">
@@ -412,7 +478,6 @@ export default function SchemaTableSelector({
                                   </div>
                                 )}
                                 
-                                {/* Preview Button */}
                                 <button
                                   onClick={() => previewTable(schema.name, table)}
                                   className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
@@ -434,7 +499,6 @@ export default function SchemaTableSelector({
         )}
       </div>
 
-      {/* Selected Tables Summary */}
       {selectedTables.length > 0 && (
         <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
           <div className="flex items-center justify-between mb-4">
@@ -519,12 +583,12 @@ export default function SchemaTableSelector({
               {isSubmitting ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Submitting...</span>
+                  <span>Triggering Ingestion...</span>
                 </>
               ) : (
                 <>
                   <Check className="w-4 h-4" />
-                  <span>Add to Data Quality System</span>
+                  <span>Trigger Ingestion</span>
                 </>
               )}
             </button>
@@ -532,7 +596,6 @@ export default function SchemaTableSelector({
         </div>
       )}
 
-      {/* Preview Modal */}
       {showPreviewModal && (
         <div className="fixed inset-0 bg-black bg-opacity-65 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
@@ -577,7 +640,7 @@ export default function SchemaTableSelector({
                     </tbody>
                   </table>
                   <div className="mt-4 text-sm text-slate-500 text-center">
-                    Showing {previewData.rowCount} rows
+                    Showing {previewData.row_count} rows
                   </div>
                 </div>
               ) : null}
@@ -585,8 +648,93 @@ export default function SchemaTableSelector({
           </div>
         </div>
       )}
+      
+      {/* Progress Modal */}
+      {showProgressModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-65 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h3 className="text-lg font-semibold text-slate-900">
+                Ingestion Progress
+              </h3>
+              <button
+                onClick={() => setShowProgressModal(false)}
+                disabled={isSubmitting}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-auto max-h-[calc(80vh-12rem)]">
+              <div className="space-y-3">
+                {selectedTables.map(tableId => {
+                  const progress = ingestionProgress[tableId] || { status: 'pending', message: 'Waiting...' };
+                  
+                  return (
+                    <div
+                      key={tableId}
+                      className={`p-4 rounded-lg border-2 transition-all ${
+                        progress.status === 'success' ? 'border-green-200 bg-green-50' :
+                        progress.status === 'error' ? 'border-red-200 bg-red-50' :
+                        progress.status === 'processing' ? 'border-blue-200 bg-blue-50' :
+                        'border-slate-200 bg-slate-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3 flex-1">
+                          {progress.status === 'success' && <Check className="w-5 h-5 text-green-600 flex-shrink-0" />}
+                          {progress.status === 'error' && <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />}
+                          {progress.status === 'processing' && <Loader2 className="w-5 h-5 text-blue-600 animate-spin flex-shrink-0" />}
+                          {progress.status === 'pending' && <div className="w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0" />}
+                          
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-slate-900 truncate">{tableId}</p>
+                            <p className="text-sm text-slate-600">{progress.message}</p>
+                            {progress.dag_run_id && (
+                              <p className="text-xs text-slate-500 mt-1 font-mono">Run ID: {progress.dag_run_id}</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <span className={`text-xs px-3 py-1 rounded-full font-medium flex-shrink-0 ml-3 ${
+                          progress.status === 'success' ? 'bg-green-100 text-green-700' :
+                          progress.status === 'error' ? 'bg-red-100 text-red-700' :
+                          progress.status === 'processing' ? 'bg-blue-100 text-blue-700' :
+                          'bg-slate-100 text-slate-700'
+                        }`}>
+                          {progress.status.toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            <div className="p-6 border-t bg-slate-50">
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-slate-600">
+                  <span className="font-semibold">
+                    {Object.values(ingestionProgress).filter(p => p.status === 'success').length}
+                  </span>
+                  {' / '}
+                  <span>{selectedTables.length}</span>
+                  {' completed'}
+                </div>
+                <button
+                  onClick={() => setShowProgressModal(false)}
+                  disabled={isSubmitting}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors font-medium"
+                >
+                  {isSubmitting ? 'Processing...' : 'Close'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Primary Key Modal */}
       {showPrimaryKeyModal && primaryKeyData && (
         <PrimaryKeyConfirmModal
           data={primaryKeyData}
@@ -598,10 +746,9 @@ export default function SchemaTableSelector({
   );
 }
 
-// Primary Key Confirmation Modal Component
 function PrimaryKeyConfirmModal({ data, onConfirm, onClose }) {
   const [selectedKeys, setSelectedKeys] = useState(
-    data.existingKeys.length > 0 ? data.existingKeys : data.detectedKeys
+    data.existing_keys.length > 0 ? data.existing_keys : data.detected_keys
   );
 
   const toggleKey = (key) => {
@@ -612,7 +759,7 @@ function PrimaryKeyConfirmModal({ data, onConfirm, onClose }) {
     }
   };
 
-  const allKeys = [...new Set([...data.existingKeys, ...data.detectedKeys])];
+  const allKeys = [...new Set([...data.existing_keys, ...data.detected_keys])];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-65 flex items-center justify-center z-50 p-4">
@@ -627,7 +774,7 @@ function PrimaryKeyConfirmModal({ data, onConfirm, onClose }) {
         </div>
         
         <div className="p-6 space-y-4">
-          {!data.hasKeys && (
+          {!data.has_keys && (
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
               <div className="flex items-start space-x-3">
                 <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5" />
@@ -647,8 +794,8 @@ function PrimaryKeyConfirmModal({ data, onConfirm, onClose }) {
             </label>
             {allKeys.length > 0 ? (
               allKeys.map((key) => {
-                const isExisting = data.existingKeys.includes(key);
-                const isDetected = data.detectedKeys.includes(key);
+                const isExisting = data.existing_keys.includes(key);
+                const isDetected = data.detected_keys.includes(key);
                 const isSelected = selectedKeys.includes(key);
 
                 return (

@@ -3,46 +3,36 @@ import React, { useState } from 'react';
 import { Database, ChevronRight, Check } from 'lucide-react';
 import DatabaseConnectionForm from './DatabaseConnectionForm';
 import SchemaTableSelector from './SchemaTableSelector';
+import DataQualityDashboard from './DataQualityDashboard';
 
 export default function DataQualityApp() {
-  const [step, setStep] = useState(1); // 1: Connection, 2: Schema Selection
+  const [step, setStep] = useState(1);
   const [connectionStatus, setConnectionStatus] = useState(null);
+  const [showDashboard, setShowDashboard] = useState(false);
   
   const [dbConfig, setDbConfig] = useState({
-    connectionName: '',
+    connection_name: '',
     host: '',
     port: '5432',
     username: '',
     password: '',
     database: '',
-    jdbcProperties: []
+    jdbc_properties: []
   });
 
   const [schemas, setSchemas] = useState([]);
   const [selectedTables, setSelectedTables] = useState([]);
   const [isLoadingSchemas, setIsLoadingSchemas] = useState(false);
+  const [ingestedTables, setIngestedTables] = useState([]);
 
   const fetchSchemas = async () => {
     setIsLoadingSchemas(true);
     setSchemas([]);
     
     try {
-      console.log('Fetching schemas for connection:', dbConfig.connectionName);
-      
-      // Convert jdbcProperties array to object
-      const jdbcPropertiesObj = dbConfig.jdbcProperties && dbConfig.jdbcProperties.length > 0
-        ? dbConfig.jdbcProperties.reduce((acc, prop) => {
-            acc[prop.key] = prop.value;
-            return acc;
-          }, {})
-        : {};
-      
-      // Call API to get schemas - simplified payload
-      const response = await fetch('http://localhost:8000/postgres/schemas/' + dbConfig.connectionName, {
+      const response = await fetch(`http://localhost:8000/postgres/schemas/${dbConfig.connection_name}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
+        headers: { 'Content-Type': 'application/json' }
       });
 
       if (!response.ok) {
@@ -51,26 +41,16 @@ export default function DataQualityApp() {
       }
 
       const data = await response.json();
-      console.log('Schemas fetched:', data);
       
-      // Transform data to match our schema structure
       const formattedSchemas = data.schemas.map(schema => ({
         name: schema.schema_name,
         expanded: false,
         tables: schema.tables || [],
-        tableCount: schema.table_count || 0
+        table_count: schema.table_count || 0
       }));
 
       setSchemas(formattedSchemas);
-      
-      if (formattedSchemas.length === 0) {
-        console.warn('No schemas found in database');
-      } else {
-        console.log(`Loaded ${formattedSchemas.length} schemas with tables`);
-      }
-      
     } catch (error) {
-      console.error('Error fetching schemas:', error);
       alert(`Failed to fetch schemas: ${error.message}`);
       setSchemas([]);
     } finally {
@@ -85,51 +65,45 @@ export default function DataQualityApp() {
     }
   };
 
-  const submitSelectedTables = async () => {
-    if (selectedTables.length === 0) {
-      alert('Please select at least one table');
-      return;
-    }
-
-    const selectedData = selectedTables.map(tableId => {
-      const [schema, table] = tableId.split('.');
-      return { schema, table };
-    });
-    
-    try {
-      console.log('Submitting tables:', selectedData);
-      
-      // Call API to submit selected tables
-      const response = await fetch('http://localhost:8000/submit_tables', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          connectionName: dbConfig.connectionName,
-          tables: selectedData
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to submit tables');
-      }
-
-      const result = await response.json();
-      console.log('Tables submitted successfully:', result);
-      
-      alert(`Successfully added ${selectedTables.length} tables to Data Quality system!\n\nConfig saved to: ${result.configFile}`);
-      
-    } catch (error) {
-      console.error('Error submitting tables:', error);
-      alert(`Failed to submit tables: ${error.message}`);
-    }
+  const handleIngestionComplete = (tablesData) => {
+    // tablesData should be array of { schema, table, primary_keys }
+    setIngestedTables(tablesData);
+    // Navigate to dashboard after successful ingestion
+    setShowDashboard(true);
   };
+
+  const handleLogout = () => {
+    // Reset to initial state
+    setShowDashboard(false);
+    setStep(1);
+    setConnectionStatus(null);
+    setDbConfig({
+      connection_name: '',
+      host: '',
+      port: '5432',
+      username: '',
+      password: '',
+      database: '',
+      jdbc_properties: []
+    });
+    setSchemas([]);
+    setSelectedTables([]);
+    setIngestedTables([]);
+  };
+
+  // Show dashboard if ingestion is complete
+  if (showDashboard) {
+    return (
+      <DataQualityDashboard 
+        connectionName={dbConfig.connection_name}
+        ingestedTables={ingestedTables}
+        onLogout={handleLogout}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header */}
       <div className="bg-white shadow-sm border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -145,7 +119,6 @@ export default function DataQualityApp() {
               </div>
             </div>
             
-            {/* Step Indicator */}
             <div className="flex items-center space-x-2">
               <div className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
                 step === 1 ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
@@ -174,7 +147,6 @@ export default function DataQualityApp() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* STEP 1: Database Connection */}
         {step === 1 && (
           <DatabaseConnectionForm
             dbConfig={dbConfig}
@@ -185,7 +157,6 @@ export default function DataQualityApp() {
           />
         )}
 
-        {/* STEP 2: Schema Selection */}
         {step === 2 && (
           <SchemaTableSelector
             schemas={schemas}
@@ -193,9 +164,9 @@ export default function DataQualityApp() {
             selectedTables={selectedTables}
             setSelectedTables={setSelectedTables}
             setStep={setStep}
-            submitSelectedTables={submitSelectedTables}
             isLoadingSchemas={isLoadingSchemas}
             dbConfig={dbConfig}
+            onIngestionComplete={handleIngestionComplete}
           />
         )}
       </div>
