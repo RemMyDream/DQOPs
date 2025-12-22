@@ -1,0 +1,3 @@
+2025.12.22 03:36:08.335569 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2025.12.22 03:36:08.335836 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2025.12.22 03:38:15.323552 [ 75 ] {} <Error> RaftInstance: session 1 failed to read rpc header from socket ::ffff:172.21.0.2:58352 due to error 2, End of file, ref count 1

@@ -1,0 +1,193 @@
+2025.12.22 03:38:19.811728 [ 1 ] {} <Debug> CrashWriter: Sending crash reports is initialized with https://crash.clickhouse.com/ endpoint (anonymized)
+2025.12.22 03:38:19.811744 [ 1 ] {} <Debug> Application: Sending logical errors is enabled
+2025.12.22 03:38:19.880421 [ 1 ] {} <Information> Application: Starting ClickHouse 25.12.1.649 (revision: 54505, git hash: bf4280aa19d3bade619578a749919e25ce490861, build id: ED4E3839527ED91CBD658B9490E93BEC010D4119), PID 1
+2025.12.22 03:38:19.880558 [ 1 ] {} <Information> Application: starting up
+2025.12.22 03:38:19.880581 [ 1 ] {} <Information> Application: OS name: Linux, version: 6.6.87.2-microsoft-standard-WSL2, architecture: x86_64
+2025.12.22 03:38:19.880801 [ 1 ] {} <Information> Application: Available RAM: 15.47 GiB; logical cores: 32; used cores: 32.
+2025.12.22 03:38:19.880826 [ 1 ] {} <Information> Application: Available CPU instruction sets: SSE, SSE2, SSE3, SSSE3, SSE41, SSE42, F16C, POPCNT, BMI1, BMI2, PCLMUL, AES, AVX, FMA, AVX2, SHA, ADX, RDRAND, RDSEED, RDTSCP, CLFLUSHOPT, CLWB, XSAVE, OSXSAVE, GenuineIntel
+2025.12.22 03:38:19.880857 [ 1 ] {} <Information> Application: It looks like the process has no CAP_IPC_LOCK capability, binary mlock will be disabled. It could happen due to incorrect ClickHouse package installation. You could resolve the problem manually with 'sudo setcap cap_ipc_lock=+ep /usr/bin/clickhouse'. Note that it will not work on 'nosuid' mounted filesystems.
+2025.12.22 03:38:19.889690 [ 1 ] {} <Information> CgroupsReader: Will create cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2025.12.22 03:38:19.889956 [ 1 ] {} <Information> AsynchronousMetrics: Will use cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2025.12.22 03:38:19.890432 [ 1 ] {} <Information> StatusFile: Writing pid 1 to /var/lib/clickhouse/status
+2025.12.22 03:38:20.075485 [ 1 ] {} <Information> Application: Integrity check of the executable successfully passed (checksum: 2BBA9AB704FAE29CC86F32059FCC1438)
+2025.12.22 03:38:20.075539 [ 1 ] {} <Information> MemoryWorker: Starting background memory thread with period of 50ms, using Cgroups as source
+2025.12.22 03:38:20.075711 [ 1 ] {} <Information> BackgroundSchedulePool/BgSchPool: Create BackgroundSchedulePool with 512 threads
+2025.12.22 03:38:20.114451 [ 1 ] {} <Debug> Application: rlimit on number of file descriptors is 1048576
+2025.12.22 03:38:20.114478 [ 1 ] {} <Debug> Application: rlimit on number of threads is 18446744073709551615
+2025.12.22 03:38:20.114484 [ 1 ] {} <Debug> Application: Initializing DateLUT.
+2025.12.22 03:38:20.115286 [ 1 ] {} <Debug> Application: Configuration parameter 'interserver_http_host' doesn't exist or exists and empty. Will use 'clickhouse-01' as replica host.
+2025.12.22 03:38:20.115413 [ 1 ] {} <Debug> Application: Initializing interserver credentials.
+2025.12.22 03:38:20.115473 [ 1 ] {} <Information> Application: Lowered uncompressed cache size to 7.74 GiB because the system has limited RAM
+2025.12.22 03:38:20.115578 [ 1 ] {} <Debug> FileCacheFactory: Will load 0 caches from default cache config
+2025.12.22 03:38:20.115631 [ 1 ] {} <Information> DNSCacheUpdater: Update period 15 seconds
+2025.12.22 03:38:20.115690 [ 96 ] {BgSchPool::2644f086-a2a7-456b-af25-c6bf19de62c2} <Debug> DNSResolver: Updating DNS cache
+2025.12.22 03:38:20.115712 [ 96 ] {BgSchPool::2644f086-a2a7-456b-af25-c6bf19de62c2} <Debug> DNSResolver: Updated DNS cache
+2025.12.22 03:38:20.119252 [ 1 ] {} <Debug> ConfigReloader: Loading config '/etc/clickhouse-server/config.xml'
+2025.12.22 03:38:20.119287 [ 1 ] {} <Debug> ConfigProcessor: Processing configuration file '/etc/clickhouse-server/config.xml'.
+2025.12.22 03:38:20.120392 [ 1 ] {} <Debug> ConfigProcessor: Merging configuration file '/etc/clickhouse-server/config.d/config.xml'.
+2025.12.22 03:38:20.123104 [ 1 ] {} <Debug> ConfigProcessor: Merging configuration file '/etc/clickhouse-server/config.d/docker_related_config.xml'.
+2025.12.22 03:38:20.126347 [ 1 ] {} <Debug> ConfigProcessor: Saved preprocessed configuration to '/var/lib/clickhouse/preprocessed_configs/config.xml'.
+2025.12.22 03:38:20.126462 [ 1 ] {} <Debug> ConfigReloader: Loaded config '/etc/clickhouse-server/config.xml', performing update on configuration
+2025.12.22 03:38:20.126901 [ 92 ] {} <Information> MemoryTracker: Correcting the value of global memory tracker from 63.43 MiB to 155.54 MiB
+2025.12.22 03:38:20.131767 [ 1 ] {} <Information> Application: Changed setting 'max_server_memory_usage' to 13.92 GiB (15.47 GiB available memory * 0.90 max_server_memory_usage_to_ram_ratio)
+2025.12.22 03:38:20.131797 [ 1 ] {} <Information> Application: Setting merges_mutations_memory_usage_soft_limit was set to 7.74 GiB (15.47 GiB available * 0.50 merges_mutations_memory_usage_to_ram_ratio)
+2025.12.22 03:38:20.131799 [ 1 ] {} <Information> Application: Merges and mutations memory limit is set to 7.74 GiB
+2025.12.22 03:38:20.133738 [ 1 ] {} <Information> Application: Setting max_remote_read_network_bandwidth_for_server was set to 0
+2025.12.22 03:38:20.133765 [ 1 ] {} <Information> Application: Setting max_remote_write_network_bandwidth_for_server was set to 0
+2025.12.22 03:38:20.133767 [ 1 ] {} <Information> Application: Setting max_local_read_bandwidth_for_server was set to 0
+2025.12.22 03:38:20.133768 [ 1 ] {} <Information> Application: Setting max_local_write_bandwidth_for_server was set to 0
+2025.12.22 03:38:20.133773 [ 1 ] {} <Information> Application: ConcurrencyControl limit is set to 64 CPU slots with 'fair_round_robin' scheduler
+2025.12.22 03:38:20.133781 [ 1 ] {} <Information> BackgroundSchedulePool/BgBufSchPool: Create BackgroundSchedulePool with 16 threads
+2025.12.22 03:38:20.135181 [ 1 ] {} <Information> BackgroundSchedulePool/BgMBSchPool: Create BackgroundSchedulePool with 16 threads
+2025.12.22 03:38:20.136816 [ 1 ] {} <Information> BackgroundSchedulePool/BgDistSchPool: Create BackgroundSchedulePool with 16 threads
+2025.12.22 03:38:20.139378 [ 1 ] {} <Debug> WorkloadEntityStorage: Refreshing workload entities from configuration
+2025.12.22 03:38:20.139416 [ 1 ] {} <Debug> WorkloadEntityStorage: Loaded 0 workload entities from configuration
+2025.12.22 03:38:20.139420 [ 1 ] {} <Information> WorkloadEntityDiskStorage: Loading workload entities from /var/lib/clickhouse/workload/
+2025.12.22 03:38:20.139423 [ 1 ] {} <Debug> WorkloadEntityDiskStorage: The directory for workload entities (/var/lib/clickhouse/workload/) does not exist: nothing to load
+2025.12.22 03:38:20.139424 [ 1 ] {} <Debug> WorkloadEntityDiskStorage: Workload entities loaded
+2025.12.22 03:38:20.139516 [ 1 ] {} <Debug> ConfigReloader: Loaded config '/etc/clickhouse-server/config.xml', performed update on configuration
+2025.12.22 03:38:20.139822 [ 1 ] {} <Warning> Application: Listen [::]:9009 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2025.12.22 03:38:20.139971 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2025.12.22 03:38:20.139994 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2025.12.22 03:38:20.140179 [ 1 ] {} <Information> Application: Listening for replica communication (interserver): http://0.0.0.0:9009
+2025.12.22 03:38:20.140250 [ 1 ] {} <Debug> Context: Setting up _tmp_default:/var/lib/clickhouse/tmp/ to store temporary data in it
+2025.12.22 03:38:20.145338 [ 1 ] {} <Debug> ConfigReloader: Loading config '/etc/clickhouse-server/users.xml'
+2025.12.22 03:38:20.145367 [ 1 ] {} <Debug> ConfigProcessor: Processing configuration file '/etc/clickhouse-server/users.xml'.
+2025.12.22 03:38:20.146057 [ 1 ] {} <Debug> ConfigProcessor: Merging configuration file '/etc/clickhouse-server/users.d/users.xml'.
+2025.12.22 03:38:20.148250 [ 1 ] {} <Debug> ConfigProcessor: Saved preprocessed configuration to '/var/lib/clickhouse/preprocessed_configs/users.xml'.
+2025.12.22 03:38:20.148288 [ 1 ] {} <Debug> ConfigReloader: Loaded config '/etc/clickhouse-server/users.xml', performing update on configuration
+2025.12.22 03:38:20.149071 [ 1 ] {} <Debug> ConfigReloader: Loaded config '/etc/clickhouse-server/users.xml', performed update on configuration
+2025.12.22 03:38:20.149433 [ 1 ] {} <Debug> Access(user directories): Added users_xml access storage 'users_xml', path: /etc/clickhouse-server/users.xml
+2025.12.22 03:38:20.149731 [ 1 ] {} <Warning> Access(local_directory): File /var/lib/clickhouse/access/users.list doesn't exist
+2025.12.22 03:38:20.149758 [ 1 ] {} <Warning> Access(local_directory): Recovering lists in directory /var/lib/clickhouse/access/
+2025.12.22 03:38:20.149892 [ 1 ] {} <Debug> Access(user directories): Added local_directory access storage 'local_directory', path: /var/lib/clickhouse/access/
+2025.12.22 03:38:20.150287 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Started cgroup current memory usage observer thread
+2025.12.22 03:38:20.150550 [ 659 ] {} <Information> CgroupsMemoryUsageObserver: Memory amount initially available to the process is 15.47 GiB
+2025.12.22 03:38:20.151762 [ 1 ] {} <Information> Context: Initialized background executor for merges and mutations with num_threads=16, num_tasks=32, scheduling_policy=round_robin
+2025.12.22 03:38:20.152749 [ 1 ] {} <Information> Context: Initialized background executor for move operations with num_threads=8, num_tasks=8
+2025.12.22 03:38:20.154846 [ 1 ] {} <Information> Context: Initialized background executor for fetches with num_threads=16, num_tasks=16
+2025.12.22 03:38:20.155530 [ 1 ] {} <Information> Context: Initialized background executor for common operations (e.g. clearing old parts) with num_threads=8, num_tasks=8
+2025.12.22 03:38:20.158233 [ 1 ] {} <Warning> Context: Delay accounting is not enabled, OSIOWaitMicroseconds will not be gathered. You can enable it using `sudo sh -c 'echo 1 > /proc/sys/kernel/task_delayacct'` or by using sysctl.
+2025.12.22 03:38:20.159633 [ 1 ] {} <Information> Application: Loading metadata from /var/lib/clickhouse/
+2025.12.22 03:38:20.162543 [ 1 ] {} <Debug> registerDiskObjectStorage: Metadata type hint: local
+2025.12.22 03:38:20.173198 [ 1 ] {} <Debug> deleteFileFromS3: Object with path sjh/ejwqwwohllurtdxncxiauklpjbbrj was removed from S3
+2025.12.22 03:38:20.173232 [ 1 ] {} <Information> DiskObjectStorage(s3): Starting up disk s3
+2025.12.22 03:38:20.173235 [ 1 ] {} <Information> DiskObjectStorage(s3): Disk s3 started up
+2025.12.22 03:38:20.173371 [ 1 ] {} <Information> SLRUFileCachePriority(s3_cache): Probationary queue 4294967296 in size and 4000000 in elements. Protected queue 6442450944 in size and 6000000 in elements
+2025.12.22 03:38:20.173385 [ 1 ] {} <Debug> FileCache(s3_cache): Using SLRU cache policy
+2025.12.22 03:38:20.173484 [ 1 ] {} <Information> StatusFile: Writing pid 1 to /var/lib/clickhouse/disks/s3_cache/status
+2025.12.22 03:38:20.173531 [ 1 ] {} <Information> FileCache(s3_cache): Loading filesystem cache with 16 threads from /var/lib/clickhouse/disks/s3_cache/
+2025.12.22 03:38:20.174568 [ 1 ] {} <Information> DiskCache: Registered cached disk (`s3_cache`) with structure: DiskObjectStorage-s3(CachedObjectStorage-s3_cache(S3ObjectStorage))
+2025.12.22 03:38:20.174619 [ 1 ] {} <Information> Context: Database disk name: default
+2025.12.22 03:38:20.174635 [ 1 ] {} <Information> Context: Database disk name: default, path: /var/lib/clickhouse/
+2025.12.22 03:38:20.174736 [ 1 ] {} <Information> DatabaseAtomic (system): Metadata disk default, path /var/lib/clickhouse/
+2025.12.22 03:38:20.195508 [ 1 ] {} <Information> DatabaseAtomic (system): Metadata processed, database system has 0 tables, 0 dictionaries and 0 materialized views in total.
+2025.12.22 03:38:20.195540 [ 1 ] {} <Information> TablesLoader: Parsed metadata of 0 tables in 1 databases in 7.619e-05 sec
+2025.12.22 03:38:20.195571 [ 1 ] {} <Debug> AsyncLoader: Prioritize load job 'startup Atomic database system': BackgrndStartup -> ForegroundLoad
+2025.12.22 03:38:20.195583 [ 1 ] {} <Debug> AsyncLoader: Prioritize load job 'startup Ordinary database system': BackgrndStartup -> ForegroundLoad
+2025.12.22 03:38:20.195587 [ 1 ] {} <Debug> AsyncLoader: Schedule load job 'startup Ordinary database system' into ForegroundLoad
+2025.12.22 03:38:20.195589 [ 1 ] {} <Debug> AsyncLoader: Schedule load job 'startup Atomic database system' into ForegroundLoad
+2025.12.22 03:38:20.195592 [ 1 ] {} <Debug> AsyncLoader: Change current priority: none -> 0
+2025.12.22 03:38:20.195593 [ 1 ] {} <Debug> AsyncLoader: Spawn loader worker #1 in ForegroundLoad
+2025.12.22 03:38:20.195800 [ 1 ] {} <Debug> AsyncLoader: Wait load job 'startup Atomic database system' in ForegroundLoad
+2025.12.22 03:38:20.195844 [ 730 ] {} <Debug> AsyncLoader: Execute load job 'startup Ordinary database system' in ForegroundLoad
+2025.12.22 03:38:20.195899 [ 730 ] {} <Debug> AsyncLoader: Finish load job 'startup Ordinary database system' with status OK
+2025.12.22 03:38:20.195915 [ 730 ] {} <Debug> AsyncLoader: Spawn loader worker #2 in ForegroundLoad
+2025.12.22 03:38:20.196062 [ 730 ] {} <Debug> AsyncLoader: Execute load job 'startup Atomic database system' in ForegroundLoad
+2025.12.22 03:38:20.196273 [ 730 ] {} <Debug> AsyncLoader: Finish load job 'startup Atomic database system' with status OK
+2025.12.22 03:38:20.196287 [ 730 ] {} <Debug> AsyncLoader: Stop worker in ForegroundLoad
+2025.12.22 03:38:20.196334 [ 1 ] {} <Debug> SystemLog: Creating system.query_log from query_log
+2025.12.22 03:38:20.196440 [ 734 ] {} <Debug> AsyncLoader: Stop worker in ForegroundLoad
+2025.12.22 03:38:20.196464 [ 734 ] {} <Debug> AsyncLoader: Change current priority: 0 -> none
+2025.12.22 03:38:20.197490 [ 1 ] {} <Debug> SystemLog: Creating system.query_thread_log from query_thread_log
+2025.12.22 03:38:20.197909 [ 1 ] {} <Debug> SystemLog: Creating system.part_log from part_log
+2025.12.22 03:38:20.198268 [ 1 ] {} <Debug> SystemLog: Creating system.background_schedule_pool_log from background_schedule_pool_log
+2025.12.22 03:38:20.198421 [ 1 ] {} <Debug> SystemLog: Creating system.trace_log from trace_log
+2025.12.22 03:38:20.198787 [ 1 ] {} <Debug> SystemLog: Creating system.crash_log from crash_log
+2025.12.22 03:38:20.198932 [ 1 ] {} <Debug> SystemLog: Creating system.text_log from text_log
+2025.12.22 03:38:20.199119 [ 1 ] {} <Debug> SystemLog: Creating system.metric_log from metric_log
+2025.12.22 03:38:20.207817 [ 1 ] {} <Debug> SystemLog: Not creating system.transposed_metric_log since corresponding section 'transposed_metric_log' is missing from config
+2025.12.22 03:38:20.207857 [ 1 ] {} <Debug> SystemLog: Creating system.error_log from error_log
+2025.12.22 03:38:20.208262 [ 1 ] {} <Debug> SystemLog: Not creating system.filesystem_cache_log since corresponding section 'filesystem_cache_log' is missing from config
+2025.12.22 03:38:20.208304 [ 1 ] {} <Debug> SystemLog: Not creating system.filesystem_read_prefetches_log since corresponding section 'filesystem_read_prefetches_log' is missing from config
+2025.12.22 03:38:20.208311 [ 1 ] {} <Debug> SystemLog: Creating system.s3queue_log from s3queue_log
+2025.12.22 03:38:20.208522 [ 1 ] {} <Debug> SystemLog: Not creating system.azure_queue_log since corresponding section 'azure_queue_log' is missing from config
+2025.12.22 03:38:20.208542 [ 1 ] {} <Debug> SystemLog: Creating system.asynchronous_metric_log from asynchronous_metric_log
+2025.12.22 03:38:20.208701 [ 1 ] {} <Debug> SystemLog: Creating system.opentelemetry_span_log from opentelemetry_span_log
+2025.12.22 03:38:20.208980 [ 1 ] {} <Debug> SystemLog: Creating system.query_views_log from query_views_log
+2025.12.22 03:38:20.209462 [ 1 ] {} <Debug> SystemLog: Not creating system.zookeeper_log since corresponding section 'zookeeper_log' is missing from config
+2025.12.22 03:38:20.209487 [ 1 ] {} <Debug> SystemLog: Not creating system.session_log since corresponding section 'session_log' is missing from config
+2025.12.22 03:38:20.209493 [ 1 ] {} <Debug> SystemLog: Not creating system.transactions_info_log since corresponding section 'transactions_info_log' is missing from config
+2025.12.22 03:38:20.209500 [ 1 ] {} <Debug> SystemLog: Creating system.processors_profile_log from processors_profile_log
+2025.12.22 03:38:20.209791 [ 1 ] {} <Debug> SystemLog: Creating system.asynchronous_insert_log from asynchronous_insert_log
+2025.12.22 03:38:20.210192 [ 1 ] {} <Debug> SystemLog: Creating system.backup_log from backup_log
+2025.12.22 03:38:20.210504 [ 1 ] {} <Debug> SystemLog: Creating system.blob_storage_log from blob_storage_log
+2025.12.22 03:38:20.210709 [ 1 ] {} <Debug> SystemLog: Creating system.query_metric_log from query_metric_log
+2025.12.22 03:38:20.214268 [ 1 ] {} <Debug> SystemLog: Not creating system.dead_letter_queue since corresponding section 'dead_letter_queue' is missing from config
+2025.12.22 03:38:20.214309 [ 1 ] {} <Debug> SystemLog: Creating system.zookeeper_connection_log from zookeeper_connection_log
+2025.12.22 03:38:20.214571 [ 1 ] {} <Debug> SystemLog: Creating system.aggregated_zookeeper_log from aggregated_zookeeper_log
+2025.12.22 03:38:20.214894 [ 1 ] {} <Debug> SystemLog: Creating system.iceberg_metadata_log from iceberg_metadata_log
+2025.12.22 03:38:20.215065 [ 1 ] {} <Debug> SystemLog: Creating system.delta_lake_metadata_log from delta_lake_metadata_log
+2025.12.22 03:38:20.217705 [ 1 ] {} <Debug> DatabaseAtomic (system): Creating directory symlink, path_to_metadata_symlink: metadata/system, metadata_path: store/4ac/4ac0966f-fcbd-44af-8a14-22deb779d94b/
+2025.12.22 03:38:20.230934 [ 1 ] {} <Information> DatabaseAtomic (default): Metadata disk default, path /var/lib/clickhouse/
+2025.12.22 03:38:20.237276 [ 1 ] {} <Information> DatabaseAtomic (default): Metadata processed, database default has 0 tables, 0 dictionaries and 0 materialized views in total.
+2025.12.22 03:38:20.237315 [ 1 ] {} <Information> TablesLoader: Parsed metadata of 0 tables in 1 databases in 9.965e-05 sec
+2025.12.22 03:38:20.237342 [ 1 ] {} <Information> loadMetadata: Start asynchronous loading of databases
+2025.12.22 03:38:20.237356 [ 1 ] {} <Debug> AsyncLoader: Schedule load job 'startup Ordinary database default' into BackgrndStartup
+2025.12.22 03:38:20.237358 [ 1 ] {} <Debug> AsyncLoader: Schedule load job 'startup Atomic database default' into BackgrndStartup
+2025.12.22 03:38:20.237361 [ 1 ] {} <Debug> AsyncLoader: Change current priority: none -> 2
+2025.12.22 03:38:20.237363 [ 1 ] {} <Debug> AsyncLoader: Spawn loader worker #1 in BackgrndStartup
+2025.12.22 03:38:20.237522 [ 1 ] {} <Information> UserDefinedSQLObjectsLoaderFromDisk: Loading user defined objects from /var/lib/clickhouse/user_defined/
+2025.12.22 03:38:20.237539 [ 1 ] {} <Debug> UserDefinedSQLObjectsLoaderFromDisk: The directory for user defined objects (/var/lib/clickhouse/user_defined/) does not exist: nothing to load
+2025.12.22 03:38:20.237542 [ 1 ] {} <Debug> Application: Loaded metadata.
+2025.12.22 03:38:20.237562 [ 1 ] {} <Information> Application: Tasks stats provider: procfs
+2025.12.22 03:38:20.237575 [ 756 ] {} <Debug> AsyncLoader: Execute load job 'startup Ordinary database default' in BackgrndStartup
+2025.12.22 03:38:20.237576 [ 1 ] {} <Information> Application: It looks like the process has no CAP_SYS_NICE capability, the setting 'os_thread_priority' will have no effect. It could happen due to incorrect ClickHouse package installation. You could resolve the problem manually with 'sudo setcap cap_sys_nice=+ep /usr/bin/clickhouse'. Note that it will not work on 'nosuid' mounted filesystems.
+2025.12.22 03:38:20.237589 [ 756 ] {} <Debug> AsyncLoader: Finish load job 'startup Ordinary database default' with status OK
+2025.12.22 03:38:20.237595 [ 756 ] {} <Debug> AsyncLoader: Spawn loader worker #2 in BackgrndStartup
+2025.12.22 03:38:20.237692 [ 756 ] {} <Debug> AsyncLoader: Execute load job 'startup Atomic database default' in BackgrndStartup
+2025.12.22 03:38:20.237707 [ 756 ] {} <Debug> AsyncLoader: Finish load job 'startup Atomic database default' with status OK
+2025.12.22 03:38:20.237711 [ 756 ] {} <Debug> AsyncLoader: Stop worker in BackgrndStartup
+2025.12.22 03:38:20.237764 [ 1 ] {} <Warning> Application: Listen [::]:8123 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2025.12.22 03:38:20.237771 [ 759 ] {} <Debug> AsyncLoader: Stop worker in BackgrndStartup
+2025.12.22 03:38:20.237877 [ 1 ] {} <Warning> Application: Listen [::]:9000 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2025.12.22 03:38:20.237897 [ 759 ] {} <Debug> AsyncLoader: Change current priority: 2 -> none
+2025.12.22 03:38:20.237961 [ 1 ] {} <Warning> Application: Listen [::]:9004 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2025.12.22 03:38:20.238023 [ 1 ] {} <Warning> Application: Listen [::]:9005 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2025.12.22 03:38:20.304858 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2025.12.22 03:38:20.304889 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2025.12.22 03:38:20.309402 [ 1 ] {} <Debug> ExternalDictionariesLoader: Periodic updates enabled
+2025.12.22 03:38:20.309633 [ 760 ] {} <Debug> ExternalDictionariesLoader: Starting periodic updates
+2025.12.22 03:38:20.310101 [ 1 ] {} <Debug> ExternalUserDefinedExecutableFunctionsLoader: Periodic updates enabled
+2025.12.22 03:38:20.310550 [ 761 ] {} <Debug> ExternalUserDefinedExecutableFunctionsLoader: Starting periodic updates
+2025.12.22 03:38:20.310794 [ 1 ] {} <Debug> AsyncLoader: Schedule load job 'startup ddl worker' into BackgrndStartup
+2025.12.22 03:38:20.310821 [ 1 ] {} <Debug> AsyncLoader: Change current priority: none -> 2
+2025.12.22 03:38:20.310824 [ 1 ] {} <Debug> AsyncLoader: Spawn loader worker #1 in BackgrndStartup
+2025.12.22 03:38:20.311056 [ 762 ] {} <Debug> AsyncLoader: Execute load job 'startup ddl worker' in BackgrndStartup
+2025.12.22 03:38:20.311074 [ 1 ] {} <Information> Application: Listening for http://0.0.0.0:8123
+2025.12.22 03:38:20.311151 [ 1 ] {} <Information> Application: Listening for native protocol (tcp): 0.0.0.0:9000
+2025.12.22 03:38:20.311285 [ 1 ] {} <Information> Application: Listening for MySQL compatibility protocol: 0.0.0.0:9004
+2025.12.22 03:38:20.311286 [ 763 ] {} <Debug> DDLWorker: Starting DDLWorker thread
+2025.12.22 03:38:20.311334 [ 763 ] {} <Debug> DDLWorker: Initializing DDLWorker thread
+2025.12.22 03:38:20.311371 [ 762 ] {} <Debug> AsyncLoader: Finish load job 'startup ddl worker' with status OK
+2025.12.22 03:38:20.311376 [ 1 ] {} <Information> Application: Listening for PostgreSQL compatibility protocol: 0.0.0.0:9005
+2025.12.22 03:38:20.311399 [ 762 ] {} <Debug> AsyncLoader: Stop worker in BackgrndStartup
+2025.12.22 03:38:20.311429 [ 762 ] {} <Debug> AsyncLoader: Change current priority: 2 -> none
+2025.12.22 03:38:20.311457 [ 766 ] {} <Debug> DDLWorker: Started DDLWorker cleanup thread
+2025.12.22 03:38:20.326090 [ 763 ] {} <Information> ZooKeeperClient: Connected to ZooKeeper at 172.18.0.22:9181 with session_id 2
+2025.12.22 03:38:20.335001 [ 763 ] {} <Debug> ZooKeeperClient: Keeper feature flag FILTERED_LIST: enabled
+2025.12.22 03:38:20.335026 [ 763 ] {} <Debug> ZooKeeperClient: Keeper feature flag MULTI_READ: enabled
+2025.12.22 03:38:20.335027 [ 763 ] {} <Debug> ZooKeeperClient: Keeper feature flag CHECK_NOT_EXISTS: enabled
+2025.12.22 03:38:20.335028 [ 763 ] {} <Debug> ZooKeeperClient: Keeper feature flag CREATE_IF_NOT_EXISTS: enabled
+2025.12.22 03:38:20.335029 [ 763 ] {} <Debug> ZooKeeperClient: Keeper feature flag REMOVE_RECURSIVE: enabled
+2025.12.22 03:38:20.335030 [ 763 ] {} <Debug> ZooKeeperClient: Keeper feature flag MULTI_WATCHES: enabled
+2025.12.22 03:38:20.335031 [ 763 ] {} <Debug> ZooKeeperClient: Keeper feature flag CHECK_STAT: disabled
+2025.12.22 03:38:20.335031 [ 763 ] {} <Debug> ZooKeeperClient: Keeper feature flag PERSISTENT_WATCHES: enabled
+2025.12.22 03:38:20.335039 [ 763 ] {} <Debug> ZooKeeperClient: Keeper feature flag CREATE_WITH_STATS: disabled
+2025.12.22 03:38:20.394533 [ 1 ] {} <Information> Application: Ready for connections.
+2025.12.22 03:38:20.533504 [ 763 ] {} <Debug> DDLWorker: Marked a replica active: active_path=/clickhouse/task_queue/replicas/clickhouse%2D01:9000/active, active_id=72dd6d6c-f1d9-40ef-97f8-0ecccb480f96
+2025.12.22 03:38:20.533794 [ 763 ] {} <Debug> DDLWorker: Initialized DDLWorker thread
+2025.12.22 03:38:20.533821 [ 763 ] {} <Debug> DDLWorker: Scheduling tasks
+2025.12.22 03:38:20.533854 [ 766 ] {} <Debug> DDLWorker: Cleaning queue
+2025.12.22 03:38:20.534070 [ 763 ] {} <Debug> DDLWorker: No tasks to schedule
+2025.12.22 03:38:20.534082 [ 763 ] {} <Debug> DDLWorker: Waiting for queue updates

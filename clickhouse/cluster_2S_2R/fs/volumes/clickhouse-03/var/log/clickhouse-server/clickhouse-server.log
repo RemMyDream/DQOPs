@@ -1,0 +1,181 @@
+2025.12.22 03:36:09.080186 [ 1 ] {} <Debug> CrashWriter: Sending crash reports is initialized with https://crash.clickhouse.com/ endpoint (anonymized)
+2025.12.22 03:36:09.080196 [ 1 ] {} <Debug> Application: Sending logical errors is enabled
+2025.12.22 03:36:09.159099 [ 1 ] {} <Information> Application: Starting ClickHouse 25.12.1.649 (revision: 54505, git hash: bf4280aa19d3bade619578a749919e25ce490861, build id: ED4E3839527ED91CBD658B9490E93BEC010D4119), PID 1
+2025.12.22 03:36:09.159271 [ 1 ] {} <Information> Application: starting up
+2025.12.22 03:36:09.159294 [ 1 ] {} <Information> Application: OS name: Linux, version: 6.6.87.2-microsoft-standard-WSL2, architecture: x86_64
+2025.12.22 03:36:09.159454 [ 1 ] {} <Information> Application: Available RAM: 15.47 GiB; logical cores: 32; used cores: 32.
+2025.12.22 03:36:09.159477 [ 1 ] {} <Information> Application: Available CPU instruction sets: SSE, SSE2, SSE3, SSSE3, SSE41, SSE42, F16C, POPCNT, BMI1, BMI2, PCLMUL, AES, AVX, FMA, AVX2, SHA, ADX, RDRAND, RDSEED, RDTSCP, CLFLUSHOPT, CLWB, XSAVE, OSXSAVE, GenuineIntel
+2025.12.22 03:36:09.159502 [ 1 ] {} <Information> Application: It looks like the process has no CAP_IPC_LOCK capability, binary mlock will be disabled. It could happen due to incorrect ClickHouse package installation. You could resolve the problem manually with 'sudo setcap cap_ipc_lock=+ep /usr/bin/clickhouse'. Note that it will not work on 'nosuid' mounted filesystems.
+2025.12.22 03:36:09.168198 [ 1 ] {} <Information> CgroupsReader: Will create cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2025.12.22 03:36:09.168453 [ 1 ] {} <Information> AsynchronousMetrics: Will use cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2025.12.22 03:36:09.169161 [ 1 ] {} <Information> StatusFile: Writing pid 1 to /var/lib/clickhouse/status
+2025.12.22 03:36:09.364120 [ 1 ] {} <Information> Application: Integrity check of the executable successfully passed (checksum: 2BBA9AB704FAE29CC86F32059FCC1438)
+2025.12.22 03:36:09.364180 [ 1 ] {} <Information> MemoryWorker: Starting background memory thread with period of 50ms, using Cgroups as source
+2025.12.22 03:36:09.364261 [ 1 ] {} <Information> BackgroundSchedulePool/BgSchPool: Create BackgroundSchedulePool with 512 threads
+2025.12.22 03:36:09.404681 [ 1 ] {} <Debug> Application: rlimit on number of file descriptors is 1048576
+2025.12.22 03:36:09.404711 [ 1 ] {} <Debug> Application: rlimit on number of threads is 18446744073709551615
+2025.12.22 03:36:09.404716 [ 1 ] {} <Debug> Application: Initializing DateLUT.
+2025.12.22 03:36:09.405526 [ 1 ] {} <Debug> Application: Configuration parameter 'interserver_http_host' doesn't exist or exists and empty. Will use 'clickhouse-03' as replica host.
+2025.12.22 03:36:09.405558 [ 1 ] {} <Debug> Application: Initializing interserver credentials.
+2025.12.22 03:36:09.405591 [ 1 ] {} <Information> Application: Lowered uncompressed cache size to 7.74 GiB because the system has limited RAM
+2025.12.22 03:36:09.405661 [ 1 ] {} <Debug> FileCacheFactory: Will load 0 caches from default cache config
+2025.12.22 03:36:09.405701 [ 1 ] {} <Information> DNSCacheUpdater: Update period 15 seconds
+2025.12.22 03:36:09.405800 [ 101 ] {BgSchPool::42eb7f41-762c-4141-99ec-e7a8dbdef462} <Debug> DNSResolver: Updating DNS cache
+2025.12.22 03:36:09.405817 [ 101 ] {BgSchPool::42eb7f41-762c-4141-99ec-e7a8dbdef462} <Debug> DNSResolver: Updated DNS cache
+2025.12.22 03:36:09.407340 [ 1 ] {} <Debug> ConfigReloader: Loading config '/etc/clickhouse-server/config.xml'
+2025.12.22 03:36:09.407348 [ 1 ] {} <Debug> ConfigProcessor: Processing configuration file '/etc/clickhouse-server/config.xml'.
+2025.12.22 03:36:09.408275 [ 1 ] {} <Debug> ConfigProcessor: Merging configuration file '/etc/clickhouse-server/config.d/config.xml'.
+2025.12.22 03:36:09.411404 [ 1 ] {} <Debug> ConfigProcessor: Merging configuration file '/etc/clickhouse-server/config.d/docker_related_config.xml'.
+2025.12.22 03:36:09.414763 [ 1 ] {} <Debug> ConfigProcessor: Saved preprocessed configuration to '/var/lib/clickhouse/preprocessed_configs/config.xml'.
+2025.12.22 03:36:09.414871 [ 1 ] {} <Debug> ConfigReloader: Loaded config '/etc/clickhouse-server/config.xml', performing update on configuration
+2025.12.22 03:36:09.415490 [ 98 ] {} <Information> MemoryTracker: Correcting the value of global memory tracker from 63.43 MiB to 156.18 MiB
+2025.12.22 03:36:09.419556 [ 1 ] {} <Information> Application: Changed setting 'max_server_memory_usage' to 13.92 GiB (15.47 GiB available memory * 0.90 max_server_memory_usage_to_ram_ratio)
+2025.12.22 03:36:09.419584 [ 1 ] {} <Information> Application: Setting merges_mutations_memory_usage_soft_limit was set to 7.74 GiB (15.47 GiB available * 0.50 merges_mutations_memory_usage_to_ram_ratio)
+2025.12.22 03:36:09.419586 [ 1 ] {} <Information> Application: Merges and mutations memory limit is set to 7.74 GiB
+2025.12.22 03:36:09.421505 [ 1 ] {} <Information> Application: Setting max_remote_read_network_bandwidth_for_server was set to 0
+2025.12.22 03:36:09.421535 [ 1 ] {} <Information> Application: Setting max_remote_write_network_bandwidth_for_server was set to 0
+2025.12.22 03:36:09.421537 [ 1 ] {} <Information> Application: Setting max_local_read_bandwidth_for_server was set to 0
+2025.12.22 03:36:09.421538 [ 1 ] {} <Information> Application: Setting max_local_write_bandwidth_for_server was set to 0
+2025.12.22 03:36:09.421542 [ 1 ] {} <Information> Application: ConcurrencyControl limit is set to 64 CPU slots with 'fair_round_robin' scheduler
+2025.12.22 03:36:09.421551 [ 1 ] {} <Information> BackgroundSchedulePool/BgBufSchPool: Create BackgroundSchedulePool with 16 threads
+2025.12.22 03:36:09.423582 [ 1 ] {} <Information> BackgroundSchedulePool/BgMBSchPool: Create BackgroundSchedulePool with 16 threads
+2025.12.22 03:36:09.425436 [ 1 ] {} <Information> BackgroundSchedulePool/BgDistSchPool: Create BackgroundSchedulePool with 16 threads
+2025.12.22 03:36:09.427325 [ 1 ] {} <Debug> WorkloadEntityStorage: Refreshing workload entities from configuration
+2025.12.22 03:36:09.427357 [ 1 ] {} <Debug> WorkloadEntityStorage: Loaded 0 workload entities from configuration
+2025.12.22 03:36:09.427361 [ 1 ] {} <Information> WorkloadEntityDiskStorage: Loading workload entities from /var/lib/clickhouse/workload/
+2025.12.22 03:36:09.427366 [ 1 ] {} <Debug> WorkloadEntityDiskStorage: The directory for workload entities (/var/lib/clickhouse/workload/) does not exist: nothing to load
+2025.12.22 03:36:09.427370 [ 1 ] {} <Debug> WorkloadEntityDiskStorage: Workload entities loaded
+2025.12.22 03:36:09.427463 [ 1 ] {} <Debug> ConfigReloader: Loaded config '/etc/clickhouse-server/config.xml', performed update on configuration
+2025.12.22 03:36:09.427743 [ 1 ] {} <Warning> Application: Listen [::]:9009 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2025.12.22 03:36:09.427863 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2025.12.22 03:36:09.427884 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2025.12.22 03:36:09.428016 [ 1 ] {} <Information> Application: Listening for replica communication (interserver): http://0.0.0.0:9009
+2025.12.22 03:36:09.428064 [ 1 ] {} <Debug> Context: Setting up _tmp_default:/var/lib/clickhouse/tmp/ to store temporary data in it
+2025.12.22 03:36:09.434696 [ 1 ] {} <Debug> ConfigReloader: Loading config '/etc/clickhouse-server/users.xml'
+2025.12.22 03:36:09.434726 [ 1 ] {} <Debug> ConfigProcessor: Processing configuration file '/etc/clickhouse-server/users.xml'.
+2025.12.22 03:36:09.435047 [ 1 ] {} <Debug> ConfigProcessor: Merging configuration file '/etc/clickhouse-server/users.d/users.xml'.
+2025.12.22 03:36:09.437394 [ 1 ] {} <Debug> ConfigProcessor: Saved preprocessed configuration to '/var/lib/clickhouse/preprocessed_configs/users.xml'.
+2025.12.22 03:36:09.437431 [ 1 ] {} <Debug> ConfigReloader: Loaded config '/etc/clickhouse-server/users.xml', performing update on configuration
+2025.12.22 03:36:09.438096 [ 1 ] {} <Debug> ConfigReloader: Loaded config '/etc/clickhouse-server/users.xml', performed update on configuration
+2025.12.22 03:36:09.438440 [ 1 ] {} <Debug> Access(user directories): Added users_xml access storage 'users_xml', path: /etc/clickhouse-server/users.xml
+2025.12.22 03:36:09.438691 [ 1 ] {} <Warning> Access(local_directory): File /var/lib/clickhouse/access/users.list doesn't exist
+2025.12.22 03:36:09.438711 [ 1 ] {} <Warning> Access(local_directory): Recovering lists in directory /var/lib/clickhouse/access/
+2025.12.22 03:36:09.438863 [ 1 ] {} <Debug> Access(user directories): Added local_directory access storage 'local_directory', path: /var/lib/clickhouse/access/
+2025.12.22 03:36:09.438979 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Started cgroup current memory usage observer thread
+2025.12.22 03:36:09.439202 [ 664 ] {} <Information> CgroupsMemoryUsageObserver: Memory amount initially available to the process is 15.47 GiB
+2025.12.22 03:36:09.440706 [ 1 ] {} <Information> Context: Initialized background executor for merges and mutations with num_threads=16, num_tasks=32, scheduling_policy=round_robin
+2025.12.22 03:36:09.441589 [ 1 ] {} <Information> Context: Initialized background executor for move operations with num_threads=8, num_tasks=8
+2025.12.22 03:36:09.443047 [ 1 ] {} <Information> Context: Initialized background executor for fetches with num_threads=16, num_tasks=16
+2025.12.22 03:36:09.443937 [ 1 ] {} <Information> Context: Initialized background executor for common operations (e.g. clearing old parts) with num_threads=8, num_tasks=8
+2025.12.22 03:36:09.446142 [ 1 ] {} <Warning> Context: Delay accounting is not enabled, OSIOWaitMicroseconds will not be gathered. You can enable it using `sudo sh -c 'echo 1 > /proc/sys/kernel/task_delayacct'` or by using sysctl.
+2025.12.22 03:36:09.447405 [ 1 ] {} <Information> Application: Loading metadata from /var/lib/clickhouse/
+2025.12.22 03:36:09.450113 [ 1 ] {} <Debug> registerDiskObjectStorage: Metadata type hint: local
+2025.12.22 03:36:13.426497 [ 730 ] {} <Warning> DNSResolver: Cannot resolve host (minio), error 0: Host not found.
+2025.12.22 03:36:13.427034 [ 730 ] {} <Debug> AWSClient: Failed to make request to: http://minio:9000/bkhcn/aot/uyoclybkccegconrqfofxhpwbgpyj: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. std::vector<Poco::Net::IPAddress, std::allocator<Poco::Net::IPAddress>> std::__function::__policy_func<std::vector<Poco::Net::IPAddress, std::allocator<Poco::Net::IPAddress>> (String const&)>::__call_func[abi:ne210105]<DB::HostResolver::HostResolver(String, Poco::Timespan)::$_0>(std::__function::__policy_storage const*, String const&) @ 0x0000000016892116
+7. DB::HostResolver::update() @ 0x000000001688c4a9
+8. DB::HostResolver::HostResolver(String, Poco::Timespan) @ 0x000000001688c2f4
+9. std::shared_ptr<DB::HostResolver> DB::HostResolver::create<String const&>(String const&)::make_shared_enabler::make_shared_enabler(String const&) @ 0x000000001689264d
+10. std::shared_ptr<std::shared_ptr<DB::HostResolver> DB::HostResolver::create<String const&>(String const&)::make_shared_enabler> std::allocate_shared[abi:ne210105]<std::shared_ptr<DB::HostResolver> DB::HostResolver::create<String const&>(String const&)::make_shared_enabler, std::allocator<std::shared_ptr<DB::HostResolver> DB::HostResolver::create<String const&>(String const&)::make_shared_enabler>, String const&, 0>(std::allocator<std::shared_ptr<DB::HostResolver> DB::HostResolver::create<String const&>(String const&)::make_shared_enabler> const&, String const&) @ 0x00000000168923fd
+11. DB::HostResolversPool::getResolver(String const&) @ 0x000000001688f281
+12. DB::EndpointConnectionPool<Poco::Net::HTTPClientSession>::getConnection(DB::ConnectionTimeouts const&, unsigned long*) @ 0x0000000016887df5
+13. DB::makeHTTPSession(DB::HTTPConnectionGroupType, Poco::URI const&, DB::ConnectionTimeouts const&, DB::ProxyConfiguration const&, unsigned long*) @ 0x0000000016879919
+14. DB::S3::PocoHTTPClient::makeRequestInternalImpl(Aws::Http::HttpRequest&, std::shared_ptr<DB::S3::PocoHTTPResponse>&, Aws::Utils::RateLimits::RateLimiterInterface*, Aws::Utils::RateLimits::RateLimiterInterface*) const @ 0x000000001685596a
+15. DB::S3::PocoHTTPClient::MakeRequest(std::shared_ptr<Aws::Http::HttpRequest> const&, Aws::Utils::RateLimits::RateLimiterInterface*, Aws::Utils::RateLimits::RateLimiterInterface*) const @ 0x0000000016853541
+16. Aws::Client::AWSClient::AttemptExhaustively(Aws::Http::URI const&, Aws::AmazonWebServiceRequest const&, Aws::Http::HttpMethod, char const*, char const*, char const*) const @ 0x000000002271c8d4
+17. Aws::Client::AWSXMLClient::MakeRequest(Aws::AmazonWebServiceRequest const&, Aws::Endpoint::AWSEndpoint const&, Aws::Http::HttpMethod, char const*, char const*, char const*) const @ 0x000000002272c752
+18. Aws::Utils::Outcome<Aws::S3::Model::PutObjectResult, Aws::S3::S3Error> std::__function::__policy_func<Aws::Utils::Outcome<Aws::S3::Model::PutObjectResult, Aws::S3::S3Error> ()>::__call_func[abi:ne210105]<Aws::S3::S3Client::PutObject(Aws::S3::Model::PutObjectRequest const&) const::$_0>(std::__function::__policy_storage const*) @ 0x00000000228c4fb6
+19. Aws::S3::S3Client::PutObject(Aws::S3::Model::PutObjectRequest const&) const @ 0x0000000022851776
+20. std::__invoke_result_impl<void, DB::S3::PutObjectRequest, DB::S3::PutObjectRequest&>::type DB::S3::Client::doRequest<DB::S3::PutObjectRequest, std::__invoke_result_impl<void, DB::S3::Client::PutObject(DB::S3::PutObjectRequest&) const::$_0, DB::S3::PutObjectRequest&>::type DB::S3::Client::doRequestWithRetryNetworkErrors<false, DB::S3::PutObjectRequest, DB::S3::Client::PutObject(DB::S3::PutObjectRequest&) const::$_0>(DB::S3::PutObjectRequest&, DB::S3::Client::PutObject(DB::S3::PutObjectRequest&) const::$_0) const::'lambda'(DB::S3::PutObjectRequest&)>(DB::S3::PutObjectRequest&, DB::S3::PutObjectRequest) const (.llvm.12393009342120782756) @ 0x00000000168252d3
+21. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0910e
+22. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+23. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+24. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+25. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+26. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+27. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+28. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+29. ? @ 0x0000000000094ac3
+30. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2025.12.22 03:36:13.427086 [ 730 ] {} <Error> WriteBufferFromS3: S3Exception name , Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key aot/uyoclybkccegconrqfofxhpwbgpyj, object size 4
+2025.12.22 03:36:13.427213 [ 1 ] {} <Information> WriteBufferFromS3: Nothing to abort. Details: bucket bkhcn, key aot/uyoclybkccegconrqfofxhpwbgpyj, total size 4, count 4, hidden_size 0, offset 0, with pool: true, prefinalized: true, finalized: false
+2025.12.22 03:36:13.427397 [ 1 ] {} <Error> virtual void DB::IDisk::checkAccessImpl(const String &): Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key aot/uyoclybkccegconrqfofxhpwbgpyj, object size 4. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2025.12.22 03:36:13.427444 [ 1 ] {} <Information> WriteBufferFromS3: WriteBufferFromS3 was canceled.The file might not be written to S3. Details: bucket bkhcn, key aot/uyoclybkccegconrqfofxhpwbgpyj, total size 4, count 4, hidden_size 0, offset 0, with pool: true, prefinalized: true, finalized: false.
+2025.12.22 03:36:13.427974 [ 1 ] {} <Error> Application: Caught exception while loading metadata: Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key aot/uyoclybkccegconrqfofxhpwbgpyj, object size 4: While checking access for disk s3. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2025.12.22 03:36:13.428031 [ 1 ] {} <Information> Application: Stopping AsyncLoader.
+2025.12.22 03:36:13.428145 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Stopped cgroup current memory usage observer thread
+2025.12.22 03:36:13.428496 [ 1 ] {} <Information> Application: Shutting down storages.
+2025.12.22 03:36:13.429817 [ 1 ] {} <Debug> ObjectStorageQueueFactory: There are no queue storages to shutdown
+2025.12.22 03:36:13.429841 [ 1 ] {} <Debug> Context: Shutting down merges executor
+2025.12.22 03:36:13.430202 [ 1 ] {} <Debug> Context: Shutting down fetches executor
+2025.12.22 03:36:13.430582 [ 1 ] {} <Debug> Context: Shutting down moves executor
+2025.12.22 03:36:13.431009 [ 1 ] {} <Debug> Context: Shutting down common executor
+2025.12.22 03:36:13.431236 [ 1 ] {} <Debug> Context: Shutting down workload entity storage
+2025.12.22 03:36:13.437664 [ 1 ] {} <Debug> Application: Shut down storages.
+2025.12.22 03:36:13.437688 [ 1 ] {} <Debug> Application: Waiting for current connections to servers for tables to finish.
+2025.12.22 03:36:13.437901 [ 1 ] {} <Information> Application: Closed all listening sockets.
+2025.12.22 03:36:13.437913 [ 1 ] {} <Information> Application: Closed connections to servers for tables.
+2025.12.22 03:36:13.437926 [ 1 ] {} <Debug> Context: Destructing threadpool writer
+2025.12.22 03:36:13.439366 [ 1 ] {} <Debug> Application: Destroyed global context.
+2025.12.22 03:36:13.439562 [ 1 ] {} <Information> Application: Waiting for background threads
+2025.12.22 03:36:13.458748 [ 1 ] {} <Information> Application: Background threads finished in 19 ms
+2025.12.22 03:36:13.459549 [ 1 ] {} <Error> Application: Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key aot/uyoclybkccegconrqfofxhpwbgpyj, object size 4: While checking access for disk s3. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2025.12.22 03:36:13.459602 [ 1 ] {} <Information> Application: shutting down
+2025.12.22 03:36:13.459604 [ 1 ] {} <Debug> Application: Uninitializing subsystem: Logging Subsystem
+2025.12.22 03:36:13.460127 [ 92 ] {} <Information> BaseDaemon: Stop SignalListener thread

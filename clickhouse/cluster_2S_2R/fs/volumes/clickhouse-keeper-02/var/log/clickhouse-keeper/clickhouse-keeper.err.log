@@ -1,0 +1,4 @@
+2025.12.22 03:36:08.288526 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2025.12.22 03:36:08.288826 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2025.12.22 03:36:09.768126 [ 44 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2025.12.22 03:38:15.330250 [ 68 ] {} <Error> RaftInstance: failed to accept a rpc connection due to error 125, Operation canceled
