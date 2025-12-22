@@ -101,7 +101,6 @@ class JobTriggerService:
             return {
                 "status": "success",
                 "message": f"DAG {dag_id} triggered successfully",
-                "job_type": job_type,
             } | result
             
         except requests.HTTPError as e:
@@ -116,7 +115,7 @@ class JobTriggerService:
             return {
                 "status": "error",
                 "message": f"HTTP error: {error_detail}",
-                "dag_id": dag_id
+                "dag_id": dag_id,
             }
             
         except Exception as e:
@@ -124,10 +123,10 @@ class JobTriggerService:
             return {
                 "status": "error",
                 "message": str(e),
-                "dag_id": dag_id
+                "dag_id": dag_id,
             }
     
-    def get_dag_run_status(self, dag_id: str, dag_run_id: str) -> Dict[str, Any]:
+    def get_dag_run_info(self, dag_id: str, dag_run_id: str) -> Dict[str, Any]:
         """Get status of a DAG run"""
         try:
             response = requests.get(
@@ -159,7 +158,7 @@ class JobTriggerService:
     def get_dag_runs(self, dag_id: str, limit: int = 10, state: Optional[str] = None) -> Dict[str, Any]:
         """Get recent DAG runs"""
         try:
-            params = {"limit": limit}
+            params = {"limit": limit, "order_by": "-execution_date"}
             if state:
                 params["state"] = state
             
@@ -177,7 +176,7 @@ class JobTriggerService:
                 "status": "success",
                 "dag_id": dag_id,
                 "total_entries": result.get("total_entries", 0),
-                "runs": [
+                "dag_runs": [
                     {
                         "dag_run_id": run.get("dag_run_id"),
                         "state": run.get("state"),

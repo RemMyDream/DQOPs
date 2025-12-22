@@ -1,0 +1,57 @@
+2025.12.22 03:36:09.427743 [ 1 ] {} <Warning> Application: Listen [::]:9009 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2025.12.22 03:36:09.438691 [ 1 ] {} <Warning> Access(local_directory): File /var/lib/clickhouse/access/users.list doesn't exist
+2025.12.22 03:36:09.438711 [ 1 ] {} <Warning> Access(local_directory): Recovering lists in directory /var/lib/clickhouse/access/
+2025.12.22 03:36:09.446142 [ 1 ] {} <Warning> Context: Delay accounting is not enabled, OSIOWaitMicroseconds will not be gathered. You can enable it using `sudo sh -c 'echo 1 > /proc/sys/kernel/task_delayacct'` or by using sysctl.
+2025.12.22 03:36:13.426497 [ 730 ] {} <Warning> DNSResolver: Cannot resolve host (minio), error 0: Host not found.
+2025.12.22 03:36:13.427086 [ 730 ] {} <Error> WriteBufferFromS3: S3Exception name , Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key aot/uyoclybkccegconrqfofxhpwbgpyj, object size 4
+2025.12.22 03:36:13.427397 [ 1 ] {} <Error> virtual void DB::IDisk::checkAccessImpl(const String &): Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key aot/uyoclybkccegconrqfofxhpwbgpyj, object size 4. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2025.12.22 03:36:13.427974 [ 1 ] {} <Error> Application: Caught exception while loading metadata: Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key aot/uyoclybkccegconrqfofxhpwbgpyj, object size 4: While checking access for disk s3. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2025.12.22 03:36:13.459549 [ 1 ] {} <Error> Application: Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key aot/uyoclybkccegconrqfofxhpwbgpyj, object size 4: While checking access for disk s3. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))

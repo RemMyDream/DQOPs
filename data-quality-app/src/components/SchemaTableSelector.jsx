@@ -23,6 +23,13 @@ export default function SchemaTableSelector({
   
   const [ingestionProgress, setIngestionProgress] = useState({});
   const [showProgressModal, setShowProgressModal] = useState(false);
+  const [pollingIntervals, setPollingIntervals] = useState({});
+
+  useEffect(() => {
+    return () => {
+      Object.values(pollingIntervals).forEach(interval => clearInterval(interval));
+    };
+  }, [pollingIntervals]);
 
   useEffect(() => {
     const checkNewlySelectedTables = async () => {
@@ -180,6 +187,81 @@ export default function SchemaTableSelector({
     setShowPrimaryKeyModal(false);
   };
 
+  const pollJobStatus = async (tableId, dagId, dagRunId) => {
+    const intervalId = setInterval(async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/trigger/status/${dagId}/${dagRunId}`,
+          {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to get job status');
+        }
+
+        const status = await response.json();
+        
+        // Map Airflow state -> UI status
+        let uiStatus = 'processing';
+        let message = 'Running...';
+        
+        if (status.state === 'success') {
+          uiStatus = 'success';
+          message = 'Completed successfully';
+          clearInterval(intervalId);
+          // Remove from polling intervals
+          setPollingIntervals(prev => {
+            const newIntervals = { ...prev };
+            delete newIntervals[tableId];
+            return newIntervals;
+          });
+        } else if (status.state === 'failed') {
+          uiStatus = 'error';
+          message = 'Job failed';
+          clearInterval(intervalId);
+          setPollingIntervals(prev => {
+            const newIntervals = { ...prev };
+            delete newIntervals[tableId];
+            return newIntervals;
+          });
+        } else if (status.state === 'running') {
+          message = 'Processing data...';
+        } else if (status.state === 'queued') {
+          message = 'Waiting in queue...';
+        }
+        
+        setIngestionProgress(prev => ({
+          ...prev,
+          [tableId]: {
+            ...prev[tableId],
+            status: uiStatus,
+            message: message,
+            state: status.state,
+            start_date: status.start_date,
+            end_date: status.end_date
+          }
+        }));
+        
+      } catch (error) {
+        console.error(`Failed to poll status for ${tableId}:`, error);
+        clearInterval(intervalId);
+        setPollingIntervals(prev => {
+          const newIntervals = { ...prev };
+          delete newIntervals[tableId];
+          return newIntervals;
+        });
+      }
+    }, 3000); // Poll mỗi 3 giây
+
+    setPollingIntervals(prev => ({
+      ...prev,
+      [tableId]: intervalId
+    }));
+  };
+
   const handleSubmit = async () => {
     const tablesWithoutPK = selectedTables.filter(
       tableId => !confirmedPrimaryKeys[tableId] || confirmedPrimaryKeys[tableId].length === 0
@@ -193,12 +275,14 @@ export default function SchemaTableSelector({
     setIsSubmitting(true);
     setShowProgressModal(true);
     
-    // Initialize progress tracking
     const initialProgress = {};
     selectedTables.forEach(tableId => {
       initialProgress[tableId] = { status: 'pending', message: 'Waiting...' };
     });
     setIngestionProgress(initialProgress);
+    
+    let startTime = Date.now();
+    let checkCompletedInterval = null;
 
     try {
       // Trigger ingest cho từng bảng sequentially
@@ -206,7 +290,6 @@ export default function SchemaTableSelector({
         const [schemaName, tableName] = tableId.split('.');
         const primaryKeys = confirmedPrimaryKeys[tableId];
 
-        // Update status: processing
         setIngestionProgress(prev => ({
           ...prev,
           [tableId]: { status: 'processing', message: 'Triggering ingestion...' }
@@ -242,22 +325,21 @@ export default function SchemaTableSelector({
 
           const result = await response.json();
 
-          // Update status: success
           setIngestionProgress(prev => ({
             ...prev,
             [tableId]: { 
-              status: 'success', 
-              message: `Triggered successfully`,
+              status: 'processing', 
+              message: `Job queued, waiting for execution...`,
               dag_run_id: result.dag_run_id,
-              job_id: result.job_id
+              dag_id: result.dag_id,
+              state: result.state || 'queued'
             }
           }));
-
-          // Small delay between triggers
+          
+          pollJobStatus(tableId, result.dag_id, result.dag_run_id);
           await new Promise(resolve => setTimeout(resolve, 500));
 
         } catch (error) {
-          // Update status: error
           setIngestionProgress(prev => ({
             ...prev,
             [tableId]: { 
@@ -267,39 +349,72 @@ export default function SchemaTableSelector({
           }));
         }
       }
-
-      // All done - PHẦN NÀY ĐÃ ĐƯỢC SỬA
-      setTimeout(() => {
-        const allSuccess = Object.values(ingestionProgress).every(p => p.status === 'success');
-        if (allSuccess) {
-          // Chuẩn bị dữ liệu các bảng đã ingest
-          const ingestedTablesData = selectedTables.map(tableId => {
-            const [schema, table] = tableId.split('.');
-            return {
-              schema: schema,
-              table: table,
-              primary_keys: confirmedPrimaryKeys[tableId]
-            };
-          });
+      
+      // ✅ THÊM PHẦN NÀY - SAU VÒNG FOR
+      checkCompletedInterval = setInterval(() => {
+        const allProgress = Object.values(ingestionProgress);
+        
+        console.log('Checking completion:', {
+          totalTables: selectedTables.length,
+          progressCount: allProgress.length,
+          statuses: allProgress.map(p => p.status)
+        });
+        
+        if (Date.now() - startTime > 300000) {
+          console.log('⏱️ Timeout after 5 minutes');
+          clearInterval(checkCompletedInterval);
+          setIsSubmitting(false);
+          alert('Ingestion timeout. Please check Airflow.');
+          return;
+        }
+        
+        const allCompleted = allProgress.every(p => 
+          p.status === 'success' || p.status === 'error'
+        );
+        
+        const hasAllTables = selectedTables.every(tableId => 
+          ingestionProgress.hasOwnProperty(tableId)
+        );
+        
+        if (allCompleted && hasAllTables && allProgress.length === selectedTables.length) {
+          console.log('✅ All completed!');
+          clearInterval(checkCompletedInterval);
+          setIsSubmitting(false);
           
-          alert('All tables triggered successfully! Redirecting to dashboard...');
+          const allSuccess = allProgress.every(p => p.status === 'success');
           
-          // Gọi callback để chuyển sang dashboard và truyền dữ liệu
-          if (onIngestionComplete) {
-            onIngestionComplete(ingestedTablesData);
+          if (allSuccess) {
+            const ingestedTablesData = selectedTables.map(tableId => {
+              const [schema, table] = tableId.split('.');
+              return {
+                schema: schema,
+                table: table,
+                primary_keys: confirmedPrimaryKeys[tableId]
+              };
+            });
+            
+            setTimeout(() => {
+              alert('All tables ingested successfully! Redirecting to dashboard...');
+              
+              if (onIngestionComplete) {
+                onIngestionComplete(ingestedTablesData);
+              }
+            }, 500);
+            
+          } else {
+            alert('Some tables failed to ingest. Please check the progress modal.');
           }
-        } else {
-          alert('Some tables failed to ingest. Please check the progress modal.');
         }
       }, 1000);
 
     } catch (error) {
       alert(`Failed to trigger ingestion: ${error.message}`);
-    } finally {
       setIsSubmitting(false);
+      if (checkCompletedInterval) {
+        clearInterval(checkCompletedInterval);
+      }
     }
-  }
-
+  }  // ← Đóng hàm handleSubmit
   const filterTables = (tables) => {
     if (!searchTerm) return tables;
     return tables.filter(table => 
@@ -692,7 +807,21 @@ export default function SchemaTableSelector({
                             <p className="font-medium text-slate-900 truncate">{tableId}</p>
                             <p className="text-sm text-slate-600">{progress.message}</p>
                             {progress.dag_run_id && (
-                              <p className="text-xs text-slate-500 mt-1 font-mono">Run ID: {progress.dag_run_id}</p>
+                              <p className="text-xs text-slate-500 mt-1 font-mono">
+                                Run ID: {progress.dag_run_id}
+                              </p>
+                            )}
+                            {/* ✅ THÊM: Hiển thị Airflow state */}
+                            {progress.state && (
+                              <p className="text-xs text-slate-500 mt-1">
+                                Airflow State: <span className="font-semibold uppercase">{progress.state}</span>
+                              </p>
+                            )}
+                            {/* ✅ THÊM: Hiển thị start_date nếu có */}
+                            {progress.start_date && (
+                              <p className="text-xs text-slate-400 mt-1">
+                                Started: {new Date(progress.start_date).toLocaleString()}
+                              </p>
                             )}
                           </div>
                         </div>

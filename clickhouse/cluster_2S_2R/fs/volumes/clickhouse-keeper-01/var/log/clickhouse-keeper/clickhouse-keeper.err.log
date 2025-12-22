@@ -1,0 +1,4 @@
+2025.12.22 03:36:08.381432 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2025.12.22 03:36:08.381621 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2025.12.22 03:38:15.323846 [ 56 ] {} <Error> RaftInstance: session 1 failed to read rpc header from socket ::ffff:172.21.0.2:58732 due to error 2, End of file, ref count 1
+2025.12.22 03:38:15.336371 [ 63 ] {} <Error> RaftInstance: failed to accept a rpc connection due to error 125, Operation canceled

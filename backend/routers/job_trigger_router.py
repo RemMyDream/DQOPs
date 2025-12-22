@@ -32,21 +32,19 @@ router = APIRouter(
 
 # ==================== Request/Response Models ====================
 
-class TriggerResponse(BaseModel):
+class StatusResponse(BaseModel):
     status: str
-    message: str
-    job_type: Optional[str] = None
     dag_id: str
     dag_run_id: str
-    state: Optional[str] = None
+    state: Optional[str]
+    message: Optional[str] = None
     execution_date: Optional[str] = None
-    conf: Optional[Dict[str, Any]] = None
-    job_id: Optional[int] = None
-    job_name: Optional[str] = None
+    start_date:  Optional[str] = None
+    end_date:  Optional[str] = None
 
 # ==================== TRIGGER ENDPOINTS ====================
 
-@router.post("/ingest")
+@router.post("/ingest", response_model=StatusResponse)
 def trigger_ingest(
     request: IngestJobCreateRequest,
     trigger_service: JobTriggerService = Depends(get_job_trigger_service),
@@ -95,11 +93,7 @@ def trigger_ingest(
         except Exception as e:
             logger.warning(f"Trigger succeeded but failed to save job: {e}")
     
-        return { 
-            "status" : trigger_result['status'],
-            "message" : trigger_result['message']
-        }
-        
+        return StatusResponse(**trigger_result)
     except HTTPException:
         raise
     except Exception as e:
@@ -156,35 +150,35 @@ def trigger_ingest(
 
 # # ==================== STATUS ENDPOINTS ====================
 
-# @router.get("/status/{dag_id}/{dag_run_id}", response_model=StatusResponse)
-# async def get_run_status(
-#     dag_id: str,
-#     dag_run_id: str,
-#     trigger_service: JobTriggerService = Depends(get_job_trigger_service)
-# ) -> StatusResponse:
-#     """Get status of a DAG run"""
-#     try:
-#         result = trigger_service.get_dag_run_status(dag_id, dag_run_id)
-#         return StatusResponse(**result)
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             detail=str(e)
-#         )
+@router.get("/status/{dag_id}/{dag_run_id}", response_model=StatusResponse)
+async def get_run_status(
+    dag_id: str,
+    dag_run_id: str,
+    trigger_service: JobTriggerService = Depends(get_job_trigger_service)
+) -> StatusResponse:
+    """Get status of a DAG run"""
+    try:
+        result = trigger_service.get_dag_run_info(dag_id, dag_run_id)
+        return StatusResponse(**result)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
 
 
-# @router.get("/runs/{dag_id}")
-# async def get_dag_runs(
-#     dag_id: str,
-#     limit: int = Query(default=10, le=100),
-#     state: Optional[str] = Query(default=None),
-#     trigger_service: JobTriggerService = Depends(get_job_trigger_service)
-# ):
-#     """Get recent DAG runs"""
-#     try:
-#         return trigger_service.get_dag_runs(dag_id, limit=limit, state=state)
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             detail=str(e)
-#         )
+@router.get("/runs/{dag_id}")
+async def get_dag_runs(
+    dag_id: str,
+    limit: int = Query(default=10, le=100),
+    state: Optional[str] = Query(default=None),
+    trigger_service: JobTriggerService = Depends(get_job_trigger_service)
+):
+    """Get recent DAG runs"""
+    try:
+        return trigger_service.get_dag_runs(dag_id, limit=limit, state=state)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
