@@ -6,3 +6,6 @@ yeucau.txt
 test-notebook.ipynb
 docker-compose-postgres (reference).yml
 **.gkg.csv
+data_pipeline
+.DS_Store
+
