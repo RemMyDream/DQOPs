@@ -8,3 +8,4 @@ docker-compose-postgres (reference).yml
 **.gkg.csv
 .DS_Store
 
+data_pipeline/
