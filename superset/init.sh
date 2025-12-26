@@ -1,13 +1,19 @@
 #!/bin/bash
+set -e
 
-# create Admin user, you can read these values from env or anywhere else possible
-superset fab create-admin --username "$ADMIN_USERNAME" --firstname Superset --lastname Admin --email "$ADMIN_EMAIL" --password "$ADMIN_PASSWORD"
-
-# Upgrading Superset metastore
+# 1. Upgrade metastore (phải chạy trước)
 superset db upgrade
 
-# setup roles and permissions
-superset superset init 
+# 2. Tạo admin user
+superset fab create-admin \
+    --username "$ADMIN_USERNAME" \
+    --firstname Superset \
+    --lastname Admin \
+    --email "$ADMIN_EMAIL" \
+    --password "$ADMIN_PASSWORD"
 
-# Starting server
-/bin/sh -c /usr/bin/run-server.sh
+# 3. Setup roles & permissions
+superset init
+
+# 4. Start server
+exec /usr/bin/run-server.sh

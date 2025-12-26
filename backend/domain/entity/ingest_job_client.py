@@ -37,6 +37,7 @@ class IngestJobTarget:
 
 
 @dataclass
+
 class IngestJob(Job):
     """Ingest Job Domain Entity"""
     source: IngestJobSource = None

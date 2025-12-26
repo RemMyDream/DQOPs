@@ -15,14 +15,15 @@ default_args = {
 def prepare_spark_config(**context):
     conf = context["dag_run"].conf
     connection_name = conf["connection_name"]
+    tables = conf["tables"]
+    layer = conf.get("layer", "bronze")
     
     conn = BaseHook.get_connection(connection_name)
     
     spark_config = {
-        **conf,
+        "tables": tables,
+        "layer": layer,
         "jdbc_url": f"jdbc:postgresql://{conn.host}:{conn.port}/{conn.schema}",
-        "host": conn.host,
-        "port": conn.port,
         "database": conn.schema,
         "username": conn.login,
         "password": conn.password
@@ -56,8 +57,7 @@ with DAG(
             '--config', '{{ ti.xcom_pull(task_ids="prepare_config") }}'
         ],
         verbose=True,
-        execution_timeout=timedelta(minutes=30), 
-
+        execution_timeout=timedelta(minutes=60),
     )
     
     prepare_config >> ingest_task

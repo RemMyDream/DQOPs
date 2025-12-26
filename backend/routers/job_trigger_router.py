@@ -42,6 +42,16 @@ class StatusResponse(BaseModel):
     start_date:  Optional[str] = None
     end_date:  Optional[str] = None
 
+class TableInfo(BaseModel):
+    schema_name: str
+    table_name: str
+    primary_keys: List[str] = []
+
+class BatchIngestRequest(BaseModel):
+    connection_name: str
+    tables: List[TableInfo]
+    target_layer: str = "bronze"
+
 # ==================== TRIGGER ENDPOINTS ====================
 
 @router.post("/ingest", response_model=StatusResponse)

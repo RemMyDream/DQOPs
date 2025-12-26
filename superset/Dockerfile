@@ -1,18 +1,14 @@
-FROM apache/superset:latest
+FROM apache/superset:2.1.3
 
 USER root
 
 COPY ./requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
 
-ENV ADMIN_USERNAME $ADMIN_USERNAME
-ENV ADMIN_EMAIL $ADMIN_EMAIL
-ENV ADMIN_PASSWORD $ADMIN_PASSWORD
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./init.sh /init.sh
-
 COPY config.py /app/
-ENV SUPERSET_CONFIG_PATH /app/config.py
+ENV SUPERSET_CONFIG_PATH=/app/config.py
 
 USER superset
 ENTRYPOINT [ "/init.sh" ]
