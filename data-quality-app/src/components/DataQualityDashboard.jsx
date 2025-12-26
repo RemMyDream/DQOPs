@@ -77,7 +77,7 @@ export default function DataQualityDashboard({
                 
                 return {
                   table_name: tableName,
-                  columns: columnsData.columns.map(col => col.column_name)
+                  columns: columnsData.columns
                 };
               } catch (error) {
                 console.error(`Error fetching columns for ${tableName}:`, error);

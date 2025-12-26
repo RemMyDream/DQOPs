@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef} from 'react';
 import { Trash2, Database, Check, ChevronDown, ChevronRight, RefreshCw, Loader2, Search, X, Eye, CheckSquare, AlertTriangle, Key } from 'lucide-react';
 
 export default function SchemaTableSelector({
@@ -24,6 +24,11 @@ export default function SchemaTableSelector({
   const [ingestionProgress, setIngestionProgress] = useState({});
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [pollingIntervals, setPollingIntervals] = useState({});
+  const ingestionProgressRef = useRef({});
+
+  useEffect(() => {
+  ingestionProgressRef.current = ingestionProgress;
+}, [ingestionProgress]);
 
   useEffect(() => {
     return () => {
@@ -187,46 +192,40 @@ export default function SchemaTableSelector({
     setShowPrimaryKeyModal(false);
   };
 
-  const pollJobStatus = async (tableId, dagId, dagRunId) => {
-    const intervalId = setInterval(async () => {
+  const pollJobStatus = (tableId, dagId, dagRunId) => {
+    console.log('🚀 Starting poll for:', tableId, dagId, dagRunId);
+    
+    const poll = async () => {
+      console.log('📡 Polling:', tableId);
+      
       try {
-        const response = await fetch(
-          `http://localhost:8000/trigger/status/${dagId}/${dagRunId}`,
-          {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
+        const url = `http://localhost:8000/trigger/status/${encodeURIComponent(dagId)}/${encodeURIComponent(dagRunId)}`;
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
 
         if (!response.ok) {
-          throw new Error('Failed to get job status');
+          console.error('❌ Response not OK:', tableId, response.status);
+          return; // Tiếp tục polling, không throw
         }
 
         const status = await response.json();
+        console.log('📥 Response:', tableId, status.state);
         
-        // Map Airflow state -> UI status
         let uiStatus = 'processing';
         let message = 'Running...';
+        let shouldStop = false;
         
         if (status.state === 'success') {
           uiStatus = 'success';
           message = 'Completed successfully';
-          clearInterval(intervalId);
-          // Remove from polling intervals
-          setPollingIntervals(prev => {
-            const newIntervals = { ...prev };
-            delete newIntervals[tableId];
-            return newIntervals;
-          });
+          shouldStop = true;
         } else if (status.state === 'failed') {
           uiStatus = 'error';
           message = 'Job failed';
-          clearInterval(intervalId);
-          setPollingIntervals(prev => {
-            const newIntervals = { ...prev };
-            delete newIntervals[tableId];
-            return newIntervals;
-          });
+          shouldStop = true;
         } else if (status.state === 'running') {
           message = 'Processing data...';
         } else if (status.state === 'queued') {
@@ -245,16 +244,27 @@ export default function SchemaTableSelector({
           }
         }));
         
+        if (shouldStop) {
+          console.log('✅ Stopping poll for:', tableId);
+          clearInterval(intervalId);
+          setPollingIntervals(prev => {
+            const newIntervals = { ...prev };
+            delete newIntervals[tableId];
+            return newIntervals;
+          });
+        }
+        
       } catch (error) {
-        console.error(`Failed to poll status for ${tableId}:`, error);
-        clearInterval(intervalId);
-        setPollingIntervals(prev => {
-          const newIntervals = { ...prev };
-          delete newIntervals[tableId];
-          return newIntervals;
-        });
+        console.error(`❌ Failed to poll ${tableId}:`, error);
+        // Không clear interval khi error - tiếp tục retry
       }
-    }, 3000); // Poll mỗi 3 giây
+    };
+
+    // Gọi ngay lần đầu
+    poll();
+    
+    // Setup interval
+    const intervalId = setInterval(poll, 3000);
 
     setPollingIntervals(prev => ({
       ...prev,
@@ -350,9 +360,9 @@ export default function SchemaTableSelector({
         }
       }
       
-      // ✅ THÊM PHẦN NÀY - SAU VÒNG FOR
-      checkCompletedInterval = setInterval(() => {
-        const allProgress = Object.values(ingestionProgress);
+    checkCompletedInterval = setInterval(() => {
+      const currentProgress = ingestionProgressRef.current;
+      const allProgress = Object.values(currentProgress);
         
         console.log('Checking completion:', {
           totalTables: selectedTables.length,
@@ -360,7 +370,7 @@ export default function SchemaTableSelector({
           statuses: allProgress.map(p => p.status)
         });
         
-        if (Date.now() - startTime > 300000) {
+        if (Date.now() - startTime > 900000) {
           console.log('⏱️ Timeout after 5 minutes');
           clearInterval(checkCompletedInterval);
           setIsSubmitting(false);
@@ -368,13 +378,13 @@ export default function SchemaTableSelector({
           return;
         }
         
-        const allCompleted = allProgress.every(p => 
-          p.status === 'success' || p.status === 'error'
-        );
+      const allCompleted = allProgress.every(p => 
+        p.status === 'success' || p.status === 'error'
+      );
         
-        const hasAllTables = selectedTables.every(tableId => 
-          ingestionProgress.hasOwnProperty(tableId)
-        );
+      const hasAllTables = selectedTables.every(tableId => 
+        currentProgress.hasOwnProperty(tableId)  // ← dùng currentProgress
+      );
         
         if (allCompleted && hasAllTables && allProgress.length === selectedTables.length) {
           console.log('✅ All completed!');
@@ -917,12 +927,13 @@ function PrimaryKeyConfirmModal({ data, onConfirm, onClose }) {
             </div>
           )}
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-700">
-              Select Primary Key Columns:
-            </label>
-            {allKeys.length > 0 ? (
-              allKeys.map((key) => {
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-slate-700">
+            Select Primary Key Columns:
+          </label>
+          {allKeys.length > 0 ? (
+            <div className={`grid gap-2 ${allKeys.length > 6 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              {allKeys.map((key) => {
                 const isExisting = data.existing_keys.includes(key);
                 const isDetected = data.detected_keys.includes(key);
                 const isSelected = selectedKeys.includes(key);
@@ -938,7 +949,7 @@ function PrimaryKeyConfirmModal({ data, onConfirm, onClose }) {
                       onChange={() => toggleKey(key)}
                       className="w-4 h-4 text-blue-600 rounded"
                     />
-                    <span className="flex-1 font-mono text-sm font-medium">{key}</span>
+                    <span className="flex-1 font-mono text-sm font-medium truncate">{key}</span>
                     {isExisting && (
                       <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-medium">
                         Existing PK
@@ -951,13 +962,14 @@ function PrimaryKeyConfirmModal({ data, onConfirm, onClose }) {
                     )}
                   </label>
                 );
-              })
-            ) : (
-              <p className="text-sm text-slate-500 italic p-4 text-center bg-slate-50 rounded-lg">
-                No suitable primary key columns found
-              </p>
-            )}
-          </div>
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500 italic p-4 text-center bg-slate-50 rounded-lg">
+              No suitable primary key columns found
+            </p>
+          )}
+        </div>
         </div>
 
         <div className="p-6 border-t flex justify-end space-x-3">
