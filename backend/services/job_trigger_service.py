@@ -42,7 +42,7 @@ class JobTriggerService:
         """Core trigger method - triggers DAG directly from config"""
         dag_id = self._get_dag_id(job_type, dag_conf)
         logger.info(f"Triggering {job_type.value} job: DAG={dag_id}")
-        return self._trigger_dag(dag_id, dag_conf, job_type.value)
+        return self._trigger_dag(dag_id, dag_conf)
     
     def _get_dag_id(self, job_type: JobType, dag_conf: Dict[str, Any]) -> str:
         """Determine DAG ID based on job type and config"""
@@ -75,7 +75,6 @@ class JobTriggerService:
         self,
         dag_id: str,
         dag_conf: Dict[str, Any],
-        job_type: str
     ) -> Dict[str, Any]:
         """Internal method to trigger Airflow DAG"""
         if not self._unpause_dag(dag_id):

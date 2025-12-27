@@ -27,7 +27,6 @@ class TableInfo(BaseModel):
 
 
 class IngestJobCreateRequest(BaseModel):
-    """Request for creating ingest jobs (supports batch)"""
     job_name: Optional[str] = Field(None, max_length=200)
     connection_name: str = Field(..., min_length=1)
     tables: List[TableInfo] = Field(..., min_length=1)
