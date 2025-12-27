@@ -25,3 +25,11 @@
 2025.12.25 19:02:28.931739 [ 52 ] {} <Warning> RaftInstance: [LOG XX] req log idx: 4661, req log term: 2, my last log idx: 4657, my log (4661) term: 0
 2025.12.25 19:02:28.931892 [ 52 ] {} <Warning> RaftInstance: deny, req term 2, my term 2, req log idx 4661, my log idx 4657, receiving snapshot FALSE
 2025.12.25 19:02:30.029264 [ 48 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2025.12.26 17:52:11.054913 [ 72 ] {} <Error> RaftInstance: session 1 failed to read rpc header from socket ::ffff:172.18.0.8:49860 due to error 2, End of file, ref count 1
+2025.12.26 17:52:12.918056 [ 69 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2025.12.26 17:52:14.017728 [ 54 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2025.12.26 17:52:14.017820 [ 54 ] {} <Warning> RaftInstance: total 1 nodes (including this node) responded for pre-vote (term 4, live 0, dead 1), at least 2 nodes should respond. failure count 1
+2025.12.26 17:52:14.017825 [ 54 ] {} <Warning> RaftInstance: failed to send prevote request: peer 3 (clickhouse-keeper-03:9234) is busy, count 1
+2025.12.26 17:52:14.017850 [ 54 ] {} <Warning> RaftInstance: failed to send prevote request: peer 1 (clickhouse-keeper-01:9234) is busy, count 2
+2025.12.26 17:52:14.017852 [ 54 ] {} <Warning> RaftInstance: too many busy connections: 2, num voting members: 3, quorum size: 2, no hope to get quorum, count: 1
+2025.12.26 17:52:14.239552 [ 49 ] {} <Error> RaftInstance: failed to accept a rpc connection due to error 125, Operation canceled
