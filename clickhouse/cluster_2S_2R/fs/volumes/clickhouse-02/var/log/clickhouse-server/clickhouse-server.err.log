@@ -472,3 +472,55 @@
 12. ? @ 0x0000000000094ac3
 13. clone @ 0x0000000000125a74
  (version 25.12.1.649 (official build))
+2025.12.26 03:05:57.551646 [ 1 ] {} <Warning> Application: Listen [::]:9009 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2025.12.26 03:05:57.570963 [ 1 ] {} <Warning> Context: Delay accounting is not enabled, OSIOWaitMicroseconds will not be gathered. You can enable it using `sudo sh -c 'echo 1 > /proc/sys/kernel/task_delayacct'` or by using sysctl.
+2025.12.26 03:05:58.217821 [ 1 ] {} <Warning> Application: Listen [::]:8123 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2025.12.26 03:05:58.218071 [ 1 ] {} <Warning> Application: Listen [::]:9000 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2025.12.26 03:05:58.218259 [ 1 ] {} <Warning> Application: Listen [::]:9004 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2025.12.26 03:05:58.218331 [ 1 ] {} <Warning> Application: Listen [::]:9005 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2025.12.26 17:52:17.245841 [ 777 ] {} <Error> ZooKeeperClient: Code: 33. DB::Exception: Cannot read all data. Bytes read: 0. Bytes expected: 4. (CANNOT_READ_ALL_DATA), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::Exception::Exception<unsigned long&, String>(int, FormatStringHelperImpl<std::type_identity<unsigned long&>::type, std::type_identity<String>::type>, unsigned long&, String&&) @ 0x0000000010a44676
+4. DB::ReadBuffer::readStrict(char*, unsigned long) @ 0x000000001648c80c
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<true, true>::ThreadFromGlobalPoolImpl<Coordination::ZooKeeper::ZooKeeper(std::vector<zkutil::ShuffleHost, std::allocator<zkutil::ShuffleHost>> const&, zkutil::ZooKeeperArgs const&, std::shared_ptr<DB::ZooKeeperLog>, std::shared_ptr<DB::AggregatedZooKeeperLog>)::$_1>(Coordination::ZooKeeper::ZooKeeper(std::vector<zkutil::ShuffleHost, std::allocator<zkutil::ShuffleHost>> const&, zkutil::ZooKeeperArgs const&, std::shared_ptr<DB::ZooKeeperLog>, std::shared_ptr<DB::AggregatedZooKeeperLog>)::$_1&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x000000001db29e66
+6. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+7. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+8. ? @ 0x0000000000094ac3
+9. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2025.12.26 17:52:17.247082 [ 777 ] {} <Error> ZooKeeperClient: Poco::Exception. Code: 1000, e.code() = 107, Net Exception: Socket is not connected, Stack trace (when copying this message, always include the lines below):
+
+0. Poco::Net::SocketImpl::error(int, String const&) @ 0x00000000223b584a
+1. Poco::Net::SocketImpl::shutdown() @ 0x00000000223b707c
+2. Coordination::ZooKeeper::finalize(bool, bool, String const&) @ 0x000000001db0d7bb
+3. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<true, true>::ThreadFromGlobalPoolImpl<Coordination::ZooKeeper::ZooKeeper(std::vector<zkutil::ShuffleHost, std::allocator<zkutil::ShuffleHost>> const&, zkutil::ZooKeeperArgs const&, std::shared_ptr<DB::ZooKeeperLog>, std::shared_ptr<DB::AggregatedZooKeeperLog>)::$_1>(Coordination::ZooKeeper::ZooKeeper(std::vector<zkutil::ShuffleHost, std::allocator<zkutil::ShuffleHost>> const&, zkutil::ZooKeeperArgs const&, std::shared_ptr<DB::ZooKeeperLog>, std::shared_ptr<DB::AggregatedZooKeeperLog>)::$_1&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x000000001db2ab0e
+4. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+5. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+6. ? @ 0x0000000000094ac3
+7. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2025.12.26 17:52:17.250856 [ 1 ] {} <Error> zkutil::EphemeralNodeHolder::~EphemeralNodeHolder(): Cannot remove /clickhouse/task_queue/replicas/clickhouse%2D02:9000/active: Code: 999. Coordination::Exception: Coordination error: Connection loss, path /clickhouse/task_queue/replicas/clickhouse%2D02:9000/active. (KEEPER_EXCEPTION), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::Exception::Exception<char const*, String const&>(int, FormatStringHelperImpl<std::type_identity<char const*>::type, std::type_identity<String const&>::type>, char const*&&, String const&) @ 0x0000000010a300b6
+4. Coordination::Exception::fromPath(Coordination::Error, String const&) @ 0x0000000010a30028
+5. zkutil::EphemeralNodeHolder::~EphemeralNodeHolder() @ 0x000000001950f9e4
+6. std::__hash_table<std::__hash_value_type<String, std::pair<std::shared_ptr<zkutil::ZooKeeper>, std::shared_ptr<zkutil::EphemeralNodeHolder>>>, std::__unordered_map_hasher<String, std::pair<String const, std::pair<std::shared_ptr<zkutil::ZooKeeper>, std::shared_ptr<zkutil::EphemeralNodeHolder>>>, std::hash<String>, std::equal_to<String>, true>, std::__unordered_map_equal<String, std::pair<String const, std::pair<std::shared_ptr<zkutil::ZooKeeper>, std::shared_ptr<zkutil::EphemeralNodeHolder>>>, std::equal_to<String>, std::hash<String>, true>, std::allocator<std::pair<String const, std::pair<std::shared_ptr<zkutil::ZooKeeper>, std::shared_ptr<zkutil::EphemeralNodeHolder>>>>>::__deallocate_node(std::__hash_node_base<std::__hash_node<std::__hash_value_type<String, std::pair<std::shared_ptr<zkutil::ZooKeeper>, std::shared_ptr<zkutil::EphemeralNodeHolder>>>, void*>*>*) @ 0x000000001b15e591
+7. DB::DDLWorker::~DDLWorker() @ 0x000000001b13bb2f
+8. DB::DDLWorker::~DDLWorker() @ 0x000000001b13c089
+9. DB::ContextSharedPart::shutdown() @ 0x000000001b064f88
+10. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_16::operator()() const @ 0x00000000167903cf
+11. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x000000001675b013
+12. Poco::Util::Application::run() @ 0x00000000223dc871
+13. DB::Server::run() @ 0x000000001673cb02
+14. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+15. main @ 0x000000000ddf7ede
+16. __pow_finite @ 0x0000000000029d90
+17. __libc_start_main @ 0x0000000000029e40
+18. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))

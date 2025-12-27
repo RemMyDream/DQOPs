@@ -21,3 +21,10 @@
 2025.12.25 19:02:28.931861 [ 47 ] {} <Warning> RaftInstance: declined append: peer 3, prev next log idx 4662, resp next 4658, new next log idx 4658, my start idx: 1, my last idx: 4661
 2025.12.25 19:02:28.953537 [ 60 ] {} <Error> RaftInstance: 2 nodes (out of 3, 3 including learners) are not responding longer than 10000 ms, at least 2 nodes (including leader) should be alive to proceed commit
 2025.12.25 19:02:28.953607 [ 60 ] {} <Error> RaftInstance: will yield the leadership of this node
+2025.12.26 17:52:11.054517 [ 51 ] {} <Error> RaftInstance: session 1 failed to read rpc header from socket ::ffff:172.18.0.8:52004 due to error 2, End of file, ref count 1
+2025.12.26 17:52:12.258655 [ 77 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2025.12.26 17:52:13.370148 [ 65 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2025.12.26 17:52:13.370679 [ 65 ] {} <Warning> RaftInstance: total 1 nodes (including this node) responded for pre-vote (term 4, live 0, dead 1), at least 2 nodes should respond. failure count 1
+2025.12.26 17:52:13.370727 [ 65 ] {} <Warning> RaftInstance: failed to send prevote request: peer 3 (clickhouse-keeper-03:9234) is busy, count 1
+2025.12.26 17:52:13.370746 [ 65 ] {} <Warning> RaftInstance: failed to send prevote request: peer 2 (clickhouse-keeper-02:9234) is busy, count 2
+2025.12.26 17:52:13.370749 [ 65 ] {} <Warning> RaftInstance: too many busy connections: 2, num voting members: 3, quorum size: 2, no hope to get quorum, count: 1

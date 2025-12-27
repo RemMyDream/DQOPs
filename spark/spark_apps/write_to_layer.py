@@ -76,7 +76,7 @@ def write_to_layer(
         logger.info(f"Created {full_table_name}")
 
     row_count = spark.table(full_table_name).count()
-    logger.info(f"✅ {full_table_name}: {row_count} rows")
+    logger.info(f"{full_table_name}: {row_count} rows")
     return row_count
 
 
@@ -89,7 +89,7 @@ def process_table(spark: SparkSession, config: dict, table_info: dict):
     database = config['database']
     path = f"s3a://{database}/{layer}/{schema_name}/{table_name}"
     
-    logger.info(f"📥 Processing: {schema_name}.{table_name}")
+    logger.info(f"Processing: {schema_name}.{table_name}")
     
     try:
         df = read_data_from_postgres(
@@ -111,7 +111,7 @@ def process_table(spark: SparkSession, config: dict, table_info: dict):
         return {"table": f"{schema_name}.{table_name}", "status": "success", "rows": row_count}
         
     except Exception as e:
-        logger.error(f"❌ Failed {schema_name}.{table_name}: {e}")
+        logger.error(f"Failed {schema_name}.{table_name}: {e}")
         return {"table": f"{schema_name}.{table_name}", "status": "error", "message": str(e)}
 
 
@@ -119,7 +119,7 @@ def main():
     config = parse_config_args()
     tables = config['tables']
     
-    logger.info(f"🚀 Starting ingestion: {len(tables)} table(s)")
+    logger.info(f"Starting ingestion: {len(tables)} table(s)")
     
     try:
         spark = create_spark_connection()
@@ -129,7 +129,7 @@ def main():
         success = sum(1 for r in results if r['status'] == 'success')
         failed = sum(1 for r in results if r['status'] == 'error')
         
-        logger.info(f"📊 Completed: {success} success, {failed} failed")
+        logger.info(f"Completed: {success} success, {failed} failed")
         
         if failed > 0:
             logger.error(f"Failed: {[r['table'] for r in results if r['status'] == 'error']}")
