@@ -47,6 +47,8 @@ services:
       mc mb myminio/bronze --ignore-existing;
       mc mb myminio/silver --ignore-existing;
       mc mb myminio/gold --ignore-existing;
+      mc mb myminio/warehouse --ignore-existing;
+      mc mb myminio/kubeflow --ignore-existing;
       echo 'Buckets created successfully';
       "
     networks:
@@ -382,12 +384,14 @@ services:
     container_name: superset
     user: root
   mlflow:
+  # Kubeflow Pipelines API Server
+  kubeflow-pipelines-api:
     build:
       context: .
-      dockerfile: Dockerfile.mlflow
-    container_name: mlflow_server
+      dockerfile: Dockerfile.kubeflow
+    container_name: kubeflow-pipelines-api
     ports:
-      - "5000:5000"
+      - "8888:8888"
     environment:
       SUPERSET_SECRET_KEY: "demo_secret_key"
       FEATURE_FLAGS: '{"ALLOW_DATA_UPLOAD": true}'
@@ -485,6 +489,20 @@ services:
         condition: service_started
       minio:
         condition: service_started
+
+  # Kubeflow Pipelines UI (Frontend)
+  kubeflow-pipelines-ui:
+    image: gcr.io/ml-pipeline/frontend:2.0.0
+    container_name: kubeflow-pipelines-ui
+    ports:
+      - "3000:3000"
+    environment:
+      API_SERVER_HOST: kubeflow-pipelines-api
+      API_SERVER_PORT: 8888
+    networks:
+      - data-pipeline
+    depends_on:
+      - kubeflow-pipelines-api
 volumes:
   postgres_data:
   postgres_metadata_data:
