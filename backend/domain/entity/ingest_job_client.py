@@ -1,47 +1,31 @@
 """
 Domain Model: Ingest Job Entity
 """
-from typing import Dict, List, Any
-from dataclasses import dataclass, asdict
+from typing import Dict, List, Any, Optional
+from dataclasses import dataclass, asdict, field
 from domain.entity.job_client import Job, JobType, JobStatus
 
+
 @dataclass
-class IngestJobSource:
-    """Ingest source configuration"""
+class IngestTableInfo:
+    """Single table configuration"""
     schema_name: str
     table_name: str
-    primary_keys: List[str]
+    primary_keys: List[str] = field(default_factory=list)
     
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]):
-        """Create from dictionary with key mapping"""
-        return cls(**data)
-
-@dataclass
-class IngestJobTarget:
-    """Ingest target configuration"""
-    layer: str
-    path: str
-    format: str = "delta"
-
-    def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
-    
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]):
-        """Create from dictionary"""
         return cls(**data)
 
 
 @dataclass
-
 class IngestJob(Job):
-    """Ingest Job Domain Entity"""
-    source: IngestJobSource = None
-    target: IngestJobTarget = None
+    """Ingest Job Domain Entity - supports batch tables"""
+    tables: List[IngestTableInfo] = field(default_factory=list)
+    target_layer: str = "bronze"
 
     def __post_init__(self):
         """Ensure job type is always INGEST"""
@@ -51,8 +35,8 @@ class IngestJob(Job):
     def to_config(self) -> Dict[str, Any]:
         """Convert to config dict for storage"""
         return {
-            "source": self.source.to_dict() if self.source else {},
-            "target": self.target.to_dict() if self.target else {}
+            "tables": [t.to_dict() for t in self.tables],
+            "target_layer": self.target_layer
         }
     
     @classmethod
@@ -64,15 +48,17 @@ class IngestJob(Job):
         **kwargs
     ):
         """Create new IngestJob from config dictionary"""
-        source_data = config.get('source', {})
-        target_data = config.get('target', {})
+        tables_data = config.get('tables', [])
+        target_layer = config.get('target_layer', 'bronze')
+        
+        tables = [IngestTableInfo.from_dict(t) for t in tables_data]
 
         return cls(
             job_name=job_name,
             job_type=JobType.INGEST,
             created_by=created_by,
-            source=IngestJobSource.from_dict(source_data) if source_data else None,
-            target=IngestJobTarget.from_dict(target_data) if target_data else None,
+            tables=tables,
+            target_layer=target_layer,
             **kwargs
         )
 
@@ -80,23 +66,19 @@ class IngestJob(Job):
         """Validate ingest job configuration"""
         errors = []
         
-        if not self.source:
-            errors.append("Source configuration is required")
+        if not self.tables or len(self.tables) == 0:
+            errors.append("At least one table is required")
         else:
-            if not self.source.schema_name:
-                errors.append("Source schema name is required")
-            if not self.source.table_name:
-                errors.append("Source table name is required")
-            if not self.source.primary_keys or len(self.source.primary_keys) == 0:
-                errors.append("At least one primary key is required")
+            for i, table in enumerate(self.tables):
+                if not table.schema_name:
+                    errors.append(f"Table {i+1}: schema_name is required")
+                if not table.table_name:
+                    errors.append(f"Table {i+1}: table_name is required")
         
-        if not self.target:
-            errors.append("Target configuration is required")
-        else:
-            if not self.target.path:
-                errors.append("Target path is required")
-            if not self.target.layer:
-                errors.append("Target layer is required")
+        if not self.target_layer:
+            errors.append("Target layer is required")
+        elif self.target_layer not in ['bronze', 'silver', 'gold']:
+            errors.append("Target layer must be bronze, silver, or gold")
         
         if errors:
             raise ValueError(f"Validation failed: {'; '.join(errors)}")
@@ -106,20 +88,16 @@ class IngestJob(Job):
     @classmethod
     def from_dict(cls, data: Dict[str, Any]):
         """Reconstruct Ingest Job from database"""        
-        # Handle config field
         if 'config' in data:
             config = data.pop('config')
             if isinstance(config, str):
                 import json
                 config = json.loads(config)
             
-            source_data = config.get('source', {})
-            target_data = config.get('target', {})
-            
-            data['source'] = IngestJobSource.from_dict(source_data) if source_data else None
-            data['target'] = IngestJobTarget.from_dict(target_data) if target_data else None
+            tables_data = config.get('tables', [])
+            data['tables'] = [IngestTableInfo.from_dict(t) for t in tables_data]
+            data['target_layer'] = config.get('target_layer', 'bronze')
         
-        # Convert enums
         if 'job_type' in data and isinstance(data['job_type'], str):
             data['job_type'] = JobType(data['job_type'])
         if 'status' in data and isinstance(data['status'], str):
