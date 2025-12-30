@@ -1,7 +1,10 @@
 #!/bin/bash
 
 echo "=========================================="
-echo "Running Spark Job: PostgreSQL to Bronze"
+echo "Running Spark Job: Silver Layer Processing"
+echo "  - GDELT Events: Bronze → Silver"
+echo "  - GDELT GKG: Bronze → Silver"
+echo "  - Stooq: Bronze → Silver"
 echo "=========================================="
 
 # Run Spark job in the Spark master container
@@ -22,9 +25,9 @@ docker exec spark-master /opt/spark/bin/spark-submit \
   --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
   --conf spark.hadoop.fs.s3a.connection.ssl.enabled=false \
   --conf spark.hadoop.fs.s3a.aws.credentials.provider=org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider \
-  /opt/spark/jobs/pycode-spark-postgres-to-bronze.py
+  /opt/spark/jobs/pycode-spark-silver.py
 
 
 echo "=========================================="
-echo "Spark job completed!"
+echo "Silver layer processing completed!"
 echo "=========================================="
