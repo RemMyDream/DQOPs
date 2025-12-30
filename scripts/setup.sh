@@ -39,7 +39,10 @@ cd ../..
 
 # Copy Spark job to jobs directory
 echo "Copying Spark job..."
-cp pycode-spark-postgres-to-bronze.py spark/jobs/
+cp src/pycode-spark-bronze.py spark/jobs/
+cp src/pycode-spark-silver.py spark/jobs/
+cp src/pycode-spark-gold.py spark/jobs/
+cp src/spark_utils.py spark/jobs/
 
 
 # uncomment the following section if you want to set up a Python virtual environment

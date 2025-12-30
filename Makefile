@@ -6,16 +6,23 @@ help:
 	@echo "  Data Lakehouse Pipeline - Available Commands"
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo ""
+	@echo "  make help           - Show this help message"
 	@echo "  make setup          - Initial setup (download JARs)"
+	@echo "  make build          - Build custom Spark Docker image"
 	@echo "  make start          - Start all Docker services"
 	@echo "  make stop           - Stop all Docker services"
 	@echo "  make restart        - Restart all Docker services"
 	@echo "  make ingest         - Run data ingestion from APIs"
 	@echo "  make bronze         - Process data to Bronze layer"
-	@echo "  make pipeline       - Run full pipeline (ingest + bronze)"
+	@echo "  make silver         - Process data to Silver layer"
+	@echo "  make gold           - Process data to Gold layer"
+	@echo "  make medallion      - Run medallion architecture (bronze → silver → gold)"
+	@echo "  make finnhub-to-minio - Transfer Finnhub from PostgreSQL to MinIO"
+	@echo "  make pipeline       - Run full pipeline (ingest + bronze + silver + gold)"
 	@echo "  make health         - Check health of all services"
 	@echo "  make logs           - Show logs for all services"
 	@echo "  make logs-<service> - Show logs for specific service"
+	@echo "  make reset-minio    - Reset MinIO buckets (keeps PostgreSQL data)"
 	@echo "  make clean          - Stop services and remove volumes (⚠️  deletes data)"
 	@echo "  make psql           - Connect to PostgreSQL"
 	@echo "  make pyspark        - Connect to PySpark shell"
@@ -23,14 +30,21 @@ help:
 	@echo "  make check-bronze   - Check Bronze layer tables"
 	@echo "  make install-deps   - Install Python dependencies"
 	@echo "  make rebuild        - Clean and rebuild everything"
+	@echo "  make start-thrift   - Start Spark Thrift Server"
 	@echo ""
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Initial setup
 setup:
 	@echo "🚀 Starting initial setup..."
-	@chmod +x setup.sh
-	@./setup.sh
+	@chmod +x scripts/setup.sh
+	@./scripts/setup.sh
+
+# Build custom Spark image
+build:
+	@echo "🔧 Building custom Spark image with Python packages..."
+	@docker-compose build spark-master
+	@echo "✅ Custom Spark image built successfully!"
 
 # Start services
 start:
@@ -62,22 +76,58 @@ restart:
 	@docker-compose restart
 	@echo "✅ Services restarted!"
 
-# Run data ingestion
+# Run data ingestion (Finnhub to PostgreSQL only)
 ingest:
-	@echo "📥 Running data ingestion..."
-	@python3 pycode-data-ingestion.py
+	@echo "📥 Running data ingestion (Finnhub to PostgreSQL)..."
+	@python3 src/pycode-data-ingestion.py
 	@echo "✅ Data ingestion completed!"
 
-# Process to Bronze layer
+# Process to Bronze layer (GDELT, Stooq direct to MinIO)
 bronze:
 	@echo "🔨 Processing data to Bronze layer..."
-	@chmod +x run_spark_job.sh
-	@./run_spark_job.sh
+	@echo "   - GDELT Events: API → MinIO"
+	@echo "   - GDELT GKG: API → MinIO"
+	@echo "   - Stooq: API → MinIO"
+	@echo "   Note: Finnhub stays in PostgreSQL only"
+	@chmod +x scripts/run_spark_bronze.sh
+	@./scripts/run_spark_bronze.sh
 	@echo "✅ Bronze layer processing completed!"
 
-# Run full pipeline
-pipeline: setup start ingest bronze
+# Process to Silver layer
+silver:
+	@echo "⚗️  Processing data to Silver layer..."
+	@echo "   - GDELT Events: Bronze → Silver"
+	@echo "   - GDELT GKG: Bronze → Silver"
+	@echo "   - Stooq: Bronze → Silver"
+	@chmod +x scripts/run_spark_silver.sh
+	@./scripts/run_spark_silver.sh
+	@echo "✅ Silver layer processing completed!"
+
+# Process to Gold layer
+gold:
+	@echo "🥇 Processing data to Gold layer..."
+	@echo "   - GDELT Events: Silver → Gold (daily aggregates)"
+	@echo "   - GDELT GKG: Silver → Gold (daily aggregates)"
+	@echo "   - Stooq: Silver → Gold"
+	@echo "   - Creating gold_<symbol> datasets"
+	@chmod +x scripts/run_spark_gold.sh
+	@./scripts/run_spark_gold.sh
+	@echo "✅ Gold layer processing completed!"
+
+# Transfer Finnhub from PostgreSQL to MinIO
+finnhub-to-minio:
+	@echo "📦 Transferring Finnhub data: PostgreSQL → MinIO..."
+	@chmod +x scripts/run_finnhub_to_minio.sh
+	@./scripts/run_finnhub_to_minio.sh
+	@echo "✅ Finnhub transfer completed!"
+
+# Run full pipeline (all layers)
+pipeline: setup start ingest bronze silver gold
 	@echo "✅ Full pipeline completed!"
+
+# Run medallion architecture (bronze → silver → gold)
+medallion: bronze silver gold
+	@echo "✅ Medallion architecture processing completed!"
 
 # Check health
 health:
@@ -91,6 +141,12 @@ logs:
 # Show logs for specific service
 logs-%:
 	@docker-compose logs -f --tail=100 $*
+
+# Reset MinIO buckets only
+reset-minio:
+	@echo "🗑️  Resetting MinIO buckets (bronze, silver, gold)..."
+	@docker-compose exec -T minio sh -c "rm -rf /data/bronze/* /data/silver/* /data/gold/* 2>/dev/null || true"
+	@echo "✅ MinIO buckets reset!"
 
 # Clean everything (removes data!)
 clean:
@@ -161,6 +217,16 @@ install-deps:
 	@pip install -r requirements.txt
 	@echo "✅ Dependencies installed!"
 
+# Install Python packages in Spark containers
+install-spark:
+	@echo "📦 Installing Python packages in Spark containers..."
+	@chmod +x scripts/install-spark-packages.sh
+	@./scripts/install-spark-packages.sh
+
 # Build and start everything from scratch
 rebuild: clean setup start
 	@echo "✅ Rebuild completed!"
+
+start-thrift:
+	@chmod +x scripts/start-thrift-server.sh
+	@./scripts/start-thrift-server.sh

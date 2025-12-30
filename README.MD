@@ -1,25 +1,14 @@
-chạy code sau trong wsl để có data trong postgres và lấy data từ postgres vào minio
+Quick notes
+- Setup once: `make setup` (downloads deps) → `make start` (docker up).
+- Main pipeline: `make pipeline` (ingest + bronze + silver + gold).
+- Focused runs: `make ingest` (Finnhub → Postgres), `make bronze` (GDELT + Stooq → MinIO), `make silver`, `make gold`.
+- Utilities: `make psql` to open Postgres, `make check-pg` to see row counts, `make check-bronze` to list bronze tables.
 
-uncomment phần tạo venv trong setup.sh nếu chưa có .venv trước khi chạy
+MinIO layout (Iceberg tables)
+- bronze/ → gdelt_events, gdelt_gkg, stooq_stock_prices
+- silver/ → gdelt_events, gdelt_gkg, stooq_stock_prices
+- gold/   → 
 
-```bash
-sudo apt update
-sudo apt install make
-make pipeline
-```
-
-Sau đó, có thể truy cập psql bẳng:
-```bash
-make psql
-
-\dt # dùng để xem ds các bảng
-\dt <table_name\> #xem các cột của bảng đó
-```
-
-
-MinIO Buckets:
-├── warehouse/              ← Iceberg catalog + all bronze tables
-│   └── bronze/
-│       ├── gdelt_events/
-│       ├── gdelt_gkg/
-│       └── finnhub_stock_prices/
+Data flow (current)
+- Finnhub: API → Postgres via `make ingest` (kept in Postgres; optional `make finnhub-to-minio` later).
+- GDELT (events, gkg) + Stooq: API → Spark bronze job (`make bronze`) → MinIO bucket `warehouse/bronze/...`.

@@ -1,9 +1,9 @@
 .venv
 __pycache__/
 spark/
-yeucau.txt
+docs/
 .env
-test-notebook.ipynb
+notebooks/
 docker-compose-postgres (reference).yml
 export_to_csv.py
 data-csv/
