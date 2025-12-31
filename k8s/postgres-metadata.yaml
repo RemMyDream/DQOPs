@@ -30,10 +30,22 @@ spec:
         fsGroup: 999
         runAsUser: 999
         runAsNonRoot: true
+      # init container to fix permissions
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+        command: ["sh", "-c", "chown -R 999:999 /var/lib/postgresql/data && chmod 700 /var/lib/postgresql/data"]
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+          subPath: pgdata
+        securityContext:
+          runAsUser: 0
+          runAsNonRoot: false
       containers:
       - name: postgres
         image: docker.getcollate.io/openmetadata/postgresql:1.11.0
-        command: ["postgres", "--work_mem=10MB"]
+        args: ["postgres", "--work_mem=10MB"]
         env:
         - name: POSTGRES_USER
           valueFrom:
@@ -46,12 +58,13 @@ spec:
               name: postgres-metadata-config
               key: POSTGRES_PASSWORD
         - name: PGDATA
-          value: /var/lib/postgresql/data/pgdata
+          value: /var/lib/postgresql/data
         ports:
         - containerPort: 5432
         volumeMounts:
         - name: postgres-storage
           mountPath: /var/lib/postgresql/data
+          subPath: pgdata
         livenessProbe:
           exec:
             command:
