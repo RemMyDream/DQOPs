@@ -25,6 +25,11 @@ spec:
       labels:
         app: postgres-metadata
     spec:
+      # Add security context to run as postgres user
+      securityContext:
+        fsGroup: 999
+        runAsUser: 999
+        runAsNonRoot: true
       containers:
       - name: postgres
         image: docker.getcollate.io/openmetadata/postgresql:1.11.0
@@ -40,6 +45,8 @@ spec:
             configMapKeyRef:
               name: postgres-metadata-config
               key: POSTGRES_PASSWORD
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         ports:
         - containerPort: 5432
         volumeMounts:
@@ -82,4 +89,3 @@ spec:
   - port: 5432
     targetPort: 5432
   type: ClusterIP
-
