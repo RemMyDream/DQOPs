@@ -55,9 +55,11 @@ spec:
   selector:
     app: openmetadata-server
   ports:
-  - port: 8585
+  - name: http
+    port: 8585
     targetPort: 8585
-  - port: 8586
+  - name: health
+    port: 8586
     targetPort: 8586
   type: ClusterIP
 
