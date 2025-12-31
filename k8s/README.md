@@ -37,6 +37,14 @@ chmod +x deploy.sh undeploy.sh
 
 # Deploy everything
 ./deploy.sh
+
+#deploy for window powershell
+.\deploy.ps1
+```
+
+If error because of Execution_Policies when run on window, run powershell as Admin and try
+```bash
+Set-ExecutionPolicy RemoteSigned
 ```
 
 ### 2. Check Deployment Status
