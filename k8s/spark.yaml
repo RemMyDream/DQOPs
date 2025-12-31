@@ -20,11 +20,20 @@ spec:
         - name: SPARK_MODE
           value: "master"
         - name: SPARK_MASTER_HOST
-          value: "0.0.0.0"  # Changed: bind to all interfaces
+          valueFrom:
+            configMapKeyRef:
+              name: spark-config
+              key: SPARK_MASTER_HOST
         - name: SPARK_MASTER_PORT
-          value: "7077"
+          valueFrom:
+            configMapKeyRef:
+              name: spark-config
+              key: SPARK_MASTER_PORT
         - name: SPARK_MASTER_WEBUI_PORT
-          value: "8080"
+          valueFrom:
+            configMapKeyRef:
+              name: spark-config
+              key: SPARK_MASTER_WEBUI_PORT
         command:
         - /opt/spark/bin/spark-class
         - org.apache.spark.deploy.master.Master
