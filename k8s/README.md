@@ -11,6 +11,7 @@ This directory contains Kubernetes manifests and scripts to deploy the DQOPs dat
 ### Installing Prerequisites
 
 #### Install KinD (Windows)
+
 ```powershell
 # Using Chocolatey
 choco install kind
@@ -20,6 +21,7 @@ go install sigs.k8s.io/kind@latest
 ```
 
 #### Install kubectl (Windows)
+
 ```powershell
 # Using Chocolatey
 choco install kubernetes-cli
@@ -45,6 +47,7 @@ wsl --shutdown
 ```
 
 If error because of Execution_Policies when run on window, run powershell as Admin and try
+
 ```bash
 Set-ExecutionPolicy RemoteSigned
 ```
@@ -125,30 +128,36 @@ The deployment includes the following components:
 ### Core Services
 
 1. **PostgreSQL (Source)** - Source database
+
    - Service: `postgres:5432`
    - PVC: `postgres-pvc`
 
 2. **MinIO** - Object storage for data lake
+
    - API: `minio:9000`
    - Console: `minio:9001`
    - PVC: `minio-pvc`
    - Buckets initialized: `warehouse/`
 
 3. **Spark Cluster**
+
    - Master: `spark-master:7077` (Web UI: 8080)
    - Workers: 2 workers (Web UI: 8081)
    - Connected to: `spark://spark-master:7077`
 
 4. **PostgreSQL Metadata** - OpenMetadata database
+
    - Service: `postgres-metadata:5432`
    - PVC: `postgres-metadata-pvc`
    - Database: `openmetadata_db`
 
 5. **Elasticsearch** - OpenMetadata search engine
+
    - Service: `elasticsearch:9200`
    - PVC: `elasticsearch-pvc`
 
 6. **OpenMetadata Server**
+
    - Service: `openmetadata-server:8585` (API: 8585, Admin: 8586)
    - Depends on: PostgreSQL Metadata, Elasticsearch, Migration Job
 
@@ -189,6 +198,7 @@ All configuration is managed through ConfigMaps and Secrets in `configmaps.yaml`
 ### Persistent Storage
 
 All stateful services use PersistentVolumeClaims:
+
 - `postgres-pvc` (10Gi)
 - `postgres-metadata-pvc` (10Gi)
 - `minio-pvc` (20Gi)
@@ -295,4 +305,3 @@ kubectl apply -f openmetadata-ingestion.yaml
 3. Configure backup strategies for persistent data
 4. Set up CI/CD pipelines for deployment
 5. Configure resource limits and requests based on workload
-
