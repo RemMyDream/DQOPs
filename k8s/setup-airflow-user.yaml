@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: setup-airflow-user-script
+  namespace: dqops
+data:
+  setup-airflow-user.sh: |
+    #!/bin/bash
+    set -e
+    
+    echo "Waiting for PostgreSQL to be ready..."
+    sleep 5
+    
+    echo "Setting up Airflow user and permissions..."
+    psql -h postgres-metadata -U "$PGUSER" -d postgres <<-EOSQL
+        DO \$\$
+        BEGIN
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_user WHERE usename = 'airflow_user') THEN
+                CREATE USER airflow_user WITH PASSWORD 'airflow_pass';
+                RAISE NOTICE 'User airflow_user created';
+            ELSE
+                RAISE NOTICE 'User airflow_user already exists';
+            END IF;
+        END
+        \$\$;
+    EOSQL
+    
+    echo "Granting privileges on database..."
+    psql -h postgres-metadata -U "$PGUSER" -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE airflow_db TO airflow_user;"
+    
+    echo "Granting privileges on schema..."
+    psql -h postgres-metadata -U "$PGUSER" -d airflow_db -c "GRANT ALL ON SCHEMA public TO airflow_user;"
+    
+    echo "Airflow user setup completed successfully!"
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: setup-airflow-user
+  namespace: dqops
+spec:
+  template:
+    spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: postgres:15
+        command:
+        - sh
+        - -c
+        - |
+          until pg_isready -h postgres-metadata -p 5432 -U openmetadata_user; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+          echo "PostgreSQL is ready!"
+      containers:
+      - name: setup-airflow-user
+        image: postgres:15
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-metadata-secret
+              key: POSTGRES_PASSWORD
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-metadata-secret
+              key: POSTGRES_USER
+        command: ["/bin/bash", "/scripts/setup-airflow-user.sh"]
+        volumeMounts:
+        - name: setup-script
+          mountPath: /scripts
+      volumes:
+      - name: setup-script
+        configMap:
+          name: setup-airflow-user-script
+          defaultMode: 0755
+      restartPolicy: OnFailure
+  backoffLimit: 3
+
