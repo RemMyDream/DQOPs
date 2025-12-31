@@ -25,6 +25,14 @@ spec:
       labels:
         app: elasticsearch
     spec:
+      initContainers:
+      - name: sysctl
+        image: busybox:1.35
+        securityContext:
+          privileged: true
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+      securityContext:
+        fsGroup: 1000
       containers:
       - name: elasticsearch
         image: docker.elastic.co/elasticsearch/elasticsearch:8.11.4
@@ -44,6 +52,12 @@ spec:
             configMapKeyRef:
               name: elasticsearch-config
               key: xpack.security.enabled
+        securityContext:
+          capabilities:
+            add:
+              - IPC_LOCK
+          runAsUser: 1000
+          runAsNonRoot: true
         ports:
         - containerPort: 9200
         - containerPort: 9300

@@ -55,8 +55,9 @@ spec:
         envFrom:
         - configMapRef:
             name: ingestion-config
-        entrypoint: ["/bin/bash"]
-        command:
+        # CHANGED: 'entrypoint' becomes 'command', 'command' becomes 'args'
+        command: ["/bin/bash"]
+        args:
         - "/opt/airflow/ingestion_dependency.sh"
         ports:
         - containerPort: 8080
