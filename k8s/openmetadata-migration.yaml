@@ -1,0 +1,95 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: openmetadata-migration
+  namespace: dqops
+spec:
+  template:
+    spec:
+      containers:
+      - name: migration
+        image: docker.getcollate.io/openmetadata/server:1.11.0
+        command: ["./bootstrap/openmetadata-ops.sh", "migrate"]
+        env:
+        - name: DB_DRIVER_CLASS
+          value: "org.postgresql.Driver"
+        - name: DB_SCHEME
+          value: "postgresql"
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: DB_USER
+        - name: DB_USER_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: DB_PASSWORD
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: DB_PORT
+        - name: OM_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: OM_DATABASE
+        - name: MIGRATION_LIMIT_PARAM
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: MIGRATION_LIMIT_PARAM
+        - name: SEARCH_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: SEARCH_TYPE
+        - name: ELASTICSEARCH_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: ELASTICSEARCH_HOST
+        - name: ELASTICSEARCH_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: ELASTICSEARCH_PORT
+        - name: ELASTICSEARCH_SCHEME
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: ELASTICSEARCH_SCHEME
+        - name: AUTHENTICATION_PROVIDER
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: AUTHENTICATION_PROVIDER
+        - name: AUTHORIZER_CLASS_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: AUTHORIZER_CLASS_NAME
+        - name: AUTHORIZER_REQUEST_FILTER
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: AUTHORIZER_REQUEST_FILTER
+        - name: AUTHORIZER_ADMIN_PRINCIPALS
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: AUTHORIZER_ADMIN_PRINCIPALS
+        - name: AUTHORIZER_PRINCIPAL_DOMAIN
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: AUTHORIZER_PRINCIPAL_DOMAIN
+      restartPolicy: Never
+  backoffLimit: 3
+
