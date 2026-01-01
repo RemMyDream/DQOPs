@@ -1,25 +1,4 @@
 services:
-  # data_source:
-  #   image: postgres:15
-  #   ports: 
-  #     - "5432:5432"
-  #   container_name: data_source
-  #   command: ['postgres', '-c', 'wal_level=logical']
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: postgres
-  #     POSTGRES_DB: data_source 
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  #     - ./init-db:/docker-entrypoint-initdb.d
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
-  #     interval: 5s
-  #     timeout: 5s
-  #     retries: 5
-  #   networks:
-  #     - kafka-network
-
   kafka-node-1:
     image: confluentinc/cp-enterprise-kafka:7.6.0
     container_name: kafka-node-1
@@ -58,7 +37,7 @@ services:
     image: confluentinc/cp-schema-registry:7.6.0
     container_name: schema-registry
     ports:
-      - "8081:8081"
+      - "18081:8081"
     environment:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka-node-1:9092
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
