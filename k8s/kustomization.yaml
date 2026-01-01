@@ -16,4 +16,8 @@ resources:
   - openmetadata-migration.yaml
   - openmetadata-server.yaml
   - openmetadata-ingestion.yaml
+  - airflow.yaml
+  - backend.yaml
+  - clickhouse.yaml
+  - superset.yaml
 
