@@ -409,7 +409,7 @@ Apply-Manifest "spark.yaml" "Deploying Spark cluster"
 
 # Check PVC status
 Write-Host "`nChecking PVC status..." -ForegroundColor Gray
-Start-Sleep -Seconds 10
+Start-Sleep -Seconds 100
 
 try {
     $pvcList = kubectl get pvc -n $NAMESPACE --no-headers 2>&1

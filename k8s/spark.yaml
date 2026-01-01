@@ -19,6 +19,8 @@ spec:
         env:
         - name: SPARK_MODE
           value: "master"
+        - name: SPARK_MASTER_BIND_ADDRESS #cause we run KinD: container's network interface typically only has the Pod IP (e.g., 10.244.x.x) and localhost. It does not "own" the ClusterIP, so the OS rejects the bind request.
+          value: "0.0.0.0" 
         - name: SPARK_MASTER_HOST
           valueFrom:
             configMapKeyRef:
@@ -38,13 +40,14 @@ spec:
         - /opt/spark/bin/spark-class
         - org.apache.spark.deploy.master.Master
         ports:
-        - containerPort: 8080
         - containerPort: 7077
-        - containerPort: 4040
+          name: spark
+        - containerPort: 8080
+          name: web-ui
         resources:
           requests:
             memory: "1Gi"
-            cpu: "500m"
+            cpu: "200m"
           limits:
             memory: "2Gi"
             cpu: "1000m"
