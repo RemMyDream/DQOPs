@@ -1,0 +1,77 @@
+services:
+  postgres:
+    image: postgres:15
+    ports: 
+      - "5433:5432"
+    container_name: postgres
+    environment:
+      POSTGRES_USER: airflow 
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+  webserver:
+    build: .
+    image: my-airflow:latest
+    container_name: webserver
+    command: ["airflow", "webserver"]
+    entrypoint: ["/opt/airflow/entrypoint.sh"]
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: this_is_a_very_secured_key
+      AIRFLOW_CONN_SPARK_DEFAULT: spark://spark-master:7077?deploy_mode=client
+      AIRFLOW__API__AUTH_BACKEND: airflow.api.auth.backend.basic_auth
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ../spark/spark_apps:/opt/airflow/spark_apps
+      - ./scripts:/opt/airflow/scripts
+      - ../utils:/opt/airflow/utils
+      - ../backend:/opt/airflow/backend
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    networks:
+      - default
+
+  scheduler:
+    image: my-airflow:latest
+    container_name: scheduler
+    command: ["airflow", "scheduler"]
+    depends_on:
+      webserver:
+        condition: service_healthy
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ../spark/spark_apps:/opt/airflow/spark_apps
+      - ./scripts:/opt/airflow/scripts
+      - ../utils:/opt/airflow/utils
+      - ../backend:/opt/airflow/backend
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: this_is_a_very_secured_key
+      AIRFLOW_CONN_SPARK_DEFAULT: spark://spark-master:7077?deploy_mode=client
+      AIRFLOW__API__AUTH_BACKEND: airflow.api.auth.backend.basic_auth
+    networks:
+      - default
+
+networks:
+  default:
+    name: bigdata-net
+    external: True
+volumes:
+  postgres_data:
