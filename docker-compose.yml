@@ -70,6 +70,7 @@ services:
     volumes:
       - ./spark/jobs:/opt/spark/jobs
       - ./spark/jars:/opt/spark/jars/extra
+      - ./notebooks:/app/notebooks
 
   # Spark Worker
   spark-worker-1:
@@ -91,6 +92,7 @@ services:
     volumes:
       - ./spark/jobs:/opt/spark/jobs
       - ./spark/jars:/opt/spark/jars/extra
+      - ./notebooks:/app/notebooks
 
   spark-worker-2:
     image: custom-spark:3.5.3
@@ -111,6 +113,7 @@ services:
     volumes:
       - ./spark/jobs:/opt/spark/jobs
       - ./spark/jars:/opt/spark/jars/extra
+      - ./notebooks:/app/notebooks
 
   # PostgreSQL - OpenMetadata Metadata Store
   postgres-metadata:
