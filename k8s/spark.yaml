@@ -19,23 +19,12 @@ spec:
         env:
         - name: SPARK_MODE
           value: "master"
-        - name: SPARK_MASTER_BIND_ADDRESS #cause we run KinD: container's network interface typically only has the Pod IP (e.g., 10.244.x.x) and localhost. It does not "own" the ClusterIP, so the OS rejects the bind request.
-          value: "0.0.0.0" 
         - name: SPARK_MASTER_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: spark-config
-              key: SPARK_MASTER_HOST
+          value: "0.0.0.0"  # Changed: bind to all interfaces
         - name: SPARK_MASTER_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: spark-config
-              key: SPARK_MASTER_PORT
+          value: "7077"
         - name: SPARK_MASTER_WEBUI_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: spark-config
-              key: SPARK_MASTER_WEBUI_PORT
+          value: "8080"
         command:
         - /opt/spark/bin/spark-class
         - org.apache.spark.deploy.master.Master
@@ -98,20 +87,11 @@ spec:
         - name: SPARK_MASTER_URL
           value: "spark://spark-master:7077"
         - name: SPARK_WORKER_CORES
-          valueFrom:
-            configMapKeyRef:
-              name: spark-config
-              key: SPARK_WORKER_CORES
+          value: "2"
         - name: SPARK_WORKER_MEMORY
-          valueFrom:
-            configMapKeyRef:
-              name: spark-config
-              key: SPARK_WORKER_MEMORY
+          value: "2g"
         - name: SPARK_WORKER_WEBUI_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: spark-config
-              key: SPARK_WORKER_WEBUI_PORT
+          value: "8081"
         command:
         - /opt/spark/bin/spark-class
         - org.apache.spark.deploy.worker.Worker
@@ -152,20 +132,11 @@ spec:
         - name: SPARK_MASTER_URL
           value: "spark://spark-master:7077"
         - name: SPARK_WORKER_CORES
-          valueFrom:
-            configMapKeyRef:
-              name: spark-config
-              key: SPARK_WORKER_CORES
+          value: "2"
         - name: SPARK_WORKER_MEMORY
-          valueFrom:
-            configMapKeyRef:
-              name: spark-config
-              key: SPARK_WORKER_MEMORY
+          value: "2g"
         - name: SPARK_WORKER_WEBUI_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: spark-config
-              key: SPARK_WORKER_WEBUI_PORT
+          value: "8081"
         command:
         - /opt/spark/bin/spark-class
         - org.apache.spark.deploy.worker.Worker
@@ -192,4 +163,3 @@ spec:
   - port: 8081
     targetPort: 8081
   type: ClusterIP
-

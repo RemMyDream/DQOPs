@@ -32,14 +32,16 @@ choco install kubernetes-cli
 ### 1. Create and Deploy to KinD Cluster
 
 ```bash
-# Make scripts executable (if on Linux/WSL)
-chmod +x deploy.sh undeploy.sh
-
-# Deploy everything
-./deploy.sh
+#change docker config
+#step 1
+.\configure_wsl.ps1
+#step 2
+wsl --shutdown
+#step 3
+# Restart docker desktop
 
 #deploy for window powershell
-.\deploy.ps1
+.\deploy_final.ps1
 ```
 
 If error because of Execution_Policies when run on window, run powershell as Admin and try
