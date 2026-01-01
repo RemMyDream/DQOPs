@@ -1,24 +1,24 @@
 services:
-  data_source:
-    image: postgres:15
-    ports: 
-      - "5432:5432"
-    container_name: data_source
-    command: ['postgres', '-c', 'wal_level=logical']
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: data_source 
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-db:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - kafka-network
+  # data_source:
+  #   image: postgres:15
+  #   ports: 
+  #     - "5432:5432"
+  #   container_name: data_source
+  #   command: ['postgres', '-c', 'wal_level=logical']
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: data_source 
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #     - ./init-db:/docker-entrypoint-initdb.d
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - kafka-network
 
   kafka-node-1:
     image: confluentinc/cp-enterprise-kafka:7.6.0
@@ -52,7 +52,7 @@ services:
       retries: 5
       start_period: 45s
     networks:
-      - kafka-network
+      - data-pipeline
   
   schema-registry:
     image: confluentinc/cp-schema-registry:7.6.0
@@ -73,7 +73,7 @@ services:
       retries: 5
       start_period: 45s
     networks:
-      - kafka-network
+      - data-pipeline
 
   control-center:
     image: confluentinc/cp-enterprise-control-center:7.6.0
@@ -102,7 +102,7 @@ services:
       timeout: 10s
       retries: 3
     networks:
-      - kafka-network
+      - data-pipeline
 
   debezium:
     build: .
@@ -128,7 +128,7 @@ services:
       retries: 5
     restart: on-failure
     networks:
-      - kafka-network
+      - data-pipeline
 
   debezium-ui:
     image: debezium/debezium-ui
@@ -142,11 +142,11 @@ services:
     environment:
       KAFKA_CONNECT_URIS: http://debezium:8083
     networks:
-      - kafka-network
+      - data-pipeline
 
 networks:
-  kafka-network:
-    driver: bridge
+  data-pipeline:
+    external: true
 
 volumes:
   postgres_data:
