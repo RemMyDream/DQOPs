@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmetadata-server
+  namespace: dqops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openmetadata-server
+  template:
+    metadata:
+      labels:
+        app: openmetadata-server
+    spec:
+      containers:
+      - name: openmetadata-server
+        image: docker.getcollate.io/openmetadata/server:1.11.0
+        envFrom:
+        - configMapRef:
+            name: openmetadata-server-config
+        ports:
+        - containerPort: 8585
+        - containerPort: 8586
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "200m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 8586
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 8586
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openmetadata-server
+  namespace: dqops
+spec:
+  selector:
+    app: openmetadata-server
+  ports:
+  - name: http
+    port: 8585
+    targetPort: 8585
+  - name: health
+    port: 8586
+    targetPort: 8586
+  type: ClusterIP
+
