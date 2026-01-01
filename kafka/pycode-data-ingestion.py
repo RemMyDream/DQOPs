@@ -6,6 +6,7 @@ from sqlalchemy import create_engine, text
 import finnhub
 import gdelt
 import logging
+import time
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -189,8 +190,9 @@ def main():
     
 
     # ingest_gdelt_events(days=1,max_records=50)
-    ingest_gdelt_gkg(days=1,max_records=50)
-    # ingest_finnhub_stock_data(symbols=['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META'])
+    # ingest_gdelt_gkg(days=1,max_records=50)
+    time.sleep(5)
+    ingest_finnhub_stock_data(symbols=['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META'])
     
     logger.info("Data ingestion pipeline completed successfully")
 
