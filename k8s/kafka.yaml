@@ -1,0 +1,272 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-node-1
+  namespace: dqops
+spec:
+  ports:
+  - port: 9092
+    name: plaintext
+  - port: 9093
+    name: controller
+  selector:
+    app: kafka-node-1
+  clusterIP: None # Headless service for stable DNS
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-node-1
+  namespace: dqops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-node-1
+  template:
+    metadata:
+      labels:
+        app: kafka-node-1
+    spec:
+      containers:
+      - name: kafka
+        image: confluentinc/cp-enterprise-kafka:7.6.0
+        ports:
+        - containerPort: 9092
+        - containerPort: 9093
+        env:
+        - name: KAFKA_NODE_ID
+          value: "1"
+        - name: CLUSTER_ID
+          value: "Kltcs-KRS8CJybmyyVtXuA"
+        - name: KAFKA_PROCESS_ROLES
+          value: "broker,controller"
+        - name: KAFKA_LISTENERS
+          value: "PLAINTEXT://:9092,CONTROLLER://:9093"
+        # Important: Advertised listeners must point to the K8s Service DNS
+        - name: KAFKA_ADVERTISED_LISTENERS
+          value: "PLAINTEXT://kafka-node-1.dqops.svc.cluster.local:9092"
+        - name: KAFKA_CONTROLLER_LISTENER_NAMES
+          value: "CONTROLLER"
+        - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+          value: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+        - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+          value: "1@kafka-node-1.dqops.svc.cluster.local:9093"
+        - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+          value: "1"
+        - name: KAFKA_DEFAULT_REPLICATION_FACTOR
+          value: "1"
+        - name: KAFKA_MIN_INSYNC_REPLICAS
+          value: "1"
+        - name: KAFKA_NUM_PARTITIONS
+          value: "1"
+        - name: KAFKA_METRIC_REPORTERS
+          value: "io.confluent.metrics.reporter.ConfluentMetricsReporter"
+        - name: KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS
+          value: "kafka-node-1.dqops.svc.cluster.local:9092"
+
+---
+# --- Schema Registry ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: schema-registry-svc
+  namespace: dqops
+spec:
+  ports:
+  - port: 8081
+    name: http
+  selector:
+    app: schema-registry
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schema-registry
+  namespace: dqops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: schema-registry
+  template:
+    metadata:
+      labels:
+        app: schema-registry
+    spec:
+      containers:
+      - name: schema-registry
+        image: confluentinc/cp-schema-registry:7.6.0
+        ports:
+        - containerPort: 8081
+        env:
+        - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
+          value: "kafka-node-1:9092"
+        - name: SCHEMA_REGISTRY_HOST_NAME
+          value: "schema-registry"
+        - name: SCHEMA_REGISTRY_LISTENERS
+          value: "http://0.0.0.0:8081"
+        - name: KAFKA_SCHEMA_REGISTRY_TOPIC_REPLICATION_FACTOR
+          value: "1"
+
+---
+# --- Debezium (Custom Image) ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: debezium
+  namespace: dqops
+spec:
+  type: NodePort
+  ports:
+  - port: 8083
+    targetPort: 8083
+    nodePort: 30083
+  selector:
+    app: debezium
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: debezium
+  namespace: dqops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: debezium
+  template:
+    metadata:
+      labels:
+        app: debezium
+    spec:
+      containers:
+      - name: debezium
+        # NOTE: You must build this image locally and load it into kind:
+        # docker build -t custom-debezium:latest .
+        # kind load docker-image custom-debezium:latest
+        image: custom-debezium:latest
+        imagePullPolicy: Never # Forces Kind to use the loaded local image
+        ports:
+        - containerPort: 8083
+        env:
+        - name: BOOTSTRAP_SERVERS
+          value: "kafka-node-1:9092"
+        - name: GROUP_ID
+          value: "cdc-debezium"
+        - name: CONFIG_STORAGE_TOPIC
+          value: "connect_configs"
+        - name: OFFSET_STORAGE_TOPIC
+          value: "connect_offsets"
+        - name: STATUS_STORAGE_TOPIC
+          value: "connect_status"
+        - name: KEY_CONVERTER
+          value: "io.confluent.connect.avro.AvroConverter"
+        - name: VALUE_CONVERTER
+          value: "io.confluent.connect.avro.AvroConverter"
+        - name: KEY_CONVERTER_SCHEMA_REGISTRY_URL
+          value: "http://schema-registry:8081"
+        - name: VALUE_CONVERTER_SCHEMA_REGISTRY_URL
+          value: "http://schema-registry:8081"
+
+---
+# --- Debezium UI ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: debezium-ui
+  namespace: dqops
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30080
+  selector:
+    app: debezium-ui
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: debezium-ui
+  namespace: dqops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: debezium-ui
+  template:
+    metadata:
+      labels:
+        app: debezium-ui
+    spec:
+      containers:
+      - name: debezium-ui
+        image: debezium/debezium-ui:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: KAFKA_CONNECT_URIS
+          value: "http://debezium:8083"
+
+---
+# --- Control Center ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: control-center
+  namespace: dqops
+spec:
+  type: NodePort
+  ports:
+  - port: 9021
+    targetPort: 9021
+    nodePort: 30021
+  selector:
+    app: control-center
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: control-center
+  namespace: dqops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: control-center
+  template:
+    metadata:
+      labels:
+        app: control-center
+    spec:
+      containers:
+      - name: control-center
+        image: confluentinc/cp-enterprise-control-center:7.6.0
+        ports:
+        - containerPort: 9021
+        env:
+        - name: CONTROL_CENTER_BOOTSTRAP_SERVERS
+          value: "kafka-node-1:9092"
+        - name: CONTROL_CENTER_SCHEMA_REGISTRY_URL
+          value: "http://schema-registry:8081"
+        - name: CONTROL_CENTER_CONNECT_HEALTHCHECK_ENDPOINT
+          value: "/connectors"
+        # Points to the Debezium service within the cluster
+        - name: CONTROL_CENTER_CONNECT_CONNECT-DEFAULT_CLUSTER
+          value: "debezium:8083" 
+        - name: CONTROL_CENTER_REPLICATION_FACTOR
+          value: "1"
+        - name: CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS
+          value: "1"
+        - name: KAFKA_METRIC_REPORTERS
+          value: "io.confluent.metrics.reporter.ConfluentMetricsReporter"
+        - name: KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS
+          value: "kafka-node-1:9092"
+        # Readiness probe to ensure Kafka is ready before starting CC is good practice, 
+        # but removed for brevity in this conversion.
