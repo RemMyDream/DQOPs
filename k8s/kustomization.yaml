@@ -21,3 +21,7 @@ resources:
   - clickhouse.yaml
   - superset.yaml
 
+configMapGenerator:
+  - name: superset-python-config
+    files:
+      - config.py
