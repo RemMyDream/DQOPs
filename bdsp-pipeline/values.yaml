@@ -28,7 +28,6 @@ postgres:
     # Additional databases to create
     additionalDatabases:
       - mlflow
-
   resources:
     requests:
       memory: "256Mi"
@@ -79,7 +78,6 @@ minio:
     - silver
     - gold
     - mlflow
-
   resources:
     requests:
       memory: "256Mi"
@@ -246,13 +244,11 @@ kafka:
       type: ClusterIP
       plaintextPort: 9092
       controllerPort: 9093
-
     config:
       offsetsTopicReplicationFactor: "1"
       defaultReplicationFactor: "1"
       minInsyncReplicas: "1"
       numPartitions: "1"
-
     resources:
       requests:
         memory: "512Mi"
@@ -260,7 +256,6 @@ kafka:
       limits:
         memory: "2Gi"
         cpu: "1000m"
-
   schemaRegistry:
     enabled: true
     image:
@@ -279,25 +274,21 @@ kafka:
       limits:
         memory: "1Gi"
         cpu: "500m"
-
   debezium:
     enabled: true
     image:
       repository: votaquangnhat/custom-debezium
       tag: "latest"
       pullPolicy: Always
-
     service:
       type: NodePort
       port: 8083
       nodePort: 30083
-
     config:
       groupId: "cdc-debezium"
       configStorageTopic: "connect_configs"
       offsetStorageTopic: "connect_offsets"
       statusStorageTopic: "connect_status"
-
     resources:
       requests:
         memory: "512Mi"
@@ -305,19 +296,16 @@ kafka:
       limits:
         memory: "2Gi"
         cpu: "1000m"
-
   debeziumUI:
     enabled: true
     image:
       repository: debezium/debezium-ui
       tag: "latest"
       pullPolicy: IfNotPresent
-
     service:
       type: NodePort
       port: 8080
       nodePort: 30080
-
     resources:
       requests:
         memory: "128Mi"
@@ -325,19 +313,16 @@ kafka:
       limits:
         memory: "512Mi"
         cpu: "250m"
-
   controlCenter:
     enabled: true
     image:
       repository: confluentinc/cp-enterprise-control-center
       tag: "7.6.0"
       pullPolicy: IfNotPresent
-
     service:
       type: NodePort
       port: 9021
       nodePort: 30021
-
     resources:
       requests:
         memory: "1Gi"
@@ -349,7 +334,6 @@ kafka:
 # OpenMetadata configuration
 openmetadata:
   enabled: true
-
   postgresMetadata:
     enabled: true
     image:
@@ -366,7 +350,6 @@ openmetadata:
       size: 10Gi
       storageClass: ""
       accessMode: ReadWriteOnce
-
     config:
       user: openmetadata_user
       password: openmetadata_password
@@ -374,7 +357,6 @@ openmetadata:
       airflowUser: airflow_user
       airflowPassword: airflow_pass
       airflowDatabase: airflow_db
-
     resources:
       requests:
         memory: "512Mi"
@@ -382,21 +364,18 @@ openmetadata:
       limits:
         memory: "2Gi"
         cpu: "1000m"
-
     livenessProbe:
       enabled: true
       initialDelaySeconds: 60
       periodSeconds: 15
       timeoutSeconds: 10
       failureThreshold: 10
-
     readinessProbe:
       enabled: true
       initialDelaySeconds: 15
       periodSeconds: 15
       timeoutSeconds: 10
       failureThreshold: 10
-
   server:
     enabled: true
     image:
@@ -410,7 +389,6 @@ openmetadata:
       type: ClusterIP
       httpPort: 8585
       adminPort: 8586
-
     config:
       clusterName: "openmetadata"
       logLevel: "INFO"
@@ -426,7 +404,6 @@ openmetadata:
       pipelineServiceClientEnabled: "true"
       airflowUsername: "admin"
       airflowPassword: "admin"
-
     resources:
       requests:
         memory: "1Gi"
@@ -434,21 +411,18 @@ openmetadata:
       limits:
         memory: "2Gi"
         cpu: "1000m"
-
     livenessProbe:
       enabled: true
       initialDelaySeconds: 60
       periodSeconds: 30
       timeoutSeconds: 10
       failureThreshold: 5
-
     readinessProbe:
       enabled: true
       initialDelaySeconds: 30
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
-
   ingestion:
     enabled: true
     image:
@@ -478,7 +452,6 @@ openmetadata:
         size: 2Gi
         storageClass: ""
         accessMode: ReadWriteOnce
-
     config:
       executor: "LocalExecutor"
       dagGeneratedConfigs: "/opt/airflow/dag_generated_configs"
@@ -486,7 +459,6 @@ openmetadata:
       airflowUser: "airflow_user"
       airflowPassword: "airflow_pass"
       dbScheme: "postgresql+psycopg2"
-
     resources:
       requests:
         memory: "1Gi"
@@ -494,7 +466,6 @@ openmetadata:
       limits:
         memory: "2Gi"
         cpu: "1000m"
-
   migration:
     enabled: true
     image:
@@ -512,7 +483,6 @@ openmetadata:
       repository: postgres
       tag: "15"
       pullPolicy: IfNotPresent
-
     # Airflow database user credentials
     airflowUser: "airflow_user"
     airflowPassword: "airflow_pass"

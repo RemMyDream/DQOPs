@@ -26,5 +26,3 @@ helm upgrade --install bdsp ./bdsp-pipeline \
     --wait \
     --timeout 10m
 ```
-
-- GDELT (events, gkg) + Stooq: API → Spark bronze job (`make bronze`) → MinIO bucket `warehouse/bronze/...`.
