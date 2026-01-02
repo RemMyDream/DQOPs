@@ -41,7 +41,7 @@ services:
     depends_on:
       - minio
     entrypoint: >
-      /bin/sh -c " sleep 5; mc alias set myminio http://minio:9000 admin password; mc mb myminio/warehouse --ignore-existing; mc mb myminio/kubeflow --ignore-existing; echo 'Buckets created successfully'; "
+      /bin/sh -c " sleep 5; mc alias set myminio http://minio:9000 admin password; mc mb myminio/bronze --ignore-existing; mc mb myminio/silver --ignore-existing; mc mb myminio/gold --ignore-existing; echo 'Buckets created successfully'; "
     networks:
       - data-pipeline
 
@@ -447,19 +447,6 @@ services:
       minio:
         condition: service_started
 
-  # Kubeflow Pipelines UI (Frontend)
-  kubeflow-pipelines-ui:
-    image: gcr.io/ml-pipeline/frontend:2.0.0
-    container_name: kubeflow-pipelines-ui
-    ports:
-      - "3000:3000"
-    environment:
-      API_SERVER_HOST: kubeflow-pipelines-api
-      API_SERVER_PORT: 8888
-    networks:
-      - data-pipeline
-    depends_on:
-      - kubeflow-pipelines-api
 volumes:
   postgres_data:
   postgres_metadata_data:
@@ -470,7 +457,6 @@ volumes:
   ingestion-volume-tmp:
   superset_home:
   clickhouse_data:
-
 
 
 networks:
