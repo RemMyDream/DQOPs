@@ -500,7 +500,6 @@ volumes:
   clickhouse_data:
 
 
-
 networks:
   data-pipeline:
     name: data-pipeline
