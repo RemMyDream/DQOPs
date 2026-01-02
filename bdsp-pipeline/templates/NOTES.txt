@@ -24,6 +24,20 @@ Installed Components:
 {{- if .Values.elasticsearch.enabled }}
 - Elasticsearch: elasticsearch.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.elasticsearch.service.httpPort }}
 {{- end }}
+{{- if .Values.kafka.enabled }}
+- Kafka:
+  - Broker: kafka-node-1.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.kafka.broker.service.plaintextPort }}
+  - Schema Registry: schema-registry.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.kafka.schemaRegistry.service.port }}
+  - Debezium Connect: debezium.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.kafka.debezium.service.port }}
+{{- end }}
+{{- if .Values.openmetadata.enabled }}
+- OpenMetadata:
+  - Server: openmetadata-server.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.openmetadata.server.service.httpPort }}
+  - Ingestion (Airflow): ingestion.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.openmetadata.ingestion.service.port }}
+  {{- if .Values.openmetadata.setupAirflowUser.enabled }}
+  - Setup Airflow User Job: Automatically creates airflow_user in PostgreSQL Metadata
+  {{- end }}
+{{- end }}
 
 To access services locally:
 {{- if .Values.postgres.enabled }}
@@ -37,4 +51,7 @@ To access services locally:
 {{- end }}
 {{- if .Values.elasticsearch.enabled }}
   kubectl port-forward -n {{ include "bdsp-pipeline.namespace" . }} svc/elasticsearch {{ .Values.elasticsearch.service.httpPort }}:{{ .Values.elasticsearch.service.httpPort }}
+{{- end }}
+{{- if .Values.openmetadata.enabled }}
+  kubectl port-forward -n {{ include "bdsp-pipeline.namespace" . }} svc/openmetadata-server {{ .Values.openmetadata.server.service.httpPort }}:{{ .Values.openmetadata.server.service.httpPort }}
 {{- end }}

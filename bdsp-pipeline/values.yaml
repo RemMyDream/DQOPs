@@ -25,6 +25,9 @@ postgres:
     user: postgres
     password: postgres
     database: sourcedb
+    # Additional databases to create
+    additionalDatabases:
+      - mlflow
   
   resources:
     requests:
@@ -75,6 +78,7 @@ minio:
     - bronze
     - silver
     - gold
+    - mlflow
   
   resources:
     requests:
@@ -224,6 +228,298 @@ postgresMetadata:
 global:
   storageClass: ""
   
+# Kafka & Debezium configuration
+kafka:
+  enabled: true
+  
+  broker:
+    image:
+      repository: confluentinc/cp-enterprise-kafka
+      tag: "7.6.0"
+      pullPolicy: IfNotPresent
+    
+    replicas: 1
+    nodeId: 1
+    clusterId: "Kltcs-KRS8CJybmyyVtXuA"
+    
+    service:
+      type: ClusterIP
+      plaintextPort: 9092
+      controllerPort: 9093
+    
+    config:
+      offsetsTopicReplicationFactor: "1"
+      defaultReplicationFactor: "1"
+      minInsyncReplicas: "1"
+      numPartitions: "1"
+    
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+  
+  schemaRegistry:
+    enabled: true
+    image:
+      repository: confluentinc/cp-schema-registry
+      tag: "7.6.0"
+      pullPolicy: IfNotPresent
+    
+    service:
+      type: ClusterIP
+      port: 8081
+    
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+  
+  debezium:
+    enabled: true
+    image:
+      repository: votaquangnhat/custom-debezium
+      tag: "latest"
+      pullPolicy: Always
+    
+    service:
+      type: NodePort
+      port: 8083
+      nodePort: 30083
+    
+    config:
+      groupId: "cdc-debezium"
+      configStorageTopic: "connect_configs"
+      offsetStorageTopic: "connect_offsets"
+      statusStorageTopic: "connect_status"
+    
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+  
+  debeziumUI:
+    enabled: true
+    image:
+      repository: debezium/debezium-ui
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    
+    service:
+      type: NodePort
+      port: 8080
+      nodePort: 30080
+    
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "50m"
+      limits:
+        memory: "512Mi"
+        cpu: "250m"
+  
+  controlCenter:
+    enabled: true
+    image:
+      repository: confluentinc/cp-enterprise-control-center
+      tag: "7.6.0"
+      pullPolicy: IfNotPresent
+    
+    service:
+      type: NodePort
+      port: 9021
+      nodePort: 30021
+    
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"
+
+# OpenMetadata configuration
+openmetadata:
+  enabled: true
+  
+  postgresMetadata:
+    enabled: true
+    image:
+      repository: docker.getcollate.io/openmetadata/postgresql
+      tag: "1.11.0"
+      pullPolicy: IfNotPresent
+    
+    service:
+      type: ClusterIP
+      port: 5432
+    
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: ""
+      accessMode: ReadWriteOnce
+    
+    config:
+      user: openmetadata_user
+      password: openmetadata_password
+      database: openmetadata_db
+      airflowUser: airflow_user
+      airflowPassword: airflow_pass
+      airflowDatabase: airflow_db
+    
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "200m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+    
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 60
+      periodSeconds: 15
+      timeoutSeconds: 10
+      failureThreshold: 10
+    
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 15
+      periodSeconds: 15
+      timeoutSeconds: 10
+      failureThreshold: 10
+  
+  server:
+    enabled: true
+    image:
+      repository: docker.getcollate.io/openmetadata/server
+      tag: "1.11.0"
+      pullPolicy: IfNotPresent
+    
+    replicas: 1
+    
+    service:
+      type: ClusterIP
+      httpPort: 8585
+      adminPort: 8586
+    
+    config:
+      clusterName: "openmetadata"
+      logLevel: "INFO"
+      heapOpts: "-Xmx1G -Xms1G"
+      authenticationProvider: "basic"
+      authorizerClassName: "org.openmetadata.service.security.DefaultAuthorizer"
+      authorizerRequestFilter: "org.openmetadata.service.security.JwtFilter"
+      authorizerAdminPrincipals: "[admin]"
+      authorizerPrincipalDomain: "open-metadata.org"
+      migrationLimitParam: "1200"
+      secretManager: "db"
+      eventMonitor: "prometheus"
+      pipelineServiceClientEnabled: "true"
+      airflowUsername: "admin"
+      airflowPassword: "admin"
+    
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "200m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+    
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 60
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 5
+    
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+  
+  ingestion:
+    enabled: true
+    image:
+      repository: docker.getcollate.io/openmetadata/ingestion
+      tag: "1.11.0"
+      pullPolicy: IfNotPresent
+    
+    replicas: 1
+    
+    service:
+      type: ClusterIP
+      port: 8080
+    
+    persistence:
+      dagAirflow:
+        enabled: true
+        size: 5Gi
+        storageClass: ""
+        accessMode: ReadWriteOnce
+      dags:
+        enabled: true
+        size: 5Gi
+        storageClass: ""
+        accessMode: ReadWriteOnce
+      tmp:
+        enabled: true
+        size: 2Gi
+        storageClass: ""
+        accessMode: ReadWriteOnce
+    
+    config:
+      executor: "LocalExecutor"
+      dagGeneratedConfigs: "/opt/airflow/dag_generated_configs"
+      airflowDatabase: "airflow_db"
+      airflowUser: "airflow_user"
+      airflowPassword: "airflow_pass"
+      dbScheme: "postgresql+psycopg2"
+    
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "200m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+  
+  migration:
+    enabled: true
+    image:
+      repository: docker.getcollate.io/openmetadata/server
+      tag: "1.11.0"
+      pullPolicy: IfNotPresent
+    
+    backoffLimit: 3
+  
+  # Setup Airflow User Job - Creates airflow_user in PostgreSQL Metadata
+  setupAirflowUser:
+    enabled: true
+    
+    image:
+      repository: postgres
+      tag: "15"
+      pullPolicy: IfNotPresent
+    
+    # Airflow database user credentials
+    airflowUser: "airflow_user"
+    airflowPassword: "airflow_pass"
+    airflowDatabase: "airflow_db"
+    
+    backoffLimit: 3
+
 # Additional labels to add to all resources
 commonLabels: {}
 
