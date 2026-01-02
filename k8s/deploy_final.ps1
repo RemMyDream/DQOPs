@@ -463,6 +463,15 @@ if (Apply-Manifest "openmetadata-migration.yaml" "Running OpenMetadata migration
 Apply-Manifest "openmetadata-server.yaml" "Deploying OpenMetadata server"
 Apply-Manifest "openmetadata-ingestion.yaml" "Deploying OpenMetadata ingestion"
 
+Apply-Manifest "airflow.yaml" "Deploying Airflow"
+
+Apply-Manifest "clickhouse.yaml" "Deploying Clickhouse"
+
+Apply-Manifest "superset.yaml" "Deploying Superset"
+
+Apply-Manifest "backend.yaml" "Deploying Backend API"
+
+
 # ==========================================
 # 8. FINAL STATUS CHECK
 # ==========================================

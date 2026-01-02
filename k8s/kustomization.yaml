@@ -16,4 +16,12 @@ resources:
   - openmetadata-migration.yaml
   - openmetadata-server.yaml
   - openmetadata-ingestion.yaml
+  - airflow.yaml
+  - backend.yaml
+  - clickhouse.yaml
+  - superset.yaml
 
+configMapGenerator:
+  - name: superset-python-config
+    files:
+      - config.py
