@@ -1,0 +1,110 @@
+{{- if .Values.postgres.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: postgres
+spec:
+  accessModes:
+    - {{ .Values.postgres.persistence.accessMode }}
+  {{- if .Values.postgres.persistence.storageClass }}
+  storageClassName: {{ .Values.postgres.persistence.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.postgres.persistence.size }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: postgres
+        image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
+        imagePullPolicy: {{ .Values.postgres.image.pullPolicy }}
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-config
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-config
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-config
+              key: POSTGRES_DB
+        ports:
+        - containerPort: {{ .Values.postgres.service.port }}
+          name: postgres
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        {{- if .Values.postgres.resources }}
+        resources:
+          {{- toYaml .Values.postgres.resources | nindent 10 }}
+        {{- end }}
+        {{- if .Values.postgres.livenessProbe.enabled }}
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+          initialDelaySeconds: {{ .Values.postgres.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.postgres.livenessProbe.periodSeconds }}
+        {{- end }}
+        {{- if .Values.postgres.readinessProbe.enabled }}
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+          initialDelaySeconds: {{ .Values.postgres.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.postgres.readinessProbe.periodSeconds }}
+        {{- end }}
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+  - port: {{ .Values.postgres.service.port }}
+    targetPort: {{ .Values.postgres.service.port }}
+    name: postgres
+  type: {{ .Values.postgres.service.type }}
+{{- end }}

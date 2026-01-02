@@ -1,0 +1,58 @@
+{{- if .Values.postgres.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: postgres
+data:
+  POSTGRES_USER: {{ .Values.postgres.config.user | quote }}
+  POSTGRES_PASSWORD: {{ .Values.postgres.config.password | quote }}
+  POSTGRES_DB: {{ .Values.postgres.config.database | quote }}
+{{- end }}
+---
+{{- if .Values.minio.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minio-config
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: minio
+data:
+  MINIO_ROOT_USER: {{ .Values.minio.config.rootUser | quote }}
+  MINIO_ROOT_PASSWORD: {{ .Values.minio.config.rootPassword | quote }}
+{{- end }}
+---
+{{- if .Values.elasticsearch.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-config
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: elasticsearch
+data:
+  discovery.type: {{ .Values.elasticsearch.config.discoveryType | quote }}
+  ES_JAVA_OPTS: {{ .Values.elasticsearch.config.javaOpts | quote }}
+  xpack.security.enabled: {{ .Values.elasticsearch.config.xpackSecurityEnabled | quote }}
+{{- end }}
+---
+{{- if .Values.postgresMetadata.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-metadata-config
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: postgres-metadata
+data:
+  POSTGRES_USER: {{ .Values.postgresMetadata.config.user | quote }}
+  POSTGRES_PASSWORD: {{ .Values.postgresMetadata.config.password | quote }}
+  POSTGRES_DB: {{ .Values.postgresMetadata.config.database | quote }}
+{{- end }}
