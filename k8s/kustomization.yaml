@@ -24,3 +24,7 @@ configMapGenerator:
     files:
       - config.py
 
+configMapGenerator:
+  - name: superset-python-config
+    files:
+      - config.py
