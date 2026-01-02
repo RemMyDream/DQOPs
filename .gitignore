@@ -7,3 +7,5 @@ notebooks/
 docker-compose-postgres (reference).yml
 export_to_csv.py
 data-csv/
+utils/bigquery_api.json
+utils/config.yaml
