@@ -23,3 +23,5 @@ useful_command.txt
 data/
 useful_command.txt
 .env
+utils/bigquery_api.json
+utils/config.yaml
