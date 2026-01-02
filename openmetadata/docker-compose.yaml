@@ -1,0 +1,165 @@
+services:
+  postgres-metadata:
+    image: docker.getcollate.io/openmetadata/postgresql:1.11.0
+    container_name: postgres-metadata
+    restart: always
+    command: "--work_mem=10MB"
+    environment:
+      POSTGRES_USER: openmetadata_user
+      POSTGRES_PASSWORD: openmetadata_password
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openmetadata_user -d openmetadata_db"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+
+    volumes:
+      - postgres_metadata_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - data-pipeline
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.14
+    container_name: openmetadata-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    healthcheck:
+      test: "curl -s http://localhost:9200/_cluster/health?pretty | grep status | grep -qE 'green|yellow' || exit 1"
+      interval: 15s
+      timeout: 10s
+      retries: 10
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - data-pipeline
+
+  openmetadata-server:
+    container_name: openmetadata_server
+    restart: always
+    image: docker.getcollate.io/openmetadata/server:1.11.0
+    entrypoint: ["/bin/bash", "/opt/openmetadata/entrypoint.sh"]
+    environment:
+      OPENMETADATA_CLUSTER_NAME: ${OPENMETADATA_CLUSTER_NAME:-openmetadata}
+      SERVER_PORT: ${SERVER_PORT:-8585}
+      SERVER_ADMIN_PORT: ${SERVER_ADMIN_PORT:-8586}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      MIGRATION_LIMIT_PARAM: 1200
+      DATABASE_MIGRATION_VALIDATE_ONLY: "false"
+      DB_DRIVER_CLASS: org.postgresql.Driver
+      DB_SCHEME: postgresql
+      DB_USER: openmetadata_user
+      DB_USER_PASSWORD: openmetadata_password
+      DB_HOST: postgres-metadata
+      DB_PORT: 5432
+      OM_DATABASE: openmetadata_db
+      DB_PARAMS: allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      AIRFLOW_DB: airflow_db
+      AIRFLOW_DB_USER: airflow_user
+      AIRFLOW_DB_PASSWORD: airflow_pass
+      SEARCH_TYPE: elasticsearch
+      ELASTICSEARCH_HOST: elasticsearch
+      ELASTICSEARCH_PORT: 9200
+      ELASTICSEARCH_SCHEME: http
+      ELASTICSEARCH_USER: ${ELASTICSEARCH_USER:-""}
+      ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD:-""}
+      ELASTICSEARCH_CONNECTION_TIMEOUT_SECS: ${ELASTICSEARCH_CONNECTION_TIMEOUT_SECS:-5}
+      ELASTICSEARCH_SOCKET_TIMEOUT_SECS: ${ELASTICSEARCH_SOCKET_TIMEOUT_SECS:-60}
+      ELASTICSEARCH_BATCH_SIZE: ${ELASTICSEARCH_BATCH_SIZE:-100}
+      ELASTICSEARCH_INDEX_MAPPING_LANG: ${ELASTICSEARCH_INDEX_MAPPING_LANG:-EN}
+      AUTHORIZER_CLASS_NAME: ${AUTHORIZER_CLASS_NAME:-org.openmetadata.service.security.DefaultAuthorizer}
+      AUTHORIZER_REQUEST_FILTER: ${AUTHORIZER_REQUEST_FILTER:-org.openmetadata.service.security.JwtFilter}
+      AUTHORIZER_ADMIN_PRINCIPALS: ${AUTHORIZER_ADMIN_PRINCIPALS:-[admin]}
+      AUTHORIZER_PRINCIPAL_DOMAIN: ${AUTHORIZER_PRINCIPAL_DOMAIN:-open-metadata.org}
+      AUTHORIZER_INGESTION_PRINCIPALS: ${AUTHORIZER_INGESTION_PRINCIPALS:-[ingestion-bot]}
+      AUTHENTICATION_PROVIDER: ${AUTHENTICATION_PROVIDER:-basic}
+      AUTHENTICATION_PUBLIC_KEYS: ${AUTHENTICATION_PUBLIC_KEYS:-[http://localhost:8585/api/v1/system/config/jwks]}
+      AUTHENTICATION_AUTHORITY: ${AUTHENTICATION_AUTHORITY:-http://localhost:8585}
+      AUTHENTICATION_CALLBACK_URL: ${AUTHENTICATION_CALLBACK_URL:-http://localhost:8585/callback}
+      AUTHENTICATION_JWT_PRINCIPAL_CLAIMS: ${AUTHENTICATION_JWT_PRINCIPAL_CLAIMS:-[email,preferred_username,sub]}
+      AUTHENTICATION_ENABLE_SELF_SIGNUP: ${AUTHENTICATION_ENABLE_SELF_SIGNUP:-true}
+      RSA_PUBLIC_KEY_FILE_PATH: ${RSA_PUBLIC_KEY_FILE_PATH:-./conf/public_key.der}
+      RSA_PRIVATE_KEY_FILE_PATH: ${RSA_PRIVATE_KEY_FILE_PATH:-./conf/private_key.der}
+      JWT_ISSUER: ${JWT_ISSUER:-open-metadata.org}
+      JWT_KEY_ID: ${JWT_KEY_ID:-Gb389a-9f76-gdjs-a92j-0242bk94356}
+      PIPELINE_SERVICE_CLIENT_ENABLED: ${PIPELINE_SERVICE_CLIENT_ENABLED:-true}
+      PIPELINE_SERVICE_CLIENT_ENDPOINT: ${PIPELINE_SERVICE_CLIENT_ENDPOINT:-http://ingestion:8080}
+      PIPELINE_SERVICE_CLIENT_HEALTH_CHECK_INTERVAL: ${PIPELINE_SERVICE_CLIENT_HEALTH_CHECK_INTERVAL:-300}
+      SERVER_HOST_API_URL: ${SERVER_HOST_API_URL:-http://openmetadata-server:8585/api}
+      PIPELINE_SERVICE_CLIENT_VERIFY_SSL: ${PIPELINE_SERVICE_CLIENT_VERIFY_SSL:-no-ssl}
+      PIPELINE_SERVICE_CLIENT_CLASS_NAME: ${PIPELINE_SERVICE_CLIENT_CLASS_NAME:-org.openmetadata.service.clients.pipeline.airflow.AirflowRESTClient}
+      PIPELINE_SERVICE_CLIENT_SECRETS_MANAGER_LOADER: ${PIPELINE_SERVICE_CLIENT_SECRETS_MANAGER_LOADER:-noop}
+      AIRFLOW_USERNAME: ${AIRFLOW_USERNAME:-admin}
+      AIRFLOW_PASSWORD: ${AIRFLOW_PASSWORD:-admin}
+      AIRFLOW_TIMEOUT: ${AIRFLOW_TIMEOUT:-10}
+      FERNET_KEY: ${FERNET_KEY:-jJ/9sz0g0OHxsfxOoSfdFdmk3ysNmPRnH3TUAbz3IHA=}
+      SECRET_MANAGER: ${SECRET_MANAGER:-db}
+      EVENT_MONITOR: ${EVENT_MONITOR:-prometheus}
+      EVENT_MONITOR_BATCH_SIZE: ${EVENT_MONITOR_BATCH_SIZE:-10}
+      AUTHORIZER_ENABLE_SMTP: ${AUTHORIZER_ENABLE_SMTP:-false}
+      OM_EMAIL_ENTITY: ${OM_EMAIL_ENTITY:-OpenMetadata}
+      OM_SUPPORT_URL: ${OM_SUPPORT_URL:-https://slack.open-metadata.org}
+      OPENMETADATA_HEAP_OPTS: ${OPENMETADATA_HEAP_OPTS:--Xmx1G -Xms1G}
+      MASK_PASSWORDS_API: ${MASK_PASSWORDS_API:-false}
+      WEB_CONF_URI_PATH: ${WEB_CONF_URI_PATH:-/api}
+      MAX_RETRIES: 30
+      RETRY_INTERVAL: 5
+    depends_on:
+      - postgres-metadata
+      - elasticsearch
+    ports:
+      - "8585:8585"
+      - "8586:8586"
+    networks:
+      - data-pipeline
+    volumes:
+      - ./scripts/openmetadata-entrypoint.sh:/opt/openmetadata/entrypoint.sh:ro
+
+  ingestion:
+    container_name: openmetadata_ingestion
+    image: docker.getcollate.io/openmetadata/ingestion:1.11.0
+    environment:
+      AIRFLOW__API__AUTH_BACKENDS: "airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session"
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__OPENMETADATA_AIRFLOW_APIS__DAG_GENERATED_CONFIGS: "/opt/airflow/dag_generated_configs"
+      DB_HOST: ${AIRFLOW_DB_HOST:-postgres-metadata}
+      DB_PORT: ${AIRFLOW_DB_PORT:-5432}
+      AIRFLOW_DB: ${AIRFLOW_DB:-airflow_db}
+      DB_USER: ${AIRFLOW_DB_USER:-airflow_user}
+      DB_SCHEME: ${DB_SCHEME:-postgresql+psycopg2}
+      DB_PASSWORD: ${AIRFLOW_DB_PASSWORD:-airflow_pass}
+      DB_PROPERTIES: ${AIRFLOW_DB_PROPERTIES:-}
+      OPENMETADATA_SERVER_URL: ${OPENMETADATA_SERVER_URL:-http://openmetadata-server:8585/api}
+    entrypoint: /bin/bash
+    command:
+      - "/opt/airflow/ingestion_dependency.sh"
+    expose:
+      - 8080
+    ports:
+      - "8090:8080"
+    networks:
+      - data-pipeline
+    volumes:
+      - ingestion-volume-dag-airflow:/opt/airflow/dag_generated_configs
+      - ingestion-volume-dags:/opt/airflow/dags
+      - ingestion-volume-tmp:/tmp
+
+volumes:
+  postgres_metadata_data:
+  elasticsearch_data:
+  ingestion-volume-dag-airflow:
+  ingestion-volume-dags:
+  ingestion-volume-tmp:
+
+networks:
+  data-pipeline:
+    name: data-pipeline
+    external: true
