@@ -1,0 +1,22 @@
+{
+  "name": "data_source-cdc",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "postgres.dqops.svc.cluster.local",
+    "database.port": "5432",
+    "database.user": "postgres",
+    "database.password": "postgres",
+    "plugin.name": "pgoutput",
+    "slot.name": "sourcedb",
+    "publication.autocreate.mode": "filtered",
+    "include.schema.changes": "false",
+    "database.dbname": "sourcedb",
+    "database.server.name": "sourcedb",
+    "table.include.list": "public.finnhub_stock_prices",
+    "topic.prefix": "sourcedb",
+    "key.converter": "io.confluent.connect.avro.AvroConverter",
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "key.converter.schema.registry.url": "http://schema-registry.dqops.svc.cluster.local:8081",
+    "value.converter.schema.registry.url": "http://schema-registry.dqops.svc.cluster.local:8081"
+  }
+}
