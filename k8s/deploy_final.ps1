@@ -449,6 +449,12 @@ Wait-ForPodReady -Namespace $NAMESPACE -LabelSelector "app=postgres-metadata" -D
 Wait-ForPodReady -Namespace $NAMESPACE -LabelSelector "app=elasticsearch" -Description "Elasticsearch" -TimeoutSeconds 300
 
 # Setup jobs
+# docker build -t custom-debezium:latest
+# kind load docker-image custom-debezium:latest
+Apply-Manifest "kafka.yaml" "Deploying Kafka cluster"
+
+Start-Sleep -Seconds 300
+
 if (Apply-Manifest "setup-airflow-user.yaml" "Setting up Airflow user" -Required $false) {
     Write-Host "Waiting for Airflow setup job..." -ForegroundColor Gray
     kubectl wait --for=condition=complete job/setup-airflow-user -n $NAMESPACE --timeout=120s 2>&1 | Out-Null
