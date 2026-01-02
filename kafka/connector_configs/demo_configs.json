@@ -12,7 +12,7 @@
     "include.schema.changes": "false",
     "database.dbname": "sourcedb",
     "database.server.name": "sourcedb",
-    "table.include.list": "public.finnhub_stock_prices,public.gdelt_events,public.gdelt_gkg",
+    "table.include.list": "public.finnhub_stock_prices",
     "topic.prefix": "sourcedb",
     "key.converter": "io.confluent.connect.avro.AvroConverter",
     "value.converter": "io.confluent.connect.avro.AvroConverter",
