@@ -11,6 +11,29 @@ data:
   POSTGRES_USER: {{ .Values.postgres.config.user | quote }}
   POSTGRES_PASSWORD: {{ .Values.postgres.config.password | quote }}
   POSTGRES_DB: {{ .Values.postgres.config.database | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-script
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: postgres
+data:
+  init-additional-databases.sh: |
+    #!/bin/bash
+    set -e
+    {{- if .Values.postgres.config.additionalDatabases }}
+    {{- range .Values.postgres.config.additionalDatabases }}
+    echo "Creating database: {{ . }}"
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+        SELECT 'CREATE DATABASE {{ . }}'
+        WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '{{ . }}')\gexec
+    EOSQL
+    echo "Database {{ . }} created successfully"
+    {{- end }}
+    {{- end }}
 {{- end }}
 ---
 {{- if .Values.minio.enabled }}
@@ -42,7 +65,8 @@ data:
   xpack.security.enabled: {{ .Values.elasticsearch.config.xpackSecurityEnabled | quote }}
 {{- end }}
 ---
-{{- if .Values.postgresMetadata.enabled }}
+{{- if .Values.openmetadata.enabled }}
+{{- if .Values.openmetadata.postgresMetadata.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -52,7 +76,112 @@ metadata:
     {{- include "bdsp-pipeline.labels" . | nindent 4 }}
     app: postgres-metadata
 data:
-  POSTGRES_USER: {{ .Values.postgresMetadata.config.user | quote }}
-  POSTGRES_PASSWORD: {{ .Values.postgresMetadata.config.password | quote }}
-  POSTGRES_DB: {{ .Values.postgresMetadata.config.database | quote }}
+  POSTGRES_USER: {{ .Values.openmetadata.postgresMetadata.config.user | quote }}
+  POSTGRES_PASSWORD: {{ .Values.openmetadata.postgresMetadata.config.password | quote }}
+  POSTGRES_DB: {{ .Values.openmetadata.postgresMetadata.config.database | quote }}
+{{- end }}
+---
+{{- if .Values.openmetadata.server.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openmetadata-server-config
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: openmetadata-server
+data:
+  OPENMETADATA_CLUSTER_NAME: {{ .Values.openmetadata.server.config.clusterName | quote }}
+  SERVER_PORT: {{ .Values.openmetadata.server.service.httpPort | quote }}
+  SERVER_ADMIN_PORT: {{ .Values.openmetadata.server.service.adminPort | quote }}
+  LOG_LEVEL: {{ .Values.openmetadata.server.config.logLevel | quote }}
+  DB_DRIVER_CLASS: "org.postgresql.Driver"
+  DB_SCHEME: "postgresql"
+  DB_USER: {{ .Values.openmetadata.postgresMetadata.config.user | quote }}
+  DB_PASSWORD: {{ .Values.openmetadata.postgresMetadata.config.password | quote }}
+  DB_HOST: "postgres-metadata"
+  DB_PORT: {{ .Values.openmetadata.postgresMetadata.service.port | quote }}
+  OM_DATABASE: {{ .Values.openmetadata.postgresMetadata.config.database | quote }}
+  SEARCH_TYPE: "elasticsearch"
+  ELASTICSEARCH_HOST: "elasticsearch"
+  ELASTICSEARCH_PORT: {{ .Values.elasticsearch.service.httpPort | quote }}
+  ELASTICSEARCH_SCHEME: "http"
+  AUTHENTICATION_PROVIDER: {{ .Values.openmetadata.server.config.authenticationProvider | quote }}
+  AUTHORIZER_CLASS_NAME: {{ .Values.openmetadata.server.config.authorizerClassName | quote }}
+  AUTHORIZER_REQUEST_FILTER: {{ .Values.openmetadata.server.config.authorizerRequestFilter | quote }}
+  AUTHORIZER_ADMIN_PRINCIPALS: {{ .Values.openmetadata.server.config.authorizerAdminPrincipals | quote }}
+  AUTHORIZER_PRINCIPAL_DOMAIN: {{ .Values.openmetadata.server.config.authorizerPrincipalDomain | quote }}
+  MIGRATION_LIMIT_PARAM: {{ .Values.openmetadata.server.config.migrationLimitParam | quote }}
+  DATABASE_MIGRATION_VALIDATE_ONLY: "false"
+  PIPELINE_SERVICE_CLIENT_ENABLED: {{ .Values.openmetadata.server.config.pipelineServiceClientEnabled | quote }}
+  PIPELINE_SERVICE_CLIENT_ENDPOINT: "http://ingestion:{{ .Values.openmetadata.ingestion.service.port }}"
+  SERVER_HOST_API_URL: "http://openmetadata-server:{{ .Values.openmetadata.server.service.httpPort }}/api"
+  AIRFLOW_USERNAME: {{ .Values.openmetadata.server.config.airflowUsername | quote }}
+  AIRFLOW_PASSWORD: {{ .Values.openmetadata.server.config.airflowPassword | quote }}
+  SECRET_MANAGER: {{ .Values.openmetadata.server.config.secretManager | quote }}
+  EVENT_MONITOR: {{ .Values.openmetadata.server.config.eventMonitor | quote }}
+  OPENMETADATA_HEAP_OPTS: {{ .Values.openmetadata.server.config.heapOpts | quote }}
+{{- end }}
+---
+{{- if .Values.openmetadata.ingestion.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingestion-config
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: ingestion
+data:
+  AIRFLOW__API__AUTH_BACKENDS: "airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session"
+  AIRFLOW__CORE__EXECUTOR: {{ .Values.openmetadata.ingestion.config.executor | quote }}
+  AIRFLOW__OPENMETADATA_AIRFLOW_APIS__DAG_GENERATED_CONFIGS: {{ .Values.openmetadata.ingestion.config.dagGeneratedConfigs | quote }}
+  DB_HOST: "postgres-metadata"
+  DB_PORT: {{ .Values.openmetadata.postgresMetadata.service.port | quote }}
+  AIRFLOW_DB: {{ .Values.openmetadata.ingestion.config.airflowDatabase | quote }}
+  DB_USER: {{ .Values.openmetadata.ingestion.config.airflowUser | quote }}
+  DB_SCHEME: {{ .Values.openmetadata.ingestion.config.dbScheme | quote }}
+  DB_PASSWORD: {{ .Values.openmetadata.ingestion.config.airflowPassword | quote }}
+  OPENMETADATA_SERVER_URL: "http://openmetadata-server:{{ .Values.openmetadata.server.service.httpPort }}/api"
+{{- end }}
+---
+{{- if .Values.openmetadata.setupAirflowUser.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: setup-airflow-user-script
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: setup-airflow-user
+data:
+  setup-airflow-user.sh: |
+    #!/bin/bash
+    set -e
+    
+    echo "Waiting for PostgreSQL to be ready..."
+    sleep 5
+    
+    echo "Setting up Airflow user and permissions..."
+    psql -h postgres-metadata -U "$PGUSER" -d postgres <<-EOSQL
+        DO \$\$
+        BEGIN
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_user WHERE usename = '{{ .Values.openmetadata.setupAirflowUser.airflowUser }}') THEN
+                CREATE USER {{ .Values.openmetadata.setupAirflowUser.airflowUser }} WITH PASSWORD '{{ .Values.openmetadata.setupAirflowUser.airflowPassword }}';
+                RAISE NOTICE 'User {{ .Values.openmetadata.setupAirflowUser.airflowUser }} created';
+            ELSE
+                RAISE NOTICE 'User {{ .Values.openmetadata.setupAirflowUser.airflowUser }} already exists';
+            END IF;
+        END
+        \$\$;
+    EOSQL
+    
+    echo "Granting privileges on database..."
+    psql -h postgres-metadata -U "$PGUSER" -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE {{ .Values.openmetadata.setupAirflowUser.airflowDatabase }} TO {{ .Values.openmetadata.setupAirflowUser.airflowUser }};"
+    
+    echo "Granting privileges on schema..."
+    psql -h postgres-metadata -U "$PGUSER" -d {{ .Values.openmetadata.setupAirflowUser.airflowDatabase }} -c "GRANT ALL ON SCHEMA public TO {{ .Values.openmetadata.setupAirflowUser.airflowUser }};"
+    
+    echo "Airflow user setup completed successfully!"
+{{- end }}
 {{- end }}

@@ -62,6 +62,8 @@ spec:
         volumeMounts:
         - name: postgres-storage
           mountPath: /var/lib/postgresql/data
+        - name: init-scripts
+          mountPath: /docker-entrypoint-initdb.d
         {{- if .Values.postgres.resources }}
         resources:
           {{- toYaml .Values.postgres.resources | nindent 10 }}
@@ -90,6 +92,10 @@ spec:
       - name: postgres-storage
         persistentVolumeClaim:
           claimName: postgres-pvc
+      - name: init-scripts
+        configMap:
+          name: postgres-init-script
+          defaultMode: 0755
 ---
 apiVersion: v1
 kind: Service
