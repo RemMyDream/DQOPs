@@ -10,17 +10,17 @@ postgres:
     repository: postgres
     tag: "15"
     pullPolicy: IfNotPresent
-  
+
   service:
     type: ClusterIP
     port: 5432
-  
+
   persistence:
     enabled: true
     size: 10Gi
     storageClass: ""
     accessMode: ReadWriteOnce
-  
+
   config:
     user: postgres
     password: postgres
@@ -28,7 +28,7 @@ postgres:
     # Additional databases to create
     additionalDatabases:
       - mlflow
-  
+
   resources:
     requests:
       memory: "256Mi"
@@ -36,12 +36,12 @@ postgres:
     limits:
       memory: "1Gi"
       cpu: "500m"
-  
+
   livenessProbe:
     enabled: true
     initialDelaySeconds: 30
     periodSeconds: 10
-  
+
   readinessProbe:
     enabled: true
     initialDelaySeconds: 5
@@ -54,32 +54,32 @@ minio:
     repository: minio/minio
     tag: latest
     pullPolicy: IfNotPresent
-  
+
   mcImage:
     repository: minio/mc
     tag: latest
-  
+
   service:
     type: ClusterIP
     apiPort: 9000
     consolePort: 9001
-  
+
   persistence:
     enabled: true
     size: 20Gi
     storageClass: ""
     accessMode: ReadWriteOnce
-  
+
   config:
     rootUser: admin
     rootPassword: password
-  
+
   buckets:
     - bronze
     - silver
     - gold
     - mlflow
-  
+
   resources:
     requests:
       memory: "256Mi"
@@ -87,12 +87,12 @@ minio:
     limits:
       memory: "1Gi"
       cpu: "500m"
-  
+
   livenessProbe:
     enabled: true
     initialDelaySeconds: 30
     periodSeconds: 20
-  
+
   readinessProbe:
     enabled: true
     initialDelaySeconds: 10
@@ -101,27 +101,27 @@ minio:
 # Spark configuration
 spark:
   enabled: true
-  
+
   master:
     image:
       repository: apache/spark
       tag: "3.5.3"
       pullPolicy: IfNotPresent
-    
+
     replicas: 1
-    
+
     service:
       type: ClusterIP
       sparkPort: 7077
       webuiPort: 8080
       appUIPort: 4040
-    
+
     env:
       sparkMode: master
       sparkMasterHost: "0.0.0.0"
       sparkMasterPort: "7077"
       sparkMasterWebuiPort: "8080"
-    
+
     resources:
       requests:
         memory: "1Gi"
@@ -129,21 +129,21 @@ spark:
       limits:
         memory: "2Gi"
         cpu: "1000m"
-  
+
   worker:
     image:
       repository: apache/spark
       tag: "3.5.3"
       pullPolicy: IfNotPresent
-    
+
     replicas: 2
-    
+
     env:
       sparkMode: worker
       sparkWorkerCores: "2"
       sparkWorkerMemory: "2g"
       sparkWorkerWebuiPort: "8081"
-    
+
     resources:
       requests:
         memory: "1Gi"
@@ -159,28 +159,28 @@ elasticsearch:
     repository: docker.elastic.co/elasticsearch/elasticsearch
     tag: "8.11.4"
     pullPolicy: IfNotPresent
-  
+
   service:
     type: ClusterIP
     httpPort: 9200
     transportPort: 9300
-  
+
   persistence:
     enabled: true
     size: 10Gi
     storageClass: ""
     accessMode: ReadWriteOnce
-  
+
   config:
     discoveryType: single-node
     javaOpts: "-Xms1024m -Xmx1024m"
     xpackSecurityEnabled: "false"
-  
+
   securityContext:
     fsGroup: 1000
     runAsUser: 1000
     runAsNonRoot: true
-  
+
   resources:
     requests:
       memory: "1Gi"
@@ -188,13 +188,13 @@ elasticsearch:
     limits:
       memory: "2Gi"
       cpu: "1000m"
-  
+
   livenessProbe:
     enabled: true
     initialDelaySeconds: 60
     periodSeconds: 15
     timeoutSeconds: 10
-  
+
   readinessProbe:
     enabled: true
     initialDelaySeconds: 30
@@ -208,17 +208,17 @@ postgresMetadata:
     repository: postgres
     tag: "15"
     pullPolicy: IfNotPresent
-  
+
   service:
     type: ClusterIP
     port: 5432
-  
+
   persistence:
     enabled: true
     size: 5Gi
     storageClass: ""
     accessMode: ReadWriteOnce
-  
+
   config:
     user: openmetadata_user
     password: openmetadata_password
@@ -227,32 +227,32 @@ postgresMetadata:
 # Global settings
 global:
   storageClass: ""
-  
+
 # Kafka & Debezium configuration
 kafka:
   enabled: true
-  
+
   broker:
     image:
       repository: confluentinc/cp-enterprise-kafka
       tag: "7.6.0"
       pullPolicy: IfNotPresent
-    
+
     replicas: 1
     nodeId: 1
     clusterId: "Kltcs-KRS8CJybmyyVtXuA"
-    
+
     service:
       type: ClusterIP
       plaintextPort: 9092
       controllerPort: 9093
-    
+
     config:
       offsetsTopicReplicationFactor: "1"
       defaultReplicationFactor: "1"
       minInsyncReplicas: "1"
       numPartitions: "1"
-    
+
     resources:
       requests:
         memory: "512Mi"
@@ -260,18 +260,18 @@ kafka:
       limits:
         memory: "2Gi"
         cpu: "1000m"
-  
+
   schemaRegistry:
     enabled: true
     image:
       repository: confluentinc/cp-schema-registry
       tag: "7.6.0"
       pullPolicy: IfNotPresent
-    
+
     service:
       type: ClusterIP
       port: 8081
-    
+
     resources:
       requests:
         memory: "256Mi"
@@ -279,25 +279,25 @@ kafka:
       limits:
         memory: "1Gi"
         cpu: "500m"
-  
+
   debezium:
     enabled: true
     image:
       repository: votaquangnhat/custom-debezium
       tag: "latest"
       pullPolicy: Always
-    
+
     service:
       type: NodePort
       port: 8083
       nodePort: 30083
-    
+
     config:
       groupId: "cdc-debezium"
       configStorageTopic: "connect_configs"
       offsetStorageTopic: "connect_offsets"
       statusStorageTopic: "connect_status"
-    
+
     resources:
       requests:
         memory: "512Mi"
@@ -305,19 +305,19 @@ kafka:
       limits:
         memory: "2Gi"
         cpu: "1000m"
-  
+
   debeziumUI:
     enabled: true
     image:
       repository: debezium/debezium-ui
       tag: "latest"
       pullPolicy: IfNotPresent
-    
+
     service:
       type: NodePort
       port: 8080
       nodePort: 30080
-    
+
     resources:
       requests:
         memory: "128Mi"
@@ -325,19 +325,19 @@ kafka:
       limits:
         memory: "512Mi"
         cpu: "250m"
-  
+
   controlCenter:
     enabled: true
     image:
       repository: confluentinc/cp-enterprise-control-center
       tag: "7.6.0"
       pullPolicy: IfNotPresent
-    
+
     service:
       type: NodePort
       port: 9021
       nodePort: 30021
-    
+
     resources:
       requests:
         memory: "1Gi"
@@ -349,24 +349,24 @@ kafka:
 # OpenMetadata configuration
 openmetadata:
   enabled: true
-  
+
   postgresMetadata:
     enabled: true
     image:
       repository: docker.getcollate.io/openmetadata/postgresql
       tag: "1.11.0"
       pullPolicy: IfNotPresent
-    
+
     service:
       type: ClusterIP
       port: 5432
-    
+
     persistence:
       enabled: true
       size: 10Gi
       storageClass: ""
       accessMode: ReadWriteOnce
-    
+
     config:
       user: openmetadata_user
       password: openmetadata_password
@@ -374,7 +374,7 @@ openmetadata:
       airflowUser: airflow_user
       airflowPassword: airflow_pass
       airflowDatabase: airflow_db
-    
+
     resources:
       requests:
         memory: "512Mi"
@@ -382,35 +382,35 @@ openmetadata:
       limits:
         memory: "2Gi"
         cpu: "1000m"
-    
+
     livenessProbe:
       enabled: true
       initialDelaySeconds: 60
       periodSeconds: 15
       timeoutSeconds: 10
       failureThreshold: 10
-    
+
     readinessProbe:
       enabled: true
       initialDelaySeconds: 15
       periodSeconds: 15
       timeoutSeconds: 10
       failureThreshold: 10
-  
+
   server:
     enabled: true
     image:
       repository: docker.getcollate.io/openmetadata/server
       tag: "1.11.0"
       pullPolicy: IfNotPresent
-    
+
     replicas: 1
-    
+
     service:
       type: ClusterIP
       httpPort: 8585
       adminPort: 8586
-    
+
     config:
       clusterName: "openmetadata"
       logLevel: "INFO"
@@ -426,7 +426,7 @@ openmetadata:
       pipelineServiceClientEnabled: "true"
       airflowUsername: "admin"
       airflowPassword: "admin"
-    
+
     resources:
       requests:
         memory: "1Gi"
@@ -434,34 +434,34 @@ openmetadata:
       limits:
         memory: "2Gi"
         cpu: "1000m"
-    
+
     livenessProbe:
       enabled: true
       initialDelaySeconds: 60
       periodSeconds: 30
       timeoutSeconds: 10
       failureThreshold: 5
-    
+
     readinessProbe:
       enabled: true
       initialDelaySeconds: 30
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
-  
+
   ingestion:
     enabled: true
     image:
       repository: docker.getcollate.io/openmetadata/ingestion
       tag: "1.11.0"
       pullPolicy: IfNotPresent
-    
+
     replicas: 1
-    
+
     service:
       type: ClusterIP
       port: 8080
-    
+
     persistence:
       dagAirflow:
         enabled: true
@@ -478,7 +478,7 @@ openmetadata:
         size: 2Gi
         storageClass: ""
         accessMode: ReadWriteOnce
-    
+
     config:
       executor: "LocalExecutor"
       dagGeneratedConfigs: "/opt/airflow/dag_generated_configs"
@@ -486,7 +486,7 @@ openmetadata:
       airflowUser: "airflow_user"
       airflowPassword: "airflow_pass"
       dbScheme: "postgresql+psycopg2"
-    
+
     resources:
       requests:
         memory: "1Gi"
@@ -494,30 +494,30 @@ openmetadata:
       limits:
         memory: "2Gi"
         cpu: "1000m"
-  
+
   migration:
     enabled: true
     image:
       repository: docker.getcollate.io/openmetadata/server
       tag: "1.11.0"
       pullPolicy: IfNotPresent
-    
+
     backoffLimit: 3
-  
+
   # Setup Airflow User Job - Creates airflow_user in PostgreSQL Metadata
   setupAirflowUser:
     enabled: true
-    
+
     image:
       repository: postgres
       tag: "15"
       pullPolicy: IfNotPresent
-    
+
     # Airflow database user credentials
     airflowUser: "airflow_user"
     airflowPassword: "airflow_pass"
     airflowDatabase: "airflow_db"
-    
+
     backoffLimit: 3
 
 # MLflow Configuration
@@ -529,13 +529,13 @@ mlflow:
     pullPolicy: IfNotPresent
     # Ensure this matches the version compatible with your python dependencies
     tag: "v2.7.1"
-  
+
   defaultBucket: "mlflow"
-  
+
   service:
     type: ClusterIP
     port: 5000
-  
+
   resources:
     limits:
       memory: 512Mi
@@ -543,7 +543,7 @@ mlflow:
     requests:
       memory: 256Mi
       cpu: 250m
-      
+
 # Additional labels to add to all resources
 commonLabels: {}
 
