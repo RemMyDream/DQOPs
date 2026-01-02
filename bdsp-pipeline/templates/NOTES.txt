@@ -1,0 +1,40 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your release is named {{ .Release.Name }}.
+
+To learn more about the release, try:
+
+  $ helm status {{ .Release.Name }}
+  $ helm get all {{ .Release.Name }}
+
+Installed Components:
+{{- if .Values.postgres.enabled }}
+- PostgreSQL: postgres.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.postgres.service.port }}
+{{- end }}
+{{- if .Values.minio.enabled }}
+- MinIO: 
+  - API: minio.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.minio.service.apiPort }}
+  - Console: minio.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.minio.service.consolePort }}
+{{- end }}
+{{- if .Values.spark.enabled }}
+- Spark:
+  - Master UI: spark-master.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.spark.master.service.webuiPort }}
+  - Master: spark://spark-master.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.spark.master.service.sparkPort }}
+{{- end }}
+{{- if .Values.elasticsearch.enabled }}
+- Elasticsearch: elasticsearch.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.elasticsearch.service.httpPort }}
+{{- end }}
+
+To access services locally:
+{{- if .Values.postgres.enabled }}
+  kubectl port-forward -n {{ include "bdsp-pipeline.namespace" . }} svc/postgres {{ .Values.postgres.service.port }}:{{ .Values.postgres.service.port }}
+{{- end }}
+{{- if .Values.minio.enabled }}
+  kubectl port-forward -n {{ include "bdsp-pipeline.namespace" . }} svc/minio {{ .Values.minio.service.consolePort }}:{{ .Values.minio.service.consolePort }}
+{{- end }}
+{{- if .Values.spark.enabled }}
+  kubectl port-forward -n {{ include "bdsp-pipeline.namespace" . }} svc/spark-master {{ .Values.spark.master.service.webuiPort }}:{{ .Values.spark.master.service.webuiPort }}
+{{- end }}
+{{- if .Values.elasticsearch.enabled }}
+  kubectl port-forward -n {{ include "bdsp-pipeline.namespace" . }} svc/elasticsearch {{ .Values.elasticsearch.service.httpPort }}:{{ .Values.elasticsearch.service.httpPort }}
+{{- end }}
