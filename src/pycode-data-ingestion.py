@@ -243,7 +243,6 @@ def main():
     """Main ingestion pipeline"""
     logger.info("Starting data ingestion pipeline")
     
-
     #ingest_gdelt_events(days=30,max_records=100)
     #ingest_gdelt_gkg(days=30,max_records=100)
     ingest_finnhub_stock_data(symbols=['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META'])

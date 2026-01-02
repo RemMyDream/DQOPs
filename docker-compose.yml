@@ -1,8 +1,8 @@
 services:
   # PostgreSQL - Source Database
-  postgres:
+  data_source:
     image: postgres:15
-    container_name: postgres-source
+    container_name: data_source
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -417,7 +417,6 @@ services:
 
 volumes:
   postgres_data:
-  postgres_metadata_data:
   minio_data:
   elasticsearch_data:
   ingestion-volume-dag-airflow:
