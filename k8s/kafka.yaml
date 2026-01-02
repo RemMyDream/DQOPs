@@ -145,11 +145,8 @@ spec:
     spec:
       containers:
       - name: debezium
-        # NOTE: You must build this image locally and load it into kind:
-        # docker build -t custom-debezium:latest .
-        # kind load docker-image custom-debezium:latest
-        image: custom-debezium:latest
-        imagePullPolicy: Never # Forces Kind to use the loaded local image
+        image: votaquangnhat/custom-debezium:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8083
         env:

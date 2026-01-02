@@ -12,3 +12,15 @@ MinIO layout (Iceberg tables)
 Data flow (current)
 - Finnhub: API → Postgres via `make ingest` (kept in Postgres; optional `make finnhub-to-minio` later).
 - GDELT (events, gkg) + Stooq: API → Spark bronze job (`make bronze`) → MinIO bucket `warehouse/bronze/...`.
+
+
+
+helm command:
+```bash
+# From /mnt/c/Coding/bdsp-test/
+helm upgrade --install bdsp ./bdsp-pipeline \
+    --create-namespace \
+    --namespace dqops \
+    --wait \
+    --timeout 10m
+```

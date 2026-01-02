@@ -1,0 +1,621 @@
+{{- if .Values.openmetadata.enabled }}
+{{- if .Values.openmetadata.postgresMetadata.enabled }}
+# PostgreSQL Metadata
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-metadata-pvc
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: postgres-metadata
+spec:
+  accessModes:
+    - {{ .Values.openmetadata.postgresMetadata.persistence.accessMode }}
+  {{- if .Values.openmetadata.postgresMetadata.persistence.storageClass }}
+  storageClassName: {{ .Values.openmetadata.postgresMetadata.persistence.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.openmetadata.postgresMetadata.persistence.size }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-metadata
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: postgres-metadata
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-metadata
+  template:
+    metadata:
+      labels:
+        app: postgres-metadata
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        fsGroup: 999
+        runAsUser: 999
+        runAsNonRoot: true
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+        command: ["sh", "-c", "chown -R 999:999 /var/lib/postgresql/data && chmod 700 /var/lib/postgresql/data"]
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+          subPath: pgdata
+        securityContext:
+          runAsUser: 0
+          runAsNonRoot: false
+      containers:
+      - name: postgres
+        image: "{{ .Values.openmetadata.postgresMetadata.image.repository }}:{{ .Values.openmetadata.postgresMetadata.image.tag }}"
+        imagePullPolicy: {{ .Values.openmetadata.postgresMetadata.image.pullPolicy }}
+        args: ["postgres", "--work_mem=10MB"]
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-metadata-config
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-metadata-config
+              key: POSTGRES_PASSWORD
+        - name: PGDATA
+          value: /var/lib/postgresql/data
+        ports:
+        - containerPort: {{ .Values.openmetadata.postgresMetadata.service.port }}
+          name: postgres
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+          subPath: pgdata
+        {{- if .Values.openmetadata.postgresMetadata.resources }}
+        resources:
+          {{- toYaml .Values.openmetadata.postgresMetadata.resources | nindent 10 }}
+        {{- end }}
+        {{- if .Values.openmetadata.postgresMetadata.livenessProbe.enabled }}
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "psql -U {{ .Values.openmetadata.postgresMetadata.config.user }} -tAc 'select 1' -d {{ .Values.openmetadata.postgresMetadata.config.database }} || exit 1"
+          initialDelaySeconds: {{ .Values.openmetadata.postgresMetadata.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.openmetadata.postgresMetadata.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.openmetadata.postgresMetadata.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.openmetadata.postgresMetadata.livenessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.openmetadata.postgresMetadata.readinessProbe.enabled }}
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "psql -U {{ .Values.openmetadata.postgresMetadata.config.user }} -tAc 'select 1' -d {{ .Values.openmetadata.postgresMetadata.config.database }} || exit 1"
+          initialDelaySeconds: {{ .Values.openmetadata.postgresMetadata.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.openmetadata.postgresMetadata.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.openmetadata.postgresMetadata.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.openmetadata.postgresMetadata.readinessProbe.failureThreshold }}
+        {{- end }}
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-metadata-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-metadata
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: postgres-metadata
+spec:
+  selector:
+    app: postgres-metadata
+  ports:
+  - port: {{ .Values.openmetadata.postgresMetadata.service.port }}
+    targetPort: {{ .Values.openmetadata.postgresMetadata.service.port }}
+    name: postgres
+  type: {{ .Values.openmetadata.postgresMetadata.service.type }}
+{{- end }}
+---
+{{- if .Values.openmetadata.migration.enabled }}
+# OpenMetadata Migration Job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: openmetadata-migration
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: openmetadata-migration
+spec:
+  template:
+    spec:
+      initContainers:
+      # Wait for PostgreSQL Metadata (service_healthy)
+      - name: wait-for-postgres-metadata
+        image: postgres:15
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for PostgreSQL Metadata to be ready..."
+          until pg_isready -h postgres-metadata -p 5432 -U {{ .Values.openmetadata.postgresMetadata.config.user }}; do
+            echo "PostgreSQL Metadata not ready yet, waiting..."
+            sleep 5
+          done
+          echo "PostgreSQL Metadata is ready!"
+      # Wait for Elasticsearch (service_healthy)
+      - name: wait-for-elasticsearch
+        image: curlimages/curl:8.1.2
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for Elasticsearch to be ready..."
+          until curl -s http://elasticsearch:9200/_cluster/health | grep -E '"status":"(green|yellow)"'; do
+            echo "Elasticsearch not ready yet, waiting..."
+            sleep 5
+          done
+          echo "Elasticsearch is ready!"
+      containers:
+      - name: migration
+        image: "{{ .Values.openmetadata.migration.image.repository }}:{{ .Values.openmetadata.migration.image.tag }}"
+        imagePullPolicy: {{ .Values.openmetadata.migration.image.pullPolicy }}
+        command: ["./bootstrap/openmetadata-ops.sh", "migrate"]
+        env:
+        - name: DB_DRIVER_CLASS
+          value: "org.postgresql.Driver"
+        - name: DB_SCHEME
+          value: "postgresql"
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: DB_USER
+        - name: DB_USER_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: DB_PASSWORD
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: DB_PORT
+        - name: OM_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: OM_DATABASE
+        - name: MIGRATION_LIMIT_PARAM
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: MIGRATION_LIMIT_PARAM
+        - name: SEARCH_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: SEARCH_TYPE
+        - name: ELASTICSEARCH_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: ELASTICSEARCH_HOST
+        - name: ELASTICSEARCH_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: ELASTICSEARCH_PORT
+        - name: ELASTICSEARCH_SCHEME
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: ELASTICSEARCH_SCHEME
+        - name: AUTHENTICATION_PROVIDER
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: AUTHENTICATION_PROVIDER
+        - name: AUTHORIZER_CLASS_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: AUTHORIZER_CLASS_NAME
+        - name: AUTHORIZER_REQUEST_FILTER
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: AUTHORIZER_REQUEST_FILTER
+        - name: AUTHORIZER_ADMIN_PRINCIPALS
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: AUTHORIZER_ADMIN_PRINCIPALS
+        - name: AUTHORIZER_PRINCIPAL_DOMAIN
+          valueFrom:
+            configMapKeyRef:
+              name: openmetadata-server-config
+              key: AUTHORIZER_PRINCIPAL_DOMAIN
+      restartPolicy: Never
+  backoffLimit: {{ .Values.openmetadata.migration.backoffLimit }}
+{{- end }}
+---
+{{- if .Values.openmetadata.server.enabled }}
+# OpenMetadata Server
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmetadata-server
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: openmetadata-server
+spec:
+  replicas: {{ .Values.openmetadata.server.replicas }}
+  selector:
+    matchLabels:
+      app: openmetadata-server
+  template:
+    metadata:
+      labels:
+        app: openmetadata-server
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+      # Wait for PostgreSQL Metadata (service_healthy)
+      - name: wait-for-postgres-metadata
+        image: postgres:15
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for PostgreSQL Metadata to be ready..."
+          until pg_isready -h postgres-metadata -p 5432 -U {{ .Values.openmetadata.postgresMetadata.config.user }}; do
+            echo "PostgreSQL Metadata not ready yet, waiting..."
+            sleep 5
+          done
+          echo "PostgreSQL Metadata is ready!"
+      # Wait for Elasticsearch (service_healthy)
+      - name: wait-for-elasticsearch
+        image: curlimages/curl:8.1.2
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for Elasticsearch to be ready..."
+          until curl -s http://elasticsearch:9200/_cluster/health | grep -E '"status":"(green|yellow)"'; do
+            echo "Elasticsearch not ready yet, waiting..."
+            sleep 5
+          done
+          echo "Elasticsearch is ready!"
+      # Wait for Migration Job to complete (service_completed_successfully)
+      - name: wait-for-migration
+        image: postgres:15
+        env:
+        - name: PGPASSWORD
+          value: "{{ .Values.openmetadata.postgresMetadata.config.password }}"
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for migration to complete..."
+          echo "Checking if openmetadata_db database exists..."
+          until psql -h postgres-metadata -U {{ .Values.openmetadata.postgresMetadata.config.user }} -lqt | cut -d '|' -f 1 | grep -qw "{{ .Values.openmetadata.server.config.database }}"; do
+            echo "Migration not complete yet (database not found), waiting..."
+            sleep 10
+          done
+          echo "Migration completed successfully!"
+      containers:
+      - name: openmetadata-server
+        image: "{{ .Values.openmetadata.server.image.repository }}:{{ .Values.openmetadata.server.image.tag }}"
+        imagePullPolicy: {{ .Values.openmetadata.server.image.pullPolicy }}
+        envFrom:
+        - configMapRef:
+            name: openmetadata-server-config
+        ports:
+        - containerPort: {{ .Values.openmetadata.server.service.httpPort }}
+          name: http
+        - containerPort: {{ .Values.openmetadata.server.service.adminPort }}
+          name: admin
+        {{- if .Values.openmetadata.server.resources }}
+        resources:
+          {{- toYaml .Values.openmetadata.server.resources | nindent 10 }}
+        {{- end }}
+        {{- if .Values.openmetadata.server.livenessProbe.enabled }}
+        livenessProbe:
+          httpGet:
+            path: /healthcheck
+            port: {{ .Values.openmetadata.server.service.adminPort }}
+          initialDelaySeconds: {{ .Values.openmetadata.server.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.openmetadata.server.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.openmetadata.server.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.openmetadata.server.livenessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.openmetadata.server.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: /healthcheck
+            port: {{ .Values.openmetadata.server.service.adminPort }}
+          initialDelaySeconds: {{ .Values.openmetadata.server.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.openmetadata.server.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.openmetadata.server.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.openmetadata.server.readinessProbe.failureThreshold }}
+        {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openmetadata-server
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: openmetadata-server
+spec:
+  selector:
+    app: openmetadata-server
+  ports:
+  - name: http
+    port: {{ .Values.openmetadata.server.service.httpPort }}
+    targetPort: {{ .Values.openmetadata.server.service.httpPort }}
+  - name: admin
+    port: {{ .Values.openmetadata.server.service.adminPort }}
+    targetPort: {{ .Values.openmetadata.server.service.adminPort }}
+  type: {{ .Values.openmetadata.server.service.type }}
+{{- end }}
+---
+{{- if .Values.openmetadata.ingestion.enabled }}
+# OpenMetadata Ingestion (Airflow)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ingestion-dag-airflow-pvc
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: ingestion
+spec:
+  accessModes:
+    - {{ .Values.openmetadata.ingestion.persistence.dagAirflow.accessMode }}
+  {{- if .Values.openmetadata.ingestion.persistence.dagAirflow.storageClass }}
+  storageClassName: {{ .Values.openmetadata.ingestion.persistence.dagAirflow.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.openmetadata.ingestion.persistence.dagAirflow.size }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ingestion-dags-pvc
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: ingestion
+spec:
+  accessModes:
+    - {{ .Values.openmetadata.ingestion.persistence.dags.accessMode }}
+  {{- if .Values.openmetadata.ingestion.persistence.dags.storageClass }}
+  storageClassName: {{ .Values.openmetadata.ingestion.persistence.dags.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.openmetadata.ingestion.persistence.dags.size }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ingestion-tmp-pvc
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: ingestion
+spec:
+  accessModes:
+    - {{ .Values.openmetadata.ingestion.persistence.tmp.accessMode }}
+  {{- if .Values.openmetadata.ingestion.persistence.tmp.storageClass }}
+  storageClassName: {{ .Values.openmetadata.ingestion.persistence.tmp.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.openmetadata.ingestion.persistence.tmp.size }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingestion
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: ingestion
+spec:
+  replicas: {{ .Values.openmetadata.ingestion.replicas }}
+  selector:
+    matchLabels:
+      app: ingestion
+  template:
+    metadata:
+      labels:
+        app: ingestion
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+      # Wait for Elasticsearch
+      - name: wait-for-elasticsearch
+        image: curlimages/curl:8.1.2
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for Elasticsearch to be ready..."
+          until curl -s http://elasticsearch:9200/_cluster/health | grep -E '"status":"(green|yellow)"'; do
+            echo "Elasticsearch not ready yet, waiting..."
+            sleep 5
+          done
+          echo "Elasticsearch is ready!"
+      # Wait for PostgreSQL Metadata
+      - name: wait-for-postgres-metadata
+        image: postgres:15
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for PostgreSQL Metadata to be ready..."
+          until pg_isready -h postgres-metadata -p 5432 -U {{ .Values.openmetadata.postgresMetadata.config.user }}; do
+            echo "PostgreSQL Metadata not ready yet, waiting..."
+            sleep 5
+          done
+          echo "PostgreSQL Metadata is ready!"
+      # Wait for OpenMetadata Server (service_started, not healthy)
+      - name: wait-for-openmetadata-server
+        image: curlimages/curl:8.1.2
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for OpenMetadata Server to start..."
+          until curl -sf http://openmetadata-server:{{ .Values.openmetadata.server.service.httpPort }}; do
+            echo "OpenMetadata Server not started yet, waiting..."
+            sleep 10
+          done
+          echo "OpenMetadata Server is started!"
+      # Wait for setup-airflow-user job to complete
+      - name: wait-for-setup-airflow-user
+        image: postgres:15
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for setup-airflow-user job to complete..."
+          echo "Verifying airflow_user exists in PostgreSQL..."
+          until PGPASSWORD={{ .Values.openmetadata.postgresMetadata.config.password }} psql -h postgres-metadata -U {{ .Values.openmetadata.postgresMetadata.config.user }} -d postgres -tAc "SELECT 1 FROM pg_user WHERE usename='{{ .Values.openmetadata.setupAirflowUser.airflowUser }}'" | grep -q 1; do
+            echo "Airflow user not found yet, waiting for setup job to complete..."
+            sleep 5
+          done
+          echo "Airflow user setup completed successfully!"
+      containers:
+      - name: ingestion
+        image: "{{ .Values.openmetadata.ingestion.image.repository }}:{{ .Values.openmetadata.ingestion.image.tag }}"
+        imagePullPolicy: {{ .Values.openmetadata.ingestion.image.pullPolicy }}
+        envFrom:
+        - configMapRef:
+            name: ingestion-config
+        command: ["/bin/bash"]
+        args:
+        - "/opt/airflow/ingestion_dependency.sh"
+        ports:
+        - containerPort: {{ .Values.openmetadata.ingestion.service.port }}
+          name: http
+        volumeMounts:
+        - name: dag-airflow
+          mountPath: /opt/airflow/dag_generated_configs
+        - name: dags
+          mountPath: /opt/airflow/dags
+        - name: tmp
+          mountPath: /tmp
+        {{- if .Values.openmetadata.ingestion.resources }}
+        resources:
+          {{- toYaml .Values.openmetadata.ingestion.resources | nindent 10 }}
+        {{- end }}
+      volumes:
+      - name: dag-airflow
+        persistentVolumeClaim:
+          claimName: ingestion-dag-airflow-pvc
+      - name: dags
+        persistentVolumeClaim:
+          claimName: ingestion-dags-pvc
+      - name: tmp
+        persistentVolumeClaim:
+          claimName: ingestion-tmp-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingestion
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: ingestion
+spec:
+  selector:
+    app: ingestion
+  ports:
+  - port: {{ .Values.openmetadata.ingestion.service.port }}
+    targetPort: {{ .Values.openmetadata.ingestion.service.port }}
+    name: http
+  type: {{ .Values.openmetadata.ingestion.service.type }}
+{{- end }}
+---
+{{- if .Values.openmetadata.setupAirflowUser.enabled }}
+# Setup Airflow User Job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: setup-airflow-user
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: setup-airflow-user
+spec:
+  template:
+    metadata:
+      labels:
+        app: setup-airflow-user
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: {{ .Values.openmetadata.setupAirflowUser.image.repository }}:{{ .Values.openmetadata.setupAirflowUser.image.tag }}
+        command:
+        - sh
+        - -c
+        - |
+          until pg_isready -h postgres-metadata -p 5432 -U {{ .Values.openmetadata.postgresMetadata.config.user }}; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+          echo "PostgreSQL is ready!"
+      containers:
+      - name: setup-airflow-user
+        image: {{ .Values.openmetadata.setupAirflowUser.image.repository }}:{{ .Values.openmetadata.setupAirflowUser.image.tag }}
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-metadata-secret
+              key: POSTGRES_PASSWORD
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-metadata-secret
+              key: POSTGRES_USER
+        command: ["/bin/bash", "/scripts/setup-airflow-user.sh"]
+        volumeMounts:
+        - name: setup-script
+          mountPath: /scripts
+      volumes:
+      - name: setup-script
+        configMap:
+          name: setup-airflow-user-script
+          defaultMode: 0755
+      restartPolicy: OnFailure
+  backoffLimit: {{ .Values.openmetadata.setupAirflowUser.backoffLimit }}
+{{- end }}
+{{- end }}
