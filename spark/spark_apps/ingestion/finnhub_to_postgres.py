@@ -195,7 +195,6 @@ class AppConfig:
 
 
 def create_ingestion_service(config_path: str = "utils/config.yaml") -> StockIngestionService:
-    """Factory function to create ingestion service with dependencies."""
     app_config = AppConfig(config_path)
 
     db_client = DatabaseClient(app_config.database_config)
