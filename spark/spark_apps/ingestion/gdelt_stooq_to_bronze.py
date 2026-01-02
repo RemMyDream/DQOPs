@@ -24,7 +24,6 @@ MINIO_ACCESS_KEY = lakehouse_cfg.get('root_user')
 MINIO_SECRET_KEY = lakehouse_cfg.get('root_password')
 BIGQUERY_API_KEY = "utils/bigquery_api.json"
 
-
 @dataclass
 class StooqConfig:
     tickers: List[str]
@@ -36,25 +35,6 @@ class GdeltConfig:
     start_date: str
     end_date: str
     stock_config: Dict[str, Dict]
-
-
-def ensure_bucket_exists(bucket_name: str) -> None:
-    try:
-        client = Minio(
-            endpoint=MINIO_ENDPOINT,
-            access_key=MINIO_ACCESS_KEY,
-            secret_key=MINIO_SECRET_KEY,
-            secure=False
-        )
-        
-        if not client.bucket_exists(bucket_name):
-            client.make_bucket(bucket_name)
-            logger.info(f"Created bucket: {bucket_name}")
-        else:
-            logger.info(f"Bucket exists: {bucket_name}")
-    except S3Error as e:
-        logger.error(f"MinIO error: {e}")
-        raise
 
 
 class DataProvider(ABC):
@@ -207,9 +187,7 @@ class IcebergWriter:
         if df is None or df.empty:
             self._logger.warning("No data to write")
             return 0
-        
-        ensure_bucket_exists(self.catalog)
-        
+                
         if table_name == "gdelt_gkg":
             if 'date' in df.columns:
                 df['date'] = pd.to_datetime(df['date'].astype(str), format='%Y%m%d%H%M%S', errors='coerce')
@@ -344,16 +322,7 @@ def main():
     
     gdelt_start = '2020-01-02'
     gdelt_end = '2020-02-02'
-    stock_config = {
-        'NVDA': {
-            'aliases': ['nvidia', 'jensen huang', 'geforce', 'rtx', 'nvda'],
-            'blacklist': []
-        },
-        'MSFT': {
-            'aliases': ['microsoft', 'satya nadella', 'azure', 'msft'],
-            'blacklist': []
-        }
-    }
+    stock_config = load_cfg("utils/config.yaml")['stock_config']
     
     try:
         logger.info("=== Ingesting Stooq Data ===")

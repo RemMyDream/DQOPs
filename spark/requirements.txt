@@ -18,3 +18,5 @@ pyarrow==14.0.2
 pyiceberg[s3fs]>=0.7.0
 google-cloud-bigquery==3.11.4
 db-dtypes
+torch>=2.0,<3.0
+transformers>=4.36,<5.0
