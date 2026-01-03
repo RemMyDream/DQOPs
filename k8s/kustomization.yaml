@@ -22,4 +22,12 @@ resources:
 configMapGenerator:
   - name: superset-python-config
     files:
+<<<<<<< HEAD
+=======
+      - config.py
+
+configMapGenerator:
+  - name: superset-python-config
+    files:
+>>>>>>> 3e1d4cc
       - config.py

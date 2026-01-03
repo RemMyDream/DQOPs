@@ -103,6 +103,8 @@ spec:
           mc mb myminio/bronze --ignore-existing
           mc mb myminio/silver --ignore-existing
           mc mb myminio/gold --ignore-existing
+          mc alias set myminio http://minio:9000 admin password
+          mc mb myminio/warehouse --ignore-existing
           echo 'Buckets created successfully'
       restartPolicy: OnFailure
   backoffLimit: 3

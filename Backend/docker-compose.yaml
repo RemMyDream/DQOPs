@@ -12,7 +12,7 @@ services:
       - ../data_quality:/app/data_quality
     restart: unless-stopped
     networks:
-      - default
+      - data-pipeline
     depends_on:
       internal_database:
         condition: service_healthy
@@ -33,8 +33,8 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - default
+      - data-pipeline
 networks:
   default:
-    name: bigdata-net
+    name: data-pipeline
     external: True
