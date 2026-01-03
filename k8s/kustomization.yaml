@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: dqops
+
+resources:
+  - namespace.yaml
+  - configmaps.yaml
+  - secrets.yaml
+  - postgres.yaml
+  - postgres-metadata.yaml
+  - minio.yaml
+  - elasticsearch.yaml
+  - spark.yaml
+  - setup-airflow-user.yaml
+  - openmetadata-migration.yaml
+  - openmetadata-server.yaml
+  - openmetadata-ingestion.yaml
+
