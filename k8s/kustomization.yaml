@@ -18,8 +18,4 @@ resources:
   - openmetadata-ingestion.yaml
   - airflow.yaml
   - backend.yaml
-  
-configMapGenerator:
-  - name: superset-python-config
-    files:
-      - config.py
+

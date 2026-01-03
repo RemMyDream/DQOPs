@@ -33,7 +33,7 @@ choco install kubernetes-cli
 
 ```bash
 #change docker config
-#step 1
+#step 1 run admin
 .\configure_wsl.ps1
 #step 2
 wsl --shutdown
