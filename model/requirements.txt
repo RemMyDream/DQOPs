@@ -1,0 +1,10 @@
+tensorflow>=2.15.0,<2.17.0
+keras-tuner>=1.4.0
+numpy
+pandas
+scikit-learn
+scipy
+pyarrow
+minio
+mlflow>=2.10.0
+joblib>=1.3.0
