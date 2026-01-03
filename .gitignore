@@ -1,6 +1,15 @@
 .venv
 __pycache__/
 spark/
+yeucau.txt
+.env
+test-notebook.ipynb
+docker-compose-postgres (reference).yml
+data_pipeline
+.DS_Store
+.venv
+__pycache__/
+spark/
 docs/
 .env
 notebooks/
