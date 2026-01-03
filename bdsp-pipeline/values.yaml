@@ -520,6 +520,30 @@ openmetadata:
     
     backoffLimit: 3
 
+# MLflow Configuration
+mlflow:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: ghcr.io/mlflow/mlflow
+    pullPolicy: IfNotPresent
+    # Ensure this matches the version compatible with your python dependencies
+    tag: "v2.7.1"
+  
+  defaultBucket: "mlflow"
+  
+  service:
+    type: ClusterIP
+    port: 5000
+  
+  resources:
+    limits:
+      memory: 512Mi
+      cpu: 500m
+    requests:
+      memory: 256Mi
+      cpu: 250m
+      
 # Additional labels to add to all resources
 commonLabels: {}
 
