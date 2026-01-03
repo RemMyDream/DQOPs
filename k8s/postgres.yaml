@@ -55,7 +55,7 @@ spec:
             command:
             - pg_isready
             - -U
-            - postgres 
+            - postgres
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:

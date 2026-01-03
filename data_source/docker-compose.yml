@@ -22,8 +22,7 @@ volumes:
   postgres_data:
   minio_data:
 
-
 networks:
   data-pipeline:
     name: data-pipeline
-    driver: bridge
+    external: true
