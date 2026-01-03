@@ -376,7 +376,8 @@ services:
     environment:
       SUPERSET_SECRET_KEY: "demo_secret_key"
       FEATURE_FLAGS: '{"ALLOW_DATA_UPLOAD": true}'
-      _PIP_INSTALL: "clickhouse-connect"
+    entrypoint: >
+      /bin/sh -c " pip install clickhouse-connect -t /app/.venv/lib/python3.10/site-packages && /usr/bin/run-server.sh "
     ports:
       - "8088:8088"
     networks:
