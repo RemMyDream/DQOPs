@@ -1,0 +1,115 @@
+{{- if .Values.spark.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-master
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: spark-master
+spec:
+  replicas: {{ .Values.spark.master.replicas }}
+  selector:
+    matchLabels:
+      app: spark-master
+  template:
+    metadata:
+      labels:
+        app: spark-master
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: spark-master
+        image: "{{ .Values.spark.master.image.repository }}:{{ .Values.spark.master.image.tag }}"
+        imagePullPolicy: {{ .Values.spark.master.image.pullPolicy }}
+        env:
+        - name: SPARK_MODE
+          value: {{ .Values.spark.master.env.sparkMode | quote }}
+        - name: SPARK_MASTER_HOST
+          value: {{ .Values.spark.master.env.sparkMasterHost | quote }}
+        - name: SPARK_MASTER_PORT
+          value: {{ .Values.spark.master.env.sparkMasterPort | quote }}
+        - name: SPARK_MASTER_WEBUI_PORT
+          value: {{ .Values.spark.master.env.sparkMasterWebuiPort | quote }}
+        command:
+        - /opt/spark/bin/spark-class
+        - org.apache.spark.deploy.master.Master
+        ports:
+        - containerPort: {{ .Values.spark.master.service.sparkPort }}
+          name: spark
+        - containerPort: {{ .Values.spark.master.service.webuiPort }}
+          name: web-ui
+        {{- if .Values.spark.master.resources }}
+        resources:
+          {{- toYaml .Values.spark.master.resources | nindent 10 }}
+        {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-master
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: spark-master
+spec:
+  selector:
+    app: spark-master
+  ports:
+  - name: webui
+    port: {{ .Values.spark.master.service.webuiPort }}
+    targetPort: {{ .Values.spark.master.service.webuiPort }}
+  - name: master
+    port: {{ .Values.spark.master.service.sparkPort }}
+    targetPort: {{ .Values.spark.master.service.sparkPort }}
+  - name: app-ui
+    port: {{ .Values.spark.master.service.appUIPort }}
+    targetPort: {{ .Values.spark.master.service.appUIPort }}
+  type: {{ .Values.spark.master.service.type }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-worker
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: spark-worker
+spec:
+  replicas: {{ .Values.spark.worker.replicas }}
+  selector:
+    matchLabels:
+      app: spark-worker
+  template:
+    metadata:
+      labels:
+        app: spark-worker
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: spark-worker
+        image: "{{ .Values.spark.worker.image.repository }}:{{ .Values.spark.worker.image.tag }}"
+        imagePullPolicy: {{ .Values.spark.worker.image.pullPolicy }}
+        env:
+        - name: SPARK_MODE
+          value: {{ .Values.spark.worker.env.sparkMode | quote }}
+        - name: SPARK_MASTER_URL
+          value: "spark://spark-master:{{ .Values.spark.master.service.sparkPort }}"
+        - name: SPARK_WORKER_CORES
+          value: {{ .Values.spark.worker.env.sparkWorkerCores | quote }}
+        - name: SPARK_WORKER_MEMORY
+          value: {{ .Values.spark.worker.env.sparkWorkerMemory | quote }}
+        - name: SPARK_WORKER_WEBUI_PORT
+          value: {{ .Values.spark.worker.env.sparkWorkerWebuiPort | quote }}
+        command:
+        - /opt/spark/bin/spark-class
+        - org.apache.spark.deploy.worker.Worker
+        - "spark://spark-master:{{ .Values.spark.master.service.sparkPort }}"
+        ports:
+        - containerPort: 8081
+          name: webui
+        {{- if .Values.spark.worker.resources }}
+        resources:
+          {{- toYaml .Values.spark.worker.resources | nindent 10 }}
+        {{- end }}
+{{- end }}

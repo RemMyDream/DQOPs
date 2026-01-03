@@ -1,0 +1,358 @@
+{{- if .Values.kafka.enabled }}
+# Kafka Broker
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-node-1
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: kafka-node-1
+spec:
+  ports:
+  - port: {{ .Values.kafka.broker.service.plaintextPort }}
+    name: plaintext
+  - port: {{ .Values.kafka.broker.service.controllerPort }}
+    name: controller
+  selector:
+    app: kafka-node-1
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-node-1
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: kafka-node-1
+spec:
+  replicas: {{ .Values.kafka.broker.replicas }}
+  selector:
+    matchLabels:
+      app: kafka-node-1
+  template:
+    metadata:
+      labels:
+        app: kafka-node-1
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: kafka
+        image: "{{ .Values.kafka.broker.image.repository }}:{{ .Values.kafka.broker.image.tag }}"
+        imagePullPolicy: {{ .Values.kafka.broker.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.kafka.broker.service.plaintextPort }}
+        - containerPort: {{ .Values.kafka.broker.service.controllerPort }}
+        env:
+        - name: KAFKA_NODE_ID
+          value: {{ .Values.kafka.broker.nodeId | quote }}
+        - name: CLUSTER_ID
+          value: {{ .Values.kafka.broker.clusterId | quote }}
+        - name: KAFKA_PROCESS_ROLES
+          value: "broker,controller"
+        - name: KAFKA_LISTENERS
+          value: "PLAINTEXT://:{{ .Values.kafka.broker.service.plaintextPort }},CONTROLLER://:{{ .Values.kafka.broker.service.controllerPort }}"
+        - name: KAFKA_ADVERTISED_LISTENERS
+          value: "PLAINTEXT://kafka-node-1.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.kafka.broker.service.plaintextPort }}"
+        - name: KAFKA_CONTROLLER_LISTENER_NAMES
+          value: "CONTROLLER"
+        - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+          value: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+        - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+          value: "{{ .Values.kafka.broker.nodeId }}@kafka-node-1.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.kafka.broker.service.controllerPort }}"
+        - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+          value: {{ .Values.kafka.broker.config.offsetsTopicReplicationFactor | quote }}
+        - name: KAFKA_DEFAULT_REPLICATION_FACTOR
+          value: {{ .Values.kafka.broker.config.defaultReplicationFactor | quote }}
+        - name: KAFKA_MIN_INSYNC_REPLICAS
+          value: {{ .Values.kafka.broker.config.minInsyncReplicas | quote }}
+        - name: KAFKA_NUM_PARTITIONS
+          value: {{ .Values.kafka.broker.config.numPartitions | quote }}
+        - name: KAFKA_METRIC_REPORTERS
+          value: "io.confluent.metrics.reporter.ConfluentMetricsReporter"
+        - name: KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS
+          value: "kafka-node-1.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.kafka.broker.service.plaintextPort }}"
+        {{- if .Values.kafka.broker.resources }}
+        resources:
+          {{- toYaml .Values.kafka.broker.resources | nindent 10 }}
+        {{- end }}
+---
+{{- if .Values.kafka.schemaRegistry.enabled }}
+# Schema Registry
+apiVersion: v1
+kind: Service
+metadata:
+  name: schema-registry-svc
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: schema-registry-svc
+spec:
+  ports:
+  - port: {{ .Values.kafka.schemaRegistry.service.port }}
+    name: http
+  selector:
+    app: schema-registry-svc
+  type: {{ .Values.kafka.schemaRegistry.service.type }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schema-registry
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: schema-registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: schema-registry
+  template:
+    metadata:
+      labels:
+        app: schema-registry
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+      - name: wait-for-kafka
+        image: busybox:1.28
+        command: ['sh', '-c', "until nc -z -w 2 kafka-node-1 {{ .Values.kafka.broker.service.plaintextPort }}; do echo waiting for kafka; sleep 2; done;"]
+      containers:
+      - name: schema-registry
+        image: "{{ .Values.kafka.schemaRegistry.image.repository }}:{{ .Values.kafka.schemaRegistry.image.tag }}"
+        imagePullPolicy: {{ .Values.kafka.schemaRegistry.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.kafka.schemaRegistry.service.port }}
+        env:
+        - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
+          value: "kafka-node-1:{{ .Values.kafka.broker.service.plaintextPort }}"
+        - name: SCHEMA_REGISTRY_HOST_NAME
+          value: "schema-registry"
+        - name: SCHEMA_REGISTRY_LISTENERS
+          value: "http://0.0.0.0:{{ .Values.kafka.schemaRegistry.service.port }}"
+        - name: KAFKA_SCHEMA_REGISTRY_TOPIC_REPLICATION_FACTOR
+          value: "1"
+        {{- if .Values.kafka.schemaRegistry.resources }}
+        resources:
+          {{- toYaml .Values.kafka.schemaRegistry.resources | nindent 10 }}
+        {{- end }}
+{{- end }}
+---
+{{- if .Values.kafka.debezium.enabled }}
+# Debezium Connect
+apiVersion: v1
+kind: Service
+metadata:
+  name: debezium
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: debezium
+spec:
+  type: {{ .Values.kafka.debezium.service.type }}
+  ports:
+  - port: {{ .Values.kafka.debezium.service.port }}
+    targetPort: {{ .Values.kafka.debezium.service.port }}
+    {{- if eq .Values.kafka.debezium.service.type "NodePort" }}
+    nodePort: {{ .Values.kafka.debezium.service.nodePort }}
+    {{- end }}
+  selector:
+    app: debezium
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: debezium
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: debezium
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: debezium
+  template:
+    metadata:
+      labels:
+        app: debezium
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+      - name: wait-for-kafka
+        image: busybox:1.28
+        command: ['sh', '-c', "until nc -z -w 2 kafka-node-1 {{ .Values.kafka.broker.service.plaintextPort }}; do echo waiting for kafka; sleep 2; done;"]
+      - name: wait-for-schema-registry
+        image: busybox:1.28
+        command: ['sh', '-c', "until nc -z -w 2 schema-registry {{ .Values.kafka.schemaRegistry.service.port }}; do echo waiting for schema-registry; sleep 2; done;"]
+      containers:
+      - name: debezium
+        image: "{{ .Values.kafka.debezium.image.repository }}:{{ .Values.kafka.debezium.image.tag }}"
+        imagePullPolicy: {{ .Values.kafka.debezium.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.kafka.debezium.service.port }}
+        env:
+        - name: BOOTSTRAP_SERVERS
+          value: "kafka-node-1:{{ .Values.kafka.broker.service.plaintextPort }}"
+        - name: GROUP_ID
+          value: {{ .Values.kafka.debezium.config.groupId | quote }}
+        - name: CONFIG_STORAGE_TOPIC
+          value: {{ .Values.kafka.debezium.config.configStorageTopic | quote }}
+        - name: OFFSET_STORAGE_TOPIC
+          value: {{ .Values.kafka.debezium.config.offsetStorageTopic | quote }}
+        - name: STATUS_STORAGE_TOPIC
+          value: {{ .Values.kafka.debezium.config.statusStorageTopic | quote }}
+        - name: KEY_CONVERTER
+          value: "io.confluent.connect.avro.AvroConverter"
+        - name: VALUE_CONVERTER
+          value: "io.confluent.connect.avro.AvroConverter"
+        - name: KEY_CONVERTER_SCHEMA_REGISTRY_URL
+          value: "http://schema-registry:{{ .Values.kafka.schemaRegistry.service.port }}"
+        - name: VALUE_CONVERTER_SCHEMA_REGISTRY_URL
+          value: "http://schema-registry:{{ .Values.kafka.schemaRegistry.service.port }}"
+        {{- if .Values.kafka.debezium.resources }}
+        resources:
+          {{- toYaml .Values.kafka.debezium.resources | nindent 10 }}
+        {{- end }}
+{{- end }}
+---
+{{- if .Values.kafka.debeziumUI.enabled }}
+# Debezium UI
+apiVersion: v1
+kind: Service
+metadata:
+  name: debezium-ui
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: debezium-ui
+spec:
+  type: {{ .Values.kafka.debeziumUI.service.type }}
+  ports:
+  - port: {{ .Values.kafka.debeziumUI.service.port }}
+    targetPort: {{ .Values.kafka.debeziumUI.service.port }}
+    {{- if eq .Values.kafka.debeziumUI.service.type "NodePort" }}
+    nodePort: {{ .Values.kafka.debeziumUI.service.nodePort }}
+    {{- end }}
+  selector:
+    app: debezium-ui
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: debezium-ui
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: debezium-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: debezium-ui
+  template:
+    metadata:
+      labels:
+        app: debezium-ui
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+      - name: wait-for-debezium
+        image: busybox:1.28
+        command: ['sh', '-c', "until nc -z -w 2 debezium {{ .Values.kafka.debezium.service.port }}; do echo waiting for debezium; sleep 2; done;"]
+      containers:
+      - name: debezium-ui
+        image: "{{ .Values.kafka.debeziumUI.image.repository }}:{{ .Values.kafka.debeziumUI.image.tag }}"
+        imagePullPolicy: {{ .Values.kafka.debeziumUI.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.kafka.debeziumUI.service.port }}
+        env:
+        - name: KAFKA_CONNECT_URIS
+          value: "http://debezium:{{ .Values.kafka.debezium.service.port }}"
+        {{- if .Values.kafka.debeziumUI.resources }}
+        resources:
+          {{- toYaml .Values.kafka.debeziumUI.resources | nindent 10 }}
+        {{- end }}
+{{- end }}
+---
+{{- if .Values.kafka.controlCenter.enabled }}
+# Control Center
+apiVersion: v1
+kind: Service
+metadata:
+  name: control-center
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: control-center
+spec:
+  type: {{ .Values.kafka.controlCenter.service.type }}
+  ports:
+  - port: {{ .Values.kafka.controlCenter.service.port }}
+    targetPort: {{ .Values.kafka.controlCenter.service.port }}
+    {{- if eq .Values.kafka.controlCenter.service.type "NodePort" }}
+    nodePort: {{ .Values.kafka.controlCenter.service.nodePort }}
+    {{- end }}
+  selector:
+    app: control-center
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: control-center
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: control-center
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: control-center
+  template:
+    metadata:
+      labels:
+        app: control-center
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+      - name: wait-for-kafka
+        image: busybox:1.28
+        command: ['sh', '-c', "until nc -z -w 2 kafka-node-1 {{ .Values.kafka.broker.service.plaintextPort }}; do echo waiting for kafka; sleep 2; done;"]
+      - name: wait-for-schema-registry
+        image: busybox:1.28
+        command: ['sh', '-c', "until nc -z -w 2 schema-registry {{ .Values.kafka.schemaRegistry.service.port }}; do echo waiting for schema-registry; sleep 2; done;"]
+      - name: wait-for-debezium
+        image: busybox:1.28
+        command: ['sh', '-c', "until nc -z -w 2 debezium {{ .Values.kafka.debezium.service.port }}; do echo waiting for debezium; sleep 2; done;"]
+      containers:
+      - name: control-center
+        image: "{{ .Values.kafka.controlCenter.image.repository }}:{{ .Values.kafka.controlCenter.image.tag }}"
+        imagePullPolicy: {{ .Values.kafka.controlCenter.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.kafka.controlCenter.service.port }}
+        env:
+        - name: CONTROL_CENTER_BOOTSTRAP_SERVERS
+          value: "kafka-node-1:{{ .Values.kafka.broker.service.plaintextPort }}"
+        - name: CONTROL_CENTER_SCHEMA_REGISTRY_URL
+          value: "http://schema-registry:{{ .Values.kafka.schemaRegistry.service.port }}"
+        - name: CONTROL_CENTER_CONNECT_HEALTHCHECK_ENDPOINT
+          value: "/connectors"
+        - name: CONTROL_CENTER_CONNECT_CONNECT-DEFAULT_CLUSTER
+          value: "debezium:{{ .Values.kafka.debezium.service.port }}"
+        - name: CONTROL_CENTER_REPLICATION_FACTOR
+          value: "1"
+        - name: CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS
+          value: "1"
+        - name: KAFKA_METRIC_REPORTERS
+          value: "io.confluent.metrics.reporter.ConfluentMetricsReporter"
+        - name: KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS
+          value: "kafka-node-1:{{ .Values.kafka.broker.service.plaintextPort }}"
+        {{- if .Values.kafka.controlCenter.resources }}
+        resources:
+          {{- toYaml .Values.kafka.controlCenter.resources | nindent 10 }}
+        {{- end }}
+{{- end }}
+{{- end }}

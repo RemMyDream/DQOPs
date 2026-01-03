@@ -1,0 +1,61 @@
+# Custom values for production environment
+
+namespace: dqops
+
+postgres:
+  enabled: true
+  persistence:
+    size: 50Gi
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+minio:
+  enabled: true
+  persistence:
+    size: 100Gi
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+spark:
+  enabled: true
+  master:
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "500m"
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"
+  worker:
+    replicas: 3
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1000m"
+      limits:
+        memory: "8Gi"
+        cpu: "4000m"
+
+elasticsearch:
+  enabled: true
+  persistence:
+    size: 50Gi
+  config:
+    javaOpts: "-Xms2048m -Xmx2048m"
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "500m"
+    limits:
+      memory: "4Gi"
+      cpu: "2000m"
