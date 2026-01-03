@@ -1,12 +1,14 @@
 import sys
 import os
 from typing import List
+import pandas as pd
 from pyspark.sql import SparkSession, DataFrame, Window
 from pyspark.sql.functions import (
-    col, avg, stddev, lag, greatest, log, when, lit,
-    current_timestamp, row_number, abs as spark_abs,
+    col, avg, stddev, lag, greatest, log, when, lit, to_date,
+    current_timestamp, abs as spark_abs,
     sum as spark_sum, min as spark_min, max as spark_max
 )
+from pyspark.sql.types import StructType, StructField, DoubleType, DateType, StringType
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -15,6 +17,7 @@ from utils.helpers import create_logger
 
 logger = create_logger("bronze_to_silver_stooq")
 
+
 class StooqSilverProcessor:
     
     def __init__(self, spark: SparkSession):
@@ -22,7 +25,7 @@ class StooqSilverProcessor:
     
     def process_ticker(self, df: DataFrame, ticker: str) -> DataFrame:
         df = df.select(
-            col("date").alias("Date"),
+            to_date(col("date")).alias("Date"),
             col("open").alias("Open"),
             col("high").alias("High"),
             col("low").alias("Low"),
@@ -32,12 +35,10 @@ class StooqSilverProcessor:
         )
         
         df = df.filter(col("ticker") == ticker)
-        window_spec = Window.partitionBy("ticker").orderBy("Date")
+        window_spec = Window.partitionBy("ticker").orderBy(col("Date"))
         
         df = self._calculate_moving_averages(df, window_spec)
-        df = self._calculate_ema(df, window_spec)
-        df = self._calculate_macd(df)
-        df = self._calculate_rsi(df, window_spec)
+        df = self._calculate_technical_indicators_pandas(df)
         df = self._calculate_stochastic(df, window_spec)
         df = self._calculate_roc(df, window_spec)
         df = self._calculate_bollinger_bands(df, window_spec)
@@ -47,57 +48,62 @@ class StooqSilverProcessor:
         df = self._calculate_price_changes(df, window_spec)
         
         return df
-    
+        
     def _calculate_moving_averages(self, df: DataFrame, window_spec) -> DataFrame:
         periods = [5, 10, 20, 50, 200]
         for period in periods:
-            window = Window.partitionBy("ticker").orderBy("Date").rowsBetween(-period + 1, 0)
+            window = Window.partitionBy("ticker").orderBy(col("Date")).rowsBetween(-period + 1, 0)
             df = df.withColumn(f"MA_{period}", avg("Close").over(window))
         return df
-    
-    def _calculate_ema(self, df: DataFrame, window_spec) -> DataFrame:
-        periods = [12, 26, 50, 200]
+
+    def _calculate_technical_indicators_pandas(self, df: DataFrame) -> DataFrame:        
+        schema = StructType([
+            StructField("Date", DateType(), True),
+            StructField("ticker", StringType(), True),
+            StructField("EMA_12", DoubleType(), True),
+            StructField("EMA_26", DoubleType(), True),
+            StructField("EMA_50", DoubleType(), True),
+            StructField("EMA_200", DoubleType(), True),
+            StructField("MACD", DoubleType(), True),
+            StructField("MACD_signal", DoubleType(), True),
+            StructField("MACD_hist", DoubleType(), True),
+            StructField("RSI", DoubleType(), True),
+        ])
         
-        for period in periods:
-            alpha = 2.0 / (period + 1)
-            window_sma = Window.partitionBy("ticker").orderBy("Date").rowsBetween(-period + 1, 0)
+        def calc_indicators(pdf: pd.DataFrame) -> pd.DataFrame:
+            pdf = pdf.sort_values("Date").reset_index(drop=True)
             
-            df = df.withColumn(f"EMA_{period}_init", avg("Close").over(window_sma))
-            df = df.withColumn(
-                f"EMA_{period}",
-                when(
-                    row_number().over(window_spec) <= period,
-                    col(f"EMA_{period}_init")
-                ).otherwise(
-                    col("Close") * lit(alpha) + col(f"EMA_{period}_init") * lit(1 - alpha)
-                )
-            ).drop(f"EMA_{period}_init")
+            # EMA
+            for period in [12, 26, 50, 200]:
+                pdf[f"EMA_{period}"] = pdf["Close"].ewm(span=period, adjust=False).mean()
+            
+            # MACD
+            pdf["MACD"] = pdf["EMA_12"] - pdf["EMA_26"]
+            pdf["MACD_signal"] = pdf["MACD"].ewm(span=9, adjust=False).mean()
+            pdf["MACD_hist"] = pdf["MACD"] - pdf["MACD_signal"]
+            
+            delta = pdf["Close"].diff()
+            gain = delta.where(delta > 0, 0.0)
+            loss = (-delta).where(delta < 0, 0.0)
+            
+            avg_gain = gain.ewm(alpha=1/14, adjust=False).mean()
+            avg_loss = loss.ewm(alpha=1/14, adjust=False).mean()
+            
+            rs = avg_gain / avg_loss
+            pdf["RSI"] = 100 - (100 / (1 + rs))
+            
+            return pdf[["Date", "ticker", "EMA_12", "EMA_26", "EMA_50", "EMA_200", 
+                       "MACD", "MACD_signal", "MACD_hist", "RSI"]]
         
-        return df
-    
-    def _calculate_macd(self, df: DataFrame) -> DataFrame:
-        df = df.withColumn("MACD", col("EMA_12") - col("EMA_26"))
-        window = Window.partitionBy("ticker").orderBy("Date").rowsBetween(-8, 0)
-        df = df.withColumn("MACD_signal", avg("MACD").over(window))
-        df = df.withColumn("MACD_hist", col("MACD") - col("MACD_signal"))
-        return df
-    
-    def _calculate_rsi(self, df: DataFrame, window_spec, period: int = 14) -> DataFrame:
-        df = df.withColumn("price_delta", col("Close") - lag("Close", 1).over(window_spec))
-        df = df.withColumn("gain", when(col("price_delta") > 0, col("price_delta")).otherwise(0))
-        df = df.withColumn("loss", when(col("price_delta") < 0, -col("price_delta")).otherwise(0))
+        indicators_df = df.select("Date", "ticker", "Close").groupBy("ticker").applyInPandas(
+            calc_indicators, schema
+        )
         
-        window_rsi = Window.partitionBy("ticker").orderBy("Date").rowsBetween(-period + 1, 0)
-        df = df.withColumn("avg_gain", avg("gain").over(window_rsi))
-        df = df.withColumn("avg_loss", avg("loss").over(window_rsi))
-        df = df.withColumn("rs", col("avg_gain") / col("avg_loss"))
-        df = df.withColumn("RSI", 100 - (100 / (1 + col("rs"))))
-        
-        df = df.drop("price_delta", "gain", "loss", "avg_gain", "avg_loss", "rs")
+        df = df.join(indicators_df, on=["Date", "ticker"], how="left")
         return df
-    
+
     def _calculate_stochastic(self, df: DataFrame, window_spec, k_period: int = 14, d_period: int = 3) -> DataFrame:
-        window_k = Window.partitionBy("ticker").orderBy("Date").rowsBetween(-k_period + 1, 0)
+        window_k = Window.partitionBy("ticker").orderBy(col("Date")).rowsBetween(-k_period + 1, 0)
         
         df = df.withColumn("low_min", spark_min("Low").over(window_k))
         df = df.withColumn("high_max", spark_max("High").over(window_k))
@@ -106,11 +112,11 @@ class StooqSilverProcessor:
             (col("Close") - col("low_min")) / (col("high_max") - col("low_min")) * 100
         )
         
-        window_d = Window.partitionBy("ticker").orderBy("Date").rowsBetween(-d_period + 1, 0)
+        window_d = Window.partitionBy("ticker").orderBy(col("Date")).rowsBetween(-d_period + 1, 0)
         df = df.withColumn("Stoch_D", avg("Stoch_K").over(window_d))
         df = df.drop("low_min", "high_max")
         return df
-    
+
     def _calculate_roc(self, df: DataFrame, window_spec, period: int = 12) -> DataFrame:
         df = df.withColumn("close_shifted", lag("Close", period).over(window_spec))
         df = df.withColumn("ROC", ((col("Close") - col("close_shifted")) / col("close_shifted")) * 100)
@@ -118,7 +124,7 @@ class StooqSilverProcessor:
         return df
     
     def _calculate_bollinger_bands(self, df: DataFrame, window_spec, period: int = 20, std_dev: int = 2) -> DataFrame:
-        window = Window.partitionBy("ticker").orderBy("Date").rowsBetween(-period + 1, 0)
+        window = Window.partitionBy("ticker").orderBy(col("Date")).rowsBetween(-period + 1, 0)
         
         df = df.withColumn("BB_middle", avg("Close").over(window))
         df = df.withColumn("bb_std", stddev("Close").over(window))
@@ -127,7 +133,7 @@ class StooqSilverProcessor:
         df = df.withColumn("BB_width", col("BB_upper") - col("BB_lower"))
         df = df.drop("bb_std")
         return df
-    
+
     def _calculate_atr(self, df: DataFrame, window_spec, period: int = 14) -> DataFrame:
         df = df.withColumn("prev_close", lag("Close", 1).over(window_spec))
         df = df.withColumn("hl", col("High") - col("Low"))
@@ -135,11 +141,11 @@ class StooqSilverProcessor:
         df = df.withColumn("lc", spark_abs(col("Low") - col("prev_close")))
         df = df.withColumn("true_range", greatest("hl", "hc", "lc"))
         
-        window = Window.partitionBy("ticker").orderBy("Date").rowsBetween(-period + 1, 0)
+        window = Window.partitionBy("ticker").orderBy(col("Date")).rowsBetween(-period + 1, 0)
         df = df.withColumn("ATR", avg("true_range").over(window))
         df = df.drop("prev_close", "hl", "hc", "lc", "true_range")
         return df
-    
+
     def _calculate_volume_indicators(self, df: DataFrame, window_spec, period: int = 20) -> DataFrame:
         df = df.withColumn("price_change_sign", 
             when(col("Close") > lag("Close", 1).over(window_spec), 1)
@@ -147,16 +153,18 @@ class StooqSilverProcessor:
             .otherwise(0)
         )
         
-        window_all = Window.partitionBy("ticker").orderBy("Date").rowsBetween(Window.unboundedPreceding, 0)
+        window_all = Window.partitionBy("ticker").orderBy(col("Date")).rowsBetween(Window.unboundedPreceding, 0)
         df = df.withColumn("OBV", spark_sum(col("price_change_sign") * col("Volume")).over(window_all))
-        df = df.withColumn("cum_vp", spark_sum(col("Close") * col("Volume")).over(window_all))
+        
+        df = df.withColumn("typical_price", (col("High") + col("Low") + col("Close")) / 3)
+        df = df.withColumn("cum_vp", spark_sum(col("typical_price") * col("Volume")).over(window_all))
         df = df.withColumn("cum_vol", spark_sum(col("Volume")).over(window_all))
         df = df.withColumn("VWAP", col("cum_vp") / col("cum_vol"))
         
-        window = Window.partitionBy("ticker").orderBy("Date").rowsBetween(-period + 1, 0)
+        window = Window.partitionBy("ticker").orderBy(col("Date")).rowsBetween(-period + 1, 0)
         df = df.withColumn("Volume_MA", avg("Volume").over(window))
         df = df.withColumn("OBV_change", col("OBV") - lag("OBV", 1).over(window_spec))
-        df = df.drop("price_change_sign", "cum_vp", "cum_vol")
+        df = df.drop("price_change_sign", "cum_vp", "cum_vol", "typical_price")
         return df
     
     def _calculate_returns(self, df: DataFrame, window_spec) -> DataFrame:
@@ -176,7 +184,6 @@ class StooqSilverProcessor:
         return df
     
     def drop_unnecessary_columns(self, df: DataFrame) -> DataFrame:
-        # Drop due to high correlation in correlation matrix
         drop_cols = [
             'Close', 'Open', 'High', 'Low', 'Volume',
             "MA_5", "MA_10", "MA_50",
@@ -202,6 +209,33 @@ class SilverIngestionService:
         self.target_catalog = target_catalog
         self.processor = StooqSilverProcessor(spark)
     
+    def _table_exists(self, table_name: str) -> bool:
+        try:
+            self.spark.sql(f"SELECT 1 FROM {table_name} LIMIT 1")
+            return True
+        except:
+            return False
+    
+    def _merge_into_table(self, source_df: DataFrame, target_table: str, primary_keys: List[str]) -> None:
+        temp_view = "source_temp_view"
+        source_df.createOrReplaceTempView(temp_view)
+        
+        merge_condition = " AND ".join([f"target.{pk} = source.{pk}" for pk in primary_keys])
+        columns = source_df.columns
+        update_set = ", ".join([f"target.{c} = source.{c}" for c in columns])
+        insert_cols = ", ".join(columns)
+        insert_vals = ", ".join([f"source.{c}" for c in columns])
+        
+        merge_sql = f"""
+            MERGE INTO {target_table} AS target
+            USING {temp_view} AS source
+            ON {merge_condition}
+            WHEN MATCHED THEN UPDATE SET {update_set}
+            WHEN NOT MATCHED THEN INSERT ({insert_cols}) VALUES ({insert_vals})
+        """
+        
+        self.spark.sql(merge_sql)
+    
     def process_stooq_to_silver(self, tickers: List[str]) -> int:
         bronze_df = self.spark.table(f"{self.source_catalog}.stooq")
         
@@ -218,7 +252,12 @@ class SilverIngestionService:
         final_df = final_df.withColumn("ingestion_timestamp", current_timestamp())
         
         silver_table = f"{self.target_catalog}.stock_indicators"
-        final_df.write.format("iceberg").mode("overwrite").saveAsTable(silver_table)
+        table_exists = self._table_exists(silver_table)
+        
+        if not table_exists:
+            final_df.write.format("iceberg").mode("overwrite").saveAsTable(silver_table)
+        else:
+            self._merge_into_table(final_df, silver_table, ["Date", "ticker"])
         
         return self.spark.table(silver_table).count()
 
