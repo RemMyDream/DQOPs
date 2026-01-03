@@ -1,0 +1,25 @@
+lakehouse:
+  endpoint: minio:9000
+  root_user: minio_access_key
+  root_password: minio_secret_key
+
+spark:
+  app: Bigdata
+
+data_source:
+  host: data_source
+  port: 5432
+  database: sourcedb
+  username: postgres
+  password: postgres
+
+finnhub:
+  api_key: d43ld7pr01qvet2pk57gd43ld7pr01qvet2pk580
+
+stock_config:
+  NVDA:
+    aliases: ['nvidia', 'jensen huang', 'geforce', 'rtx', 'nvda']
+    blacklist: []
+  MSFT: 
+    aliases: ['microsoft', 'satya nadella', 'azure', 'msft']
+    blacklist: []
