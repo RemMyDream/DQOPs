@@ -10,8 +10,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from create_spark_connection import create_spark_connection
 from utils.helpers import create_logger, load_cfg
-from minio import Minio
-from minio.error import S3Error
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import current_timestamp
 from pyspark.sql.types import StructType, StructField, StringType, TimestampType
@@ -318,10 +316,10 @@ def main():
     
     stooq_tickers = ['NVDA', 'MSFT']
     stooq_start = '2020-01-02'
-    stooq_end = '2020-02-02'
+    stooq_end = '2025-12-22'
     
-    gdelt_start = '2020-01-02'
-    gdelt_end = '2020-02-02'
+    gdelt_start = '2019-12-31'
+    gdelt_end = '2025-12-23'
     stock_config = load_cfg("utils/config.yaml")['stock_config']
     
     try:
