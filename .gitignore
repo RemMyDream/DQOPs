@@ -7,3 +7,19 @@ test-notebook.ipynb
 docker-compose-postgres (reference).yml
 data_pipeline
 .DS_Store
+.venv
+__pycache__/
+spark/
+docs/
+.env
+notebooks/
+docker-compose-postgres (reference).yml
+export_to_csv.py
+data-csv/
+kafka/data/
+useful_command.txt
+data/
+useful_command.txt
+data/
+useful_command.txt
+.env

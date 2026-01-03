@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    name: {{ include "bdsp-pipeline.namespace" . }}
