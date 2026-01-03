@@ -9,8 +9,9 @@ metadata:
     {{- include "bdsp-pipeline.labels" . | nindent 4 }}
     app: mlflow-postgres
 spec:
+  storageClassName: {{ .Values.mlflow.postgres.persistence.storageClass | default "" }}
   accessModes:
-    - ReadWriteOnce
+    - {{ .Values.mlflow.postgres.persistence.accessMode }}
   resources:
     requests:
       storage: {{ .Values.mlflow.postgres.persistence.size }}
@@ -84,7 +85,7 @@ metadata:
     {{- include "bdsp-pipeline.labels" . | nindent 4 }}
     app: mlflow-server
 spec:
-  replicas: 1
+  replicas: {{ .Values.mlflow.replicas }}
   selector:
     matchLabels:
       app: mlflow-server
@@ -97,25 +98,31 @@ spec:
       initContainers:
         - name: wait-for-postgres
           image: busybox
-          command: ['sh', '-c', 'until nc -z mlflow-postgres 5432; do echo waiting for postgres; sleep 2; done;']
+          # Updated to use /dev/tcp which is more standard than 'nc' in some busybox images
+          command: 
+            - 'sh'
+            - '-c'
+            - 'until (echo > /dev/tcp/mlflow-postgres/5432) >/dev/null 2>&1; do echo "Waiting for postgres..."; sleep 2; done;'
       containers:
         - name: mlflow
           image: "{{ .Values.mlflow.image.repository }}:{{ .Values.mlflow.image.tag }}"
-          imagePullPolicy: IfNotPresent
-          # Replicating the command from docker-compose
-          # Note: Ideally, build a custom image containing psycopg2-binary and boto3 to avoid installing at runtime.
+          imagePullPolicy: {{ .Values.mlflow.image.pullPolicy }}
           command:
-            - /bin/bash
-            - -c
-            - |
-              pip install --no-cache-dir psycopg2-binary boto3 && \
-              mlflow server \
-                --backend-store-uri postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@mlflow-postgres:5432/${POSTGRES_DB} \
-                --artifacts-destination s3://${MLFLOW_S3_BUCKET} \
-                --host 0.0.0.0 \
-                --port 5000
+            - mlflow
+            - server
+            - --backend-store-uri
+            - postgresql://{{ .Values.mlflow.postgres.user }}:{{ .Values.mlflow.postgres.password }}@mlflow-postgres:5432/{{ .Values.mlflow.postgres.db }}
+            - --artifacts-destination
+            - s3://{{ .Values.mlflow.s3.bucket }}
+            - --host
+            - {{ .Values.mlflow.service.host }}
+            - --port
+            - {{ .Values.mlflow.service.port | quote }}
+            
           ports:
-            - containerPort: 5000
+            - containerPort: {{ .Values.mlflow.service.port }}
+          resources:
+            {{- toYaml .Values.mlflow.resources | nindent 12 }}
           env:
             # Postgres Config
             - name: POSTGRES_USER
@@ -135,19 +142,19 @@ spec:
               value: {{ .Values.mlflow.s3.bucket }}
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
-                configMapKeyRef:
-                  name: minio-config
+                secretKeyRef:
+                  name: minio-secret
                   key: MINIO_ROOT_USER
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
-                configMapKeyRef:
-                  name: minio-config
+                secretKeyRef:
+                  name: minio-secret
                   key: MINIO_ROOT_PASSWORD
             - name: AWS_DEFAULT_REGION
               value: {{ .Values.mlflow.s3.region }}
           readinessProbe:
             exec:
-              command: ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+              command: ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:{{ .Values.mlflow.service.port }}/health')"]
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
@@ -165,7 +172,7 @@ spec:
     app: mlflow-server
   ports:
     - protocol: TCP
-      port: 5000
-      targetPort: 5000
+      port: {{ .Values.mlflow.service.port }}
+      targetPort: {{ .Values.mlflow.service.port }}
   type: {{ .Values.mlflow.service.type }}
 {{- end }}

@@ -25,9 +25,7 @@ postgres:
     user: postgres
     password: postgres
     database: sourcedb
-    # Additional databases to create
-    additionalDatabases:
-      - mlflow
+    additionalDatabases: []
   
   resources:
     requests:
@@ -78,7 +76,7 @@ minio:
     - bronze
     - silver
     - gold
-    - mlflow
+    - mlflow-artifacts
   
   resources:
     requests:
@@ -523,17 +521,14 @@ openmetadata:
 # MLflow Configuration
 mlflow:
   enabled: true
-  replicaCount: 1
   image:
-    repository: ghcr.io/mlflow/mlflow
+    repository: votaquangnhat/mlflow
+    tag: "latest"
     pullPolicy: IfNotPresent
-    # Ensure this matches the version compatible with your python dependencies
-    tag: "v2.7.1"
-  
-  defaultBucket: "mlflow"
-  
+  replicas: 1
   service:
     type: ClusterIP
+    host: 0.0.0.0
     port: 5000
   
   resources:
@@ -543,6 +538,22 @@ mlflow:
     requests:
       memory: 256Mi
       cpu: 250m
+  
+  # Backend Store Database
+  postgres:
+    user: mlflow
+    password: mlflow
+    db: mlflow
+    persistence:
+      enabled: true
+      size: 5Gi
+      storageClass: ""
+      accessMode: ReadWriteOnce
+  
+  # Artifact Store (Connects to your MinIO)
+  s3:
+    bucket: mlflow-artifacts
+    region: ap-southeast-1
       
 # Additional labels to add to all resources
 commonLabels: {}
