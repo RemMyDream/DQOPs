@@ -65,10 +65,10 @@
         <disks>
             <s3>
                 <type>s3</type>
-                <endpoint>http://minio:9000/bkhcn/</endpoint> 
+                <endpoint>http://minio:9000/gold/</endpoint> 
                 <access_key_id>minio_access_key</access_key_id>
                 <secret_access_key>minio_secret_key</secret_access_key>
-                <bucket>bkhcn</bucket>
+                <bucket>gold</bucket>
                 <metadata_path>/var/lib/clickhouse/disks/s3/</metadata_path>
                 <use_virtual_host>false</use_virtual_host>
             </s3>

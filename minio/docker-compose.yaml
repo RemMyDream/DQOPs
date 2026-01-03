@@ -7,11 +7,11 @@ services:
       - "9011:9001"
     volumes:
       - minio_storage:/data
-      - ./entrypoint.sh:/entrypoint.sh 
+      - ./entrypoint.sh:/entrypoint.sh:ro
     environment:
       MINIO_ROOT_USER: minio_access_key
       MINIO_ROOT_PASSWORD: minio_secret_key
-    entrypoint: /entrypoint.sh 
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
     networks:
       - data-pipeline
 

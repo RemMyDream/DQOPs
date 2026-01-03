@@ -11317,3 +11317,1500 @@ my id: 1, leader: 3, term: 4
 9. ? @ 0x0000000000094ac3
 10. clone @ 0x0000000000125a74
 
+2026.01.03 17:13:23.501758 [ 1 ] {} <Information> Application: Starting ClickHouse Keeper 25.12.1.649 (revision: 54505, git hash: bf4280aa19d3bade619578a749919e25ce490861, build id: 850543EC7BBD2A9A1CC4C04C027F5A030A3C0566), PID 1
+2026.01.03 17:13:23.501794 [ 1 ] {} <Information> Application: starting up
+2026.01.03 17:13:23.501800 [ 1 ] {} <Information> Application: OS Name = Linux, OS Version = 6.6.87.2-microsoft-standard-WSL2, OS Architecture = x86_64
+2026.01.03 17:13:23.502964 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 17:13:23.507984 [ 1 ] {} <Information> CgroupsReader: Will create cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 17:13:23.508010 [ 1 ] {} <Information> MemoryWorker: Starting background memory thread with period of 50ms, using Cgroups as source
+2026.01.03 17:13:23.512819 [ 1 ] {} <Information> AsynchronousMetrics: Will use cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 17:13:23.514070 [ 1 ] {} <Information> Context: Cannot connect to ZooKeeper (or Keeper) before internal Keeper start, will wait for Keeper synchronously
+2026.01.03 17:13:23.515000 [ 1 ] {} <Information> KeeperContext: Keeper feature flag FILTERED_LIST: enabled
+2026.01.03 17:13:23.515012 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_READ: enabled
+2026.01.03 17:13:23.515013 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_NOT_EXISTS: enabled
+2026.01.03 17:13:23.515014 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_IF_NOT_EXISTS: enabled
+2026.01.03 17:13:23.515015 [ 1 ] {} <Information> KeeperContext: Keeper feature flag REMOVE_RECURSIVE: enabled
+2026.01.03 17:13:23.515015 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_WATCHES: enabled
+2026.01.03 17:13:23.515016 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_STAT: disabled
+2026.01.03 17:13:23.515017 [ 1 ] {} <Information> KeeperContext: Keeper feature flag PERSISTENT_WATCHES: enabled
+2026.01.03 17:13:23.515018 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_WITH_STATS: disabled
+2026.01.03 17:13:23.551965 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2026.01.03 17:13:23.552219 [ 1 ] {} <Information> KeeperLogStore: force_sync enabled
+2026.01.03 17:13:23.552288 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2026.01.03 17:13:23.552692 [ 1 ] {} <Information> KeeperServer: No config in log store and snapshot, probably it's initial run. Will use config from .xml on disk
+2026.01.03 17:13:23.558691 [ 31 ] {} <Information> MemoryTracker: Correcting the value of global memory tracker from 4.19 MiB to 37.00 MiB
+2026.01.03 17:13:23.560649 [ 45 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_0, current threads: 0
+2026.01.03 17:13:23.560691 [ 49 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_1, current threads: 0
+2026.01.03 17:13:23.560849 [ 47 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_2, current threads: 2
+2026.01.03 17:13:23.560892 [ 52 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_3, current threads: 2
+2026.01.03 17:13:23.561017 [ 51 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_4, current threads: 4
+2026.01.03 17:13:23.561020 [ 53 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_6, current threads: 4
+2026.01.03 17:13:23.561030 [ 46 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_5, current threads: 4
+2026.01.03 17:13:23.561041 [ 50 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_7, current threads: 4
+2026.01.03 17:13:23.561088 [ 54 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_8, current threads: 8
+2026.01.03 17:13:23.561178 [ 56 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_9, current threads: 9
+2026.01.03 17:13:23.561240 [ 48 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_10, current threads: 10
+2026.01.03 17:13:23.561261 [ 55 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_11, current threads: 10
+2026.01.03 17:13:23.561483 [ 57 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_12, current threads: 12
+2026.01.03 17:13:23.561509 [ 58 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_13, current threads: 12
+2026.01.03 17:13:23.561704 [ 59 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_14, current threads: 14
+2026.01.03 17:13:23.561934 [ 60 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_15, current threads: 15
+2026.01.03 17:13:23.562035 [ 62 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_16, current threads: 16
+2026.01.03 17:13:23.562129 [ 63 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_17, current threads: 17
+2026.01.03 17:13:23.562179 [ 64 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_18, current threads: 18
+2026.01.03 17:13:23.562277 [ 66 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_19, current threads: 19
+2026.01.03 17:13:23.562324 [ 65 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_20, current threads: 19
+2026.01.03 17:13:23.562364 [ 61 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_21, current threads: 21
+2026.01.03 17:13:23.562439 [ 67 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_22, current threads: 22
+2026.01.03 17:13:23.562447 [ 68 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_23, current threads: 22
+2026.01.03 17:13:23.562524 [ 69 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_24, current threads: 24
+2026.01.03 17:13:23.562571 [ 70 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_25, current threads: 25
+2026.01.03 17:13:23.562627 [ 71 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_26, current threads: 26
+2026.01.03 17:13:23.562839 [ 73 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_27, current threads: 27
+2026.01.03 17:13:23.562873 [ 74 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_28, current threads: 28
+2026.01.03 17:13:23.562934 [ 72 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_29, current threads: 29
+2026.01.03 17:13:23.562943 [ 75 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_30, current threads: 29
+2026.01.03 17:13:23.562979 [ 1 ] {} <Information> RaftInstance: Raft ASIO listener initiated on :::9234, unsecured
+2026.01.03 17:13:23.563016 [ 76 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_31, current threads: 31
+2026.01.03 17:13:23.563264 [ 1 ] {} <Information> RaftInstance: parameters: election timeout range 1000 - 2000, heartbeat 500, leadership expiry 10000, max batch 100, backoff 50, snapshot distance 100000, enable randomized snapshot creation NO, log sync stop gap 99999, use new joiner type NO, reserved logs 100000, client timeout 10000, auto forwarding on, API call type async, custom commit quorum size 0, custom election quorum size 0, snapshot receiver included, leadership transfer wait time 0, grace period of lagging state machine 0, snapshot IO: blocking, parallel log appending: on, streaming mode max log gap 0, max bytes 0
+2026.01.03 17:13:23.563266 [ 1 ] {} <Information> RaftInstance: new election timeout range: 1000 - 2000
+2026.01.03 17:13:23.563274 [ 1 ] {} <Information> RaftInstance:    === INIT RAFT SERVER ===
+commit index 0
+term 0
+election timer allowed
+catching-up no
+log store start 1, end 0
+config log idx 0, prev log idx 0
+ -- ASYNC REPLICATION --
+2026.01.03 17:13:23.563862 [ 1 ] {} <Information> RaftInstance: peer 1: DC ID 0, clickhouse-keeper-01:9234, voting member, 1
+peer 2: DC ID 0, clickhouse-keeper-02:9234, voting member, 1
+peer 3: DC ID 0, clickhouse-keeper-03:9234, voting member, 1
+my id: 1, voting_member
+num peers: 2
+2026.01.03 17:13:23.563871 [ 1 ] {} <Information> RaftInstance: global manager does not exist. will use local thread for commit and append
+2026.01.03 17:13:23.564009 [ 1 ] {} <Information> RaftInstance: wait for HB, for 50 + [1000, 2000] ms
+2026.01.03 17:13:23.564359 [ 78 ] {} <Information> RaftInstance: bg append_entries thread initiated
+2026.01.03 17:13:24.953163 [ 45 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2026.01.03 17:13:24.953198 [ 45 ] {} <Information> RaftInstance: [PRIORITY] decay, target 1 -> 1, mine 1
+2026.01.03 17:13:24.954542 [ 45 ] {} <Information> RaftInstance: [ELECTION TIMEOUT] current role: follower, log last term 0, state term 0, target p 1, my p 1, hb dead, pre-vote NOT done
+2026.01.03 17:13:24.954564 [ 45 ] {} <Information> RaftInstance: [PRE-VOTE INIT] my id 1, my role candidate, term 0, log idx 0, log term 0, priority (target 1 / mine 1)
+2026.01.03 17:13:24.955507 [ 53 ] {} <Information> RaftInstance: 0x76380ce01018 connected to clickhouse-keeper-02:9234 (as a client)
+2026.01.03 17:13:24.955516 [ 52 ] {} <Information> RaftInstance: 0x76380ce01418 connected to clickhouse-keeper-03:9234 (as a client)
+2026.01.03 17:13:24.955753 [ 46 ] {} <Information> RaftInstance: [PRE-VOTE RESP] peer 3 (O), term 0, resp term 0, my role candidate, dead 2, live 0, abandoned 0, num voting members 3, quorum 2
+2026.01.03 17:13:24.955754 [ 46 ] {} <Information> RaftInstance: [PRE-VOTE DONE] SUCCESS, term 0
+2026.01.03 17:13:24.955755 [ 46 ] {} <Information> RaftInstance: [PRE-VOTE DONE] initiate actual vote
+2026.01.03 17:13:24.960812 [ 46 ] {} <Information> RaftInstance: [VOTE INIT] my id 1, my role candidate, term 1, log idx 0, log term 0, priority (target 1 / mine 1)
+2026.01.03 17:13:24.961222 [ 48 ] {} <Information> RaftInstance: [PRE-VOTE RESP] peer 2 (O), term 0, resp term 0, my role candidate, dead 3, live 0, abandoned 0, num voting members 3, quorum 2
+2026.01.03 17:13:24.961225 [ 48 ] {} <Information> RaftInstance: [PRE-VOTE DONE] SUCCESS, term 0
+2026.01.03 17:13:24.961231 [ 48 ] {} <Information> RaftInstance: [PRE-VOTE DONE] actual vote is already initiated, do nothing
+2026.01.03 17:13:24.973988 [ 55 ] {} <Information> RaftInstance: [VOTE RESP] peer 2 (O), resp term 1, my role candidate, granted 2, responded 2, num voting members 3, quorum 2
+2026.01.03 17:13:24.974000 [ 55 ] {} <Information> RaftInstance: Server is elected as leader for term 1
+2026.01.03 17:13:24.974011 [ 55 ] {} <Information> RaftInstance: number of pending commit elements: 0
+2026.01.03 17:13:24.974013 [ 55 ] {} <Information> RaftInstance: state machine commit index 0, precommit index 0, last log index 0
+2026.01.03 17:13:24.985998 [ 55 ] {} <Information> RaftInstance: [BECOME LEADER] appended new config at 1
+2026.01.03 17:13:24.986114 [ 55 ] {} <Information> RaftInstance:   === LEADER (term 1) ===
+2026.01.03 17:13:24.986272 [ 63 ] {} <Information> RaftInstance: Election completed, will ignore the voting result from this server
+2026.01.03 17:13:24.993064 [ 77 ] {} <Information> RaftInstance: config at index 1 is committed, prev config log idx 0
+2026.01.03 17:13:24.993094 [ 77 ] {} <Information> RaftInstance: new config log idx 1, prev log idx 0, cur config log idx 0, prev log idx 0
+2026.01.03 17:13:24.993146 [ 77 ] {} <Information> RaftInstance: new configuration: log idx 1, prev log idx 0
+peer 1, DC ID 0, clickhouse-keeper-01:9234, voting member, regular member, 1
+peer 2, DC ID 0, clickhouse-keeper-02:9234, voting member, regular member, 1
+peer 3, DC ID 0, clickhouse-keeper-03:9234, voting member, regular member, 1
+my id: 1, leader: 1, term: 1
+2026.01.03 17:13:24.993416 [ 1 ] {} <Information> Application: Listening for Keeper (tcp): 0.0.0.0:9181
+2026.01.03 17:13:25.004205 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 17:13:25.004713 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 17:13:25.004718 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 17:13:25.005247 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Started cgroup current memory usage observer thread
+2026.01.03 17:13:25.005248 [ 1 ] {} <Information> Application: Ready for connections.
+2026.01.03 17:13:25.005384 [ 85 ] {} <Information> CgroupsMemoryUsageObserver: Memory amount initially available to the process is 15.47 GiB
+2026.01.03 17:14:37.948121 [ 30 ] {} <Information> Application: Received termination signal (Terminated)
+2026.01.03 17:14:37.948205 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Stopped cgroup current memory usage observer thread
+2026.01.03 17:14:37.948212 [ 1 ] {} <Information> Application: Shutting down.
+2026.01.03 17:14:37.948553 [ 1 ] {} <Information> Application: Closed all listening sockets.
+2026.01.03 17:14:37.948556 [ 1 ] {} <Information> Application: Closed connections to Keeper.
+2026.01.03 17:14:38.006906 [ 1 ] {} <Information> RaftInstance: shutting down raft core
+2026.01.03 17:14:38.006934 [ 1 ] {} <Information> RaftInstance: sent stop signal to the commit thread.
+2026.01.03 17:14:38.007065 [ 1 ] {} <Information> RaftInstance: cancelled all schedulers.
+2026.01.03 17:14:38.007066 [ 1 ] {} <Information> RaftInstance: commit thread stopped.
+2026.01.03 17:14:38.007068 [ 1 ] {} <Information> RaftInstance: all pending commit elements dropped.
+2026.01.03 17:14:38.007069 [ 1 ] {} <Information> RaftInstance: reset all pointers.
+2026.01.03 17:14:38.007071 [ 1 ] {} <Information> RaftInstance: joined terminated commit thread.
+2026.01.03 17:14:38.007096 [ 1 ] {} <Information> RaftInstance: sent stop signal to background append thread.
+2026.01.03 17:14:38.007100 [ 78 ] {} <Information> RaftInstance: bg append_entries thread terminated
+2026.01.03 17:14:38.007124 [ 1 ] {} <Information> RaftInstance: clean up auto-forwarding queue: 0 elems
+2026.01.03 17:14:38.007125 [ 1 ] {} <Information> RaftInstance: clean up auto-forwarding clients
+2026.01.03 17:14:38.007131 [ 1 ] {} <Information> RaftInstance: raft_server shutdown completed.
+2026.01.03 17:14:38.007133 [ 1 ] {} <Information> RaftInstance: manually create a snapshot on 1
+2026.01.03 17:14:38.007135 [ 1 ] {} <Information> RaftInstance: creating a snapshot for index 1
+2026.01.03 17:14:38.007136 [ 1 ] {} <Information> RaftInstance: create snapshot idx 1 log_term 1
+2026.01.03 17:14:38.007151 [ 1 ] {} <Information> KeeperStateMachine: Creating a snapshot during shutdown because 'create_snapshot_on_exit' is enabled.
+2026.01.03 17:14:38.013083 [ 1 ] {} <Information> RaftInstance: snapshot idx 1 log_term 1 created, compact the log store if needed
+2026.01.03 17:14:38.013107 [ 1 ] {} <Information> RaftInstance: create snapshot idx 1 log_term 1 done: 5968 us elapsed
+2026.01.03 17:14:38.013220 [ 59 ] {} <Error> RaftInstance: failed to accept a rpc connection due to error 125, Operation canceled
+2026.01.03 17:14:38.013711 [ 51 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_4, remaining threads: 31
+2026.01.03 17:14:38.013722 [ 57 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_12, remaining threads: 30
+2026.01.03 17:14:38.013764 [ 45 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_0, remaining threads: 29
+2026.01.03 17:14:38.013773 [ 59 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_14, remaining threads: 27
+2026.01.03 17:14:38.013777 [ 58 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_13, remaining threads: 28
+2026.01.03 17:14:38.013796 [ 55 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_11, remaining threads: 26
+2026.01.03 17:14:38.013802 [ 67 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_22, remaining threads: 25
+2026.01.03 17:14:38.013818 [ 72 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_29, remaining threads: 24
+2026.01.03 17:14:38.013821 [ 66 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_19, remaining threads: 23
+2026.01.03 17:14:38.013826 [ 74 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_28, remaining threads: 22
+2026.01.03 17:14:38.013854 [ 75 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_30, remaining threads: 21
+2026.01.03 17:14:38.013886 [ 71 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_26, remaining threads: 20
+2026.01.03 17:14:38.013889 [ 68 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_23, remaining threads: 19
+2026.01.03 17:14:38.013901 [ 56 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_9, remaining threads: 18
+2026.01.03 17:14:38.013903 [ 49 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_1, remaining threads: 17
+2026.01.03 17:14:38.013921 [ 63 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_17, remaining threads: 16
+2026.01.03 17:14:38.013930 [ 73 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_27, remaining threads: 15
+2026.01.03 17:14:38.013933 [ 60 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_15, remaining threads: 14
+2026.01.03 17:14:38.013951 [ 47 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_2, remaining threads: 13
+2026.01.03 17:14:38.013971 [ 61 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_21, remaining threads: 12
+2026.01.03 17:14:38.013975 [ 64 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_18, remaining threads: 11
+2026.01.03 17:14:38.014006 [ 48 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_10, remaining threads: 10
+2026.01.03 17:14:38.014017 [ 50 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_7, remaining threads: 9
+2026.01.03 17:14:38.014030 [ 70 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_25, remaining threads: 8
+2026.01.03 17:14:38.014039 [ 52 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_3, remaining threads: 7
+2026.01.03 17:14:38.014045 [ 54 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_8, remaining threads: 6
+2026.01.03 17:14:38.014058 [ 65 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_20, remaining threads: 5
+2026.01.03 17:14:38.014067 [ 76 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_31, remaining threads: 4
+2026.01.03 17:14:38.014073 [ 53 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_6, remaining threads: 3
+2026.01.03 17:14:38.014081 [ 62 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_16, remaining threads: 2
+2026.01.03 17:14:38.014087 [ 46 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_5, remaining threads: 1
+2026.01.03 17:14:38.014113 [ 69 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_24, remaining threads: 0
+2026.01.03 17:14:38.017976 [ 41 ] {} <Information> KeeperLogStore: Raft server is not set in LogStore.
+2026.01.03 17:14:38.021075 [ 1 ] {} <Information> KeeperSnapshotManagerS3: KeeperSnapshotManagerS3 shut down
+2026.01.03 17:14:38.021469 [ 1 ] {} <Information> KeeperLogStore: Changelog is shut down
+2026.01.03 17:14:38.022129 [ 1 ] {} <Information> Application: Waiting for background threads
+2026.01.03 17:14:38.023126 [ 1 ] {} <Information> Application: Background threads finished in 0 ms
+2026.01.03 17:14:38.023130 [ 1 ] {} <Information> Application: shutting down
+2026.01.03 17:14:38.023179 [ 30 ] {} <Information> BaseDaemon: Stop SignalListener thread
+2026.01.03 17:14:43.413826 [ 1 ] {} <Information> Application: Starting ClickHouse Keeper 25.12.1.649 (revision: 54505, git hash: bf4280aa19d3bade619578a749919e25ce490861, build id: 850543EC7BBD2A9A1CC4C04C027F5A030A3C0566), PID 1
+2026.01.03 17:14:43.413881 [ 1 ] {} <Information> Application: starting up
+2026.01.03 17:14:43.413898 [ 1 ] {} <Information> Application: OS Name = Linux, OS Version = 6.6.87.2-microsoft-standard-WSL2, OS Architecture = x86_64
+2026.01.03 17:14:43.414274 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 17:14:43.419654 [ 1 ] {} <Information> CgroupsReader: Will create cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 17:14:43.419714 [ 1 ] {} <Information> MemoryWorker: Starting background memory thread with period of 50ms, using Cgroups as source
+2026.01.03 17:14:43.420975 [ 1 ] {} <Information> AsynchronousMetrics: Will use cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 17:14:43.421826 [ 1 ] {} <Information> Context: Cannot connect to ZooKeeper (or Keeper) before internal Keeper start, will wait for Keeper synchronously
+2026.01.03 17:14:43.421911 [ 1 ] {} <Information> KeeperContext: Keeper feature flag FILTERED_LIST: enabled
+2026.01.03 17:14:43.421913 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_READ: enabled
+2026.01.03 17:14:43.421914 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_NOT_EXISTS: enabled
+2026.01.03 17:14:43.421914 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_IF_NOT_EXISTS: enabled
+2026.01.03 17:14:43.421915 [ 1 ] {} <Information> KeeperContext: Keeper feature flag REMOVE_RECURSIVE: enabled
+2026.01.03 17:14:43.421916 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_WATCHES: enabled
+2026.01.03 17:14:43.421917 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_STAT: disabled
+2026.01.03 17:14:43.421918 [ 1 ] {} <Information> KeeperContext: Keeper feature flag PERSISTENT_WATCHES: enabled
+2026.01.03 17:14:43.421919 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_WITH_STATS: disabled
+2026.01.03 17:14:43.424419 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2026.01.03 17:14:43.424940 [ 1 ] {} <Information> KeeperLogStore: force_sync enabled
+2026.01.03 17:14:43.424980 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2026.01.03 17:14:43.425058 [ 1 ] {} <Information> KeeperServer: No config in log store and snapshot, probably it's initial run. Will use config from .xml on disk
+2026.01.03 17:14:43.428067 [ 44 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_0, current threads: 0
+2026.01.03 17:14:43.428214 [ 46 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_1, current threads: 1
+2026.01.03 17:14:43.428290 [ 45 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_2, current threads: 1
+2026.01.03 17:14:43.428291 [ 48 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_3, current threads: 2
+2026.01.03 17:14:43.428495 [ 49 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_4, current threads: 4
+2026.01.03 17:14:43.428586 [ 51 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_6, current threads: 5
+2026.01.03 17:14:43.428591 [ 50 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_5, current threads: 5
+2026.01.03 17:14:43.428616 [ 52 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_7, current threads: 5
+2026.01.03 17:14:43.428803 [ 53 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_8, current threads: 8
+2026.01.03 17:14:43.429051 [ 54 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_9, current threads: 9
+2026.01.03 17:14:43.429082 [ 55 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_10, current threads: 9
+2026.01.03 17:14:43.429155 [ 56 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_11, current threads: 11
+2026.01.03 17:14:43.429316 [ 57 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_12, current threads: 12
+2026.01.03 17:14:43.429523 [ 58 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_13, current threads: 13
+2026.01.03 17:14:43.429540 [ 60 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_14, current threads: 13
+2026.01.03 17:14:43.429690 [ 59 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_15, current threads: 15
+2026.01.03 17:14:43.429808 [ 61 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_16, current threads: 16
+2026.01.03 17:14:43.430102 [ 62 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_17, current threads: 17
+2026.01.03 17:14:43.430317 [ 63 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_18, current threads: 18
+2026.01.03 17:14:43.430501 [ 64 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_19, current threads: 19
+2026.01.03 17:14:43.430668 [ 67 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_20, current threads: 20
+2026.01.03 17:14:43.430834 [ 66 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_22, current threads: 21
+2026.01.03 17:14:43.430861 [ 68 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_23, current threads: 21
+2026.01.03 17:14:43.430878 [ 65 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_21, current threads: 21
+2026.01.03 17:14:43.430907 [ 69 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_24, current threads: 23
+2026.01.03 17:14:43.431168 [ 72 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_26, current threads: 25
+2026.01.03 17:14:43.431264 [ 73 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_27, current threads: 26
+2026.01.03 17:14:43.431333 [ 70 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_25, current threads: 25
+2026.01.03 17:14:43.431377 [ 74 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_28, current threads: 27
+2026.01.03 17:14:43.431381 [ 1 ] {} <Information> RaftInstance: Raft ASIO listener initiated on :::9234, unsecured
+2026.01.03 17:14:43.431431 [ 1 ] {} <Information> RaftInstance: parameters: election timeout range 1000 - 2000, heartbeat 500, leadership expiry 10000, max batch 100, backoff 50, snapshot distance 100000, enable randomized snapshot creation NO, log sync stop gap 99999, use new joiner type NO, reserved logs 100000, client timeout 10000, auto forwarding on, API call type async, custom commit quorum size 0, custom election quorum size 0, snapshot receiver included, leadership transfer wait time 0, grace period of lagging state machine 0, snapshot IO: blocking, parallel log appending: on, streaming mode max log gap 0, max bytes 0
+2026.01.03 17:14:43.431436 [ 1 ] {} <Information> RaftInstance: new election timeout range: 1000 - 2000
+2026.01.03 17:14:43.431446 [ 1 ] {} <Information> RaftInstance:    === INIT RAFT SERVER ===
+commit index 0
+term 0
+election timer allowed
+catching-up no
+log store start 1, end 0
+config log idx 0, prev log idx 0
+ -- ASYNC REPLICATION --
+2026.01.03 17:14:43.431484 [ 71 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_29, current threads: 29
+2026.01.03 17:14:43.431551 [ 75 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_30, current threads: 29
+2026.01.03 17:14:43.431603 [ 76 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_31, current threads: 31
+2026.01.03 17:14:43.431611 [ 1 ] {} <Information> RaftInstance: peer 1: DC ID 0, clickhouse-keeper-01:9234, voting member, 1
+peer 2: DC ID 0, clickhouse-keeper-02:9234, voting member, 1
+peer 3: DC ID 0, clickhouse-keeper-03:9234, voting member, 1
+my id: 1, voting_member
+num peers: 2
+2026.01.03 17:14:43.431622 [ 1 ] {} <Information> RaftInstance: global manager does not exist. will use local thread for commit and append
+2026.01.03 17:14:43.432065 [ 1 ] {} <Information> RaftInstance: wait for HB, for 50 + [1000, 2000] ms
+2026.01.03 17:14:43.432229 [ 78 ] {} <Information> RaftInstance: bg append_entries thread initiated
+2026.01.03 17:14:43.470674 [ 31 ] {} <Information> MemoryTracker: Correcting the value of global memory tracker from 8.42 MiB to 48.00 MiB
+2026.01.03 17:14:44.575237 [ 44 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2026.01.03 17:14:44.575266 [ 44 ] {} <Information> RaftInstance: [PRIORITY] decay, target 1 -> 1, mine 1
+2026.01.03 17:14:44.575345 [ 44 ] {} <Information> RaftInstance: [ELECTION TIMEOUT] current role: follower, log last term 0, state term 0, target p 1, my p 1, hb dead, pre-vote NOT done
+2026.01.03 17:14:44.575355 [ 44 ] {} <Information> RaftInstance: [PRE-VOTE INIT] my id 1, my role candidate, term 0, log idx 0, log term 0, priority (target 1 / mine 1)
+2026.01.03 17:14:44.576344 [ 51 ] {} <Information> RaftInstance: 0x74a8c423bc18 connected to clickhouse-keeper-02:9234 (as a client)
+2026.01.03 17:14:44.576536 [ 48 ] {} <Information> RaftInstance: 0x74a8c4246018 connected to clickhouse-keeper-03:9234 (as a client)
+2026.01.03 17:14:44.576816 [ 52 ] {} <Information> RaftInstance: [PRE-VOTE RESP] peer 2 (O), term 0, resp term 0, my role candidate, dead 2, live 0, abandoned 0, num voting members 3, quorum 2
+2026.01.03 17:14:44.576819 [ 52 ] {} <Information> RaftInstance: [PRE-VOTE DONE] SUCCESS, term 0
+2026.01.03 17:14:44.576820 [ 52 ] {} <Information> RaftInstance: [PRE-VOTE DONE] initiate actual vote
+2026.01.03 17:14:44.581756 [ 52 ] {} <Information> RaftInstance: [VOTE INIT] my id 1, my role candidate, term 1, log idx 0, log term 0, priority (target 1 / mine 1)
+2026.01.03 17:14:44.581930 [ 55 ] {} <Information> RaftInstance: [PRE-VOTE RESP] peer 3 (O), term 0, resp term 0, my role candidate, dead 3, live 0, abandoned 0, num voting members 3, quorum 2
+2026.01.03 17:14:44.581932 [ 55 ] {} <Information> RaftInstance: [PRE-VOTE DONE] SUCCESS, term 0
+2026.01.03 17:14:44.581960 [ 55 ] {} <Information> RaftInstance: [PRE-VOTE DONE] actual vote is already initiated, do nothing
+2026.01.03 17:14:44.591158 [ 56 ] {} <Information> RaftInstance: [VOTE RESP] peer 3 (O), resp term 1, my role candidate, granted 2, responded 2, num voting members 3, quorum 2
+2026.01.03 17:14:44.591186 [ 56 ] {} <Information> RaftInstance: Server is elected as leader for term 1
+2026.01.03 17:14:44.591220 [ 56 ] {} <Information> RaftInstance: number of pending commit elements: 0
+2026.01.03 17:14:44.591230 [ 56 ] {} <Information> RaftInstance: state machine commit index 0, precommit index 0, last log index 0
+2026.01.03 17:14:44.596112 [ 56 ] {} <Information> RaftInstance: [BECOME LEADER] appended new config at 1
+2026.01.03 17:14:44.596256 [ 56 ] {} <Information> RaftInstance:   === LEADER (term 1) ===
+2026.01.03 17:14:44.596309 [ 62 ] {} <Information> RaftInstance: Election completed, will ignore the voting result from this server
+2026.01.03 17:14:44.603505 [ 77 ] {} <Information> RaftInstance: config at index 1 is committed, prev config log idx 0
+2026.01.03 17:14:44.603527 [ 77 ] {} <Information> RaftInstance: new config log idx 1, prev log idx 0, cur config log idx 0, prev log idx 0
+2026.01.03 17:14:44.603542 [ 77 ] {} <Information> RaftInstance: new configuration: log idx 1, prev log idx 0
+peer 1, DC ID 0, clickhouse-keeper-01:9234, voting member, regular member, 1
+peer 2, DC ID 0, clickhouse-keeper-02:9234, voting member, regular member, 1
+peer 3, DC ID 0, clickhouse-keeper-03:9234, voting member, regular member, 1
+my id: 1, leader: 1, term: 1
+2026.01.03 17:14:44.603898 [ 1 ] {} <Information> Application: Listening for Keeper (tcp): 0.0.0.0:9181
+2026.01.03 17:14:44.613328 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 17:14:44.613894 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 17:14:44.613907 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 17:14:44.614411 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Started cgroup current memory usage observer thread
+2026.01.03 17:14:44.614412 [ 1 ] {} <Information> Application: Ready for connections.
+2026.01.03 17:14:44.614624 [ 84 ] {} <Information> CgroupsMemoryUsageObserver: Memory amount initially available to the process is 15.47 GiB
+2026.01.03 17:27:51.069403 [ 1 ] {} <Information> Application: Starting ClickHouse Keeper 25.12.1.649 (revision: 54505, git hash: bf4280aa19d3bade619578a749919e25ce490861, build id: 850543EC7BBD2A9A1CC4C04C027F5A030A3C0566), PID 1
+2026.01.03 17:27:51.069426 [ 1 ] {} <Information> Application: starting up
+2026.01.03 17:27:51.069432 [ 1 ] {} <Information> Application: OS Name = Linux, OS Version = 6.6.87.2-microsoft-standard-WSL2, OS Architecture = x86_64
+2026.01.03 17:27:51.069668 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 17:27:51.074706 [ 1 ] {} <Information> CgroupsReader: Will create cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 17:27:51.074741 [ 1 ] {} <Information> MemoryWorker: Starting background memory thread with period of 50ms, using Cgroups as source
+2026.01.03 17:27:51.075935 [ 1 ] {} <Information> AsynchronousMetrics: Will use cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 17:27:51.076866 [ 1 ] {} <Information> Context: Cannot connect to ZooKeeper (or Keeper) before internal Keeper start, will wait for Keeper synchronously
+2026.01.03 17:27:51.076973 [ 1 ] {} <Information> KeeperContext: Keeper feature flag FILTERED_LIST: enabled
+2026.01.03 17:27:51.076975 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_READ: enabled
+2026.01.03 17:27:51.076976 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_NOT_EXISTS: enabled
+2026.01.03 17:27:51.076976 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_IF_NOT_EXISTS: enabled
+2026.01.03 17:27:51.076977 [ 1 ] {} <Information> KeeperContext: Keeper feature flag REMOVE_RECURSIVE: enabled
+2026.01.03 17:27:51.076978 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_WATCHES: enabled
+2026.01.03 17:27:51.076979 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_STAT: disabled
+2026.01.03 17:27:51.076981 [ 1 ] {} <Information> KeeperContext: Keeper feature flag PERSISTENT_WATCHES: enabled
+2026.01.03 17:27:51.076982 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_WITH_STATS: disabled
+2026.01.03 17:27:51.079454 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2026.01.03 17:27:51.079867 [ 1 ] {} <Information> KeeperLogStore: force_sync enabled
+2026.01.03 17:27:51.079891 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2026.01.03 17:27:51.079948 [ 1 ] {} <Information> KeeperServer: No config in log store and snapshot, probably it's initial run. Will use config from .xml on disk
+2026.01.03 17:27:51.082920 [ 46 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_0, current threads: 0
+2026.01.03 17:27:51.082957 [ 45 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_1, current threads: 0
+2026.01.03 17:27:51.083132 [ 49 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_2, current threads: 2
+2026.01.03 17:27:51.083225 [ 47 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_3, current threads: 3
+2026.01.03 17:27:51.083232 [ 50 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_4, current threads: 3
+2026.01.03 17:27:51.083378 [ 48 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_5, current threads: 5
+2026.01.03 17:27:51.083425 [ 51 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_6, current threads: 6
+2026.01.03 17:27:51.083471 [ 52 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_7, current threads: 6
+2026.01.03 17:27:51.083561 [ 54 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_8, current threads: 8
+2026.01.03 17:27:51.083602 [ 56 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_9, current threads: 9
+2026.01.03 17:27:51.083706 [ 55 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_10, current threads: 10
+2026.01.03 17:27:51.083738 [ 57 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_11, current threads: 10
+2026.01.03 17:27:51.083771 [ 58 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_12, current threads: 11
+2026.01.03 17:27:51.083807 [ 53 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_13, current threads: 13
+2026.01.03 17:27:51.083939 [ 59 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_14, current threads: 14
+2026.01.03 17:27:51.083980 [ 60 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_15, current threads: 14
+2026.01.03 17:27:51.084111 [ 62 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_17, current threads: 16
+2026.01.03 17:27:51.084165 [ 61 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_16, current threads: 16
+2026.01.03 17:27:51.084263 [ 63 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_18, current threads: 18
+2026.01.03 17:27:51.084315 [ 64 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_19, current threads: 19
+2026.01.03 17:27:51.084447 [ 65 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_20, current threads: 20
+2026.01.03 17:27:51.084536 [ 66 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_21, current threads: 21
+2026.01.03 17:27:51.084670 [ 67 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_22, current threads: 22
+2026.01.03 17:27:51.084753 [ 68 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_23, current threads: 23
+2026.01.03 17:27:51.084839 [ 69 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_24, current threads: 24
+2026.01.03 17:27:51.084909 [ 70 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_25, current threads: 25
+2026.01.03 17:27:51.084995 [ 71 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_26, current threads: 26
+2026.01.03 17:27:51.085140 [ 72 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_27, current threads: 27
+2026.01.03 17:27:51.085210 [ 73 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_28, current threads: 28
+2026.01.03 17:27:51.085293 [ 74 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_29, current threads: 29
+2026.01.03 17:27:51.085441 [ 75 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_30, current threads: 30
+2026.01.03 17:27:51.085478 [ 1 ] {} <Information> RaftInstance: Raft ASIO listener initiated on :::9234, unsecured
+2026.01.03 17:27:51.085514 [ 76 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_31, current threads: 31
+2026.01.03 17:27:51.085534 [ 1 ] {} <Information> RaftInstance: parameters: election timeout range 1000 - 2000, heartbeat 500, leadership expiry 10000, max batch 100, backoff 50, snapshot distance 100000, enable randomized snapshot creation NO, log sync stop gap 99999, use new joiner type NO, reserved logs 100000, client timeout 10000, auto forwarding on, API call type async, custom commit quorum size 0, custom election quorum size 0, snapshot receiver included, leadership transfer wait time 0, grace period of lagging state machine 0, snapshot IO: blocking, parallel log appending: on, streaming mode max log gap 0, max bytes 0
+2026.01.03 17:27:51.085536 [ 1 ] {} <Information> RaftInstance: new election timeout range: 1000 - 2000
+2026.01.03 17:27:51.085545 [ 1 ] {} <Information> RaftInstance:    === INIT RAFT SERVER ===
+commit index 0
+term 0
+election timer allowed
+catching-up no
+log store start 1, end 0
+config log idx 0, prev log idx 0
+ -- ASYNC REPLICATION --
+2026.01.03 17:27:51.085663 [ 1 ] {} <Information> RaftInstance: peer 1: DC ID 0, clickhouse-keeper-01:9234, voting member, 1
+peer 2: DC ID 0, clickhouse-keeper-02:9234, voting member, 1
+peer 3: DC ID 0, clickhouse-keeper-03:9234, voting member, 1
+my id: 1, voting_member
+num peers: 2
+2026.01.03 17:27:51.085672 [ 1 ] {} <Information> RaftInstance: global manager does not exist. will use local thread for commit and append
+2026.01.03 17:27:51.085861 [ 1 ] {} <Information> RaftInstance: wait for HB, for 50 + [1000, 2000] ms
+2026.01.03 17:27:51.085989 [ 78 ] {} <Information> RaftInstance: bg append_entries thread initiated
+2026.01.03 17:27:51.125555 [ 32 ] {} <Information> MemoryTracker: Correcting the value of global memory tracker from 8.42 MiB to 47.39 MiB
+2026.01.03 17:27:52.747242 [ 46 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2026.01.03 17:27:52.747268 [ 46 ] {} <Information> RaftInstance: [PRIORITY] decay, target 1 -> 1, mine 1
+2026.01.03 17:27:52.747342 [ 46 ] {} <Information> RaftInstance: [ELECTION TIMEOUT] current role: follower, log last term 0, state term 0, target p 1, my p 1, hb dead, pre-vote NOT done
+2026.01.03 17:27:52.747365 [ 46 ] {} <Information> RaftInstance: [PRE-VOTE INIT] my id 1, my role candidate, term 0, log idx 0, log term 0, priority (target 1 / mine 1)
+2026.01.03 17:27:52.748560 [ 47 ] {} <Information> RaftInstance: 0x725c7ac01018 connected to clickhouse-keeper-02:9234 (as a client)
+2026.01.03 17:27:52.748608 [ 52 ] {} <Information> RaftInstance: 0x725c7ac01418 connected to clickhouse-keeper-03:9234 (as a client)
+2026.01.03 17:27:52.748938 [ 54 ] {} <Information> RaftInstance: [PRE-VOTE RESP] peer 2 (O), term 0, resp term 0, my role candidate, dead 2, live 0, abandoned 0, num voting members 3, quorum 2
+2026.01.03 17:27:52.748939 [ 54 ] {} <Information> RaftInstance: [PRE-VOTE DONE] SUCCESS, term 0
+2026.01.03 17:27:52.748942 [ 54 ] {} <Information> RaftInstance: [PRE-VOTE DONE] initiate actual vote
+2026.01.03 17:27:52.754602 [ 54 ] {} <Information> RaftInstance: [VOTE INIT] my id 1, my role candidate, term 1, log idx 0, log term 0, priority (target 1 / mine 1)
+2026.01.03 17:27:52.754937 [ 57 ] {} <Information> RaftInstance: [PRE-VOTE RESP] peer 3 (O), term 0, resp term 0, my role candidate, dead 3, live 0, abandoned 0, num voting members 3, quorum 2
+2026.01.03 17:27:52.754940 [ 57 ] {} <Information> RaftInstance: [PRE-VOTE DONE] SUCCESS, term 0
+2026.01.03 17:27:52.754946 [ 57 ] {} <Information> RaftInstance: [PRE-VOTE DONE] actual vote is already initiated, do nothing
+2026.01.03 17:27:52.766106 [ 58 ] {} <Information> RaftInstance: [VOTE RESP] peer 2 (O), resp term 1, my role candidate, granted 2, responded 2, num voting members 3, quorum 2
+2026.01.03 17:27:52.766120 [ 58 ] {} <Information> RaftInstance: Server is elected as leader for term 1
+2026.01.03 17:27:52.766131 [ 58 ] {} <Information> RaftInstance: number of pending commit elements: 0
+2026.01.03 17:27:52.766135 [ 58 ] {} <Information> RaftInstance: state machine commit index 0, precommit index 0, last log index 0
+2026.01.03 17:27:52.777583 [ 58 ] {} <Information> RaftInstance: [BECOME LEADER] appended new config at 1
+2026.01.03 17:27:52.777739 [ 58 ] {} <Information> RaftInstance:   === LEADER (term 1) ===
+2026.01.03 17:27:52.777818 [ 63 ] {} <Information> RaftInstance: Election completed, will ignore the voting result from this server
+2026.01.03 17:27:52.782919 [ 77 ] {} <Information> RaftInstance: config at index 1 is committed, prev config log idx 0
+2026.01.03 17:27:52.782969 [ 77 ] {} <Information> RaftInstance: new config log idx 1, prev log idx 0, cur config log idx 0, prev log idx 0
+2026.01.03 17:27:52.782990 [ 77 ] {} <Information> RaftInstance: new configuration: log idx 1, prev log idx 0
+peer 1, DC ID 0, clickhouse-keeper-01:9234, voting member, regular member, 1
+peer 2, DC ID 0, clickhouse-keeper-02:9234, voting member, regular member, 1
+peer 3, DC ID 0, clickhouse-keeper-03:9234, voting member, regular member, 1
+my id: 1, leader: 1, term: 1
+2026.01.03 17:27:52.783284 [ 1 ] {} <Information> Application: Listening for Keeper (tcp): 0.0.0.0:9181
+2026.01.03 17:27:52.791387 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 17:27:52.791932 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 17:27:52.791955 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 17:27:52.792428 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Started cgroup current memory usage observer thread
+2026.01.03 17:27:52.792430 [ 1 ] {} <Information> Application: Ready for connections.
+2026.01.03 17:27:52.792662 [ 85 ] {} <Information> CgroupsMemoryUsageObserver: Memory amount initially available to the process is 15.47 GiB
+2026.01.03 17:48:01.516426 [ 31 ] {} <Information> Application: Received termination signal (Terminated)
+2026.01.03 17:48:01.516864 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Stopped cgroup current memory usage observer thread
+2026.01.03 17:48:01.516872 [ 1 ] {} <Information> Application: Shutting down.
+2026.01.03 17:48:01.519109 [ 1 ] {} <Information> Application: Closed all listening sockets.
+2026.01.03 17:48:01.519123 [ 1 ] {} <Information> Application: Closed connections to Keeper.
+2026.01.03 17:48:01.533499 [ 1 ] {} <Information> RaftInstance: shutting down raft core
+2026.01.03 17:48:01.533524 [ 1 ] {} <Information> RaftInstance: sent stop signal to the commit thread.
+2026.01.03 17:48:01.534023 [ 1 ] {} <Information> RaftInstance: cancelled all schedulers.
+2026.01.03 17:48:01.534026 [ 1 ] {} <Information> RaftInstance: commit thread stopped.
+2026.01.03 17:48:01.534036 [ 1 ] {} <Information> RaftInstance: all pending commit elements dropped.
+2026.01.03 17:48:01.534045 [ 1 ] {} <Information> RaftInstance: reset all pointers.
+2026.01.03 17:48:01.534046 [ 1 ] {} <Information> RaftInstance: joined terminated commit thread.
+2026.01.03 17:48:01.534113 [ 78 ] {} <Information> RaftInstance: bg append_entries thread terminated
+2026.01.03 17:48:01.534114 [ 1 ] {} <Information> RaftInstance: sent stop signal to background append thread.
+2026.01.03 17:48:01.534129 [ 1 ] {} <Information> RaftInstance: clean up auto-forwarding queue: 0 elems
+2026.01.03 17:48:01.534130 [ 1 ] {} <Information> RaftInstance: clean up auto-forwarding clients
+2026.01.03 17:48:01.534145 [ 1 ] {} <Information> RaftInstance: raft_server shutdown completed.
+2026.01.03 17:48:01.534147 [ 1 ] {} <Information> RaftInstance: manually create a snapshot on 1
+2026.01.03 17:48:01.534157 [ 1 ] {} <Information> RaftInstance: creating a snapshot for index 1
+2026.01.03 17:48:01.534167 [ 1 ] {} <Information> RaftInstance: create snapshot idx 1 log_term 1
+2026.01.03 17:48:01.534670 [ 1 ] {} <Information> KeeperStateMachine: Creating a snapshot during shutdown because 'create_snapshot_on_exit' is enabled.
+2026.01.03 17:48:01.540877 [ 1 ] {} <Information> RaftInstance: snapshot idx 1 log_term 1 created, compact the log store if needed
+2026.01.03 17:48:01.540961 [ 1 ] {} <Information> RaftInstance: create snapshot idx 1 log_term 1 done: 6784 us elapsed
+2026.01.03 17:48:01.541199 [ 48 ] {} <Error> RaftInstance: failed to accept a rpc connection due to error 125, Operation canceled
+2026.01.03 17:48:01.541439 [ 61 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_16, remaining threads: 30
+2026.01.03 17:48:01.541440 [ 70 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_25, remaining threads: 29
+2026.01.03 17:48:01.541449 [ 47 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_3, remaining threads: 28
+2026.01.03 17:48:01.541452 [ 52 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_7, remaining threads: 27
+2026.01.03 17:48:01.541463 [ 63 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_18, remaining threads: 31
+2026.01.03 17:48:01.541477 [ 74 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_29, remaining threads: 25
+2026.01.03 17:48:01.541484 [ 54 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_8, remaining threads: 26
+2026.01.03 17:48:01.541494 [ 60 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_15, remaining threads: 24
+2026.01.03 17:48:01.541497 [ 45 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_1, remaining threads: 22
+2026.01.03 17:48:01.541503 [ 55 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_10, remaining threads: 20
+2026.01.03 17:48:01.541506 [ 76 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_31, remaining threads: 19
+2026.01.03 17:48:01.541506 [ 75 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_30, remaining threads: 20
+2026.01.03 17:48:01.541537 [ 73 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_28, remaining threads: 18
+2026.01.03 17:48:01.541545 [ 71 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_26, remaining threads: 17
+2026.01.03 17:48:01.541547 [ 65 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_20, remaining threads: 23
+2026.01.03 17:48:01.541559 [ 53 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_13, remaining threads: 15
+2026.01.03 17:48:01.541560 [ 58 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_12, remaining threads: 14
+2026.01.03 17:48:01.541563 [ 72 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_27, remaining threads: 13
+2026.01.03 17:48:01.541574 [ 50 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_4, remaining threads: 12
+2026.01.03 17:48:01.541574 [ 69 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_24, remaining threads: 11
+2026.01.03 17:48:01.541584 [ 64 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_19, remaining threads: 10
+2026.01.03 17:48:01.541555 [ 51 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_6, remaining threads: 16
+2026.01.03 17:48:01.541605 [ 68 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_23, remaining threads: 8
+2026.01.03 17:48:01.541597 [ 56 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_9, remaining threads: 9
+2026.01.03 17:48:01.541626 [ 67 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_22, remaining threads: 7
+2026.01.03 17:48:01.541637 [ 59 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_14, remaining threads: 6
+2026.01.03 17:48:01.541649 [ 66 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_21, remaining threads: 4
+2026.01.03 17:48:01.541652 [ 57 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_11, remaining threads: 3
+2026.01.03 17:48:01.541676 [ 48 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_5, remaining threads: 2
+2026.01.03 17:48:01.541670 [ 62 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_17, remaining threads: 5
+2026.01.03 17:48:01.541774 [ 46 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_0, remaining threads: 1
+2026.01.03 17:48:01.541807 [ 49 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_2, remaining threads: 0
+2026.01.03 17:48:01.543885 [ 42 ] {} <Information> KeeperLogStore: Raft server is not set in LogStore.
+2026.01.03 17:48:01.545047 [ 1 ] {} <Information> KeeperSnapshotManagerS3: KeeperSnapshotManagerS3 shut down
+2026.01.03 17:48:01.546236 [ 1 ] {} <Information> KeeperLogStore: Changelog is shut down
+2026.01.03 17:48:01.546614 [ 1 ] {} <Information> Application: Waiting for background threads
+2026.01.03 17:48:01.547505 [ 1 ] {} <Information> Application: Background threads finished in 0 ms
+2026.01.03 17:48:01.547509 [ 1 ] {} <Information> Application: shutting down
+2026.01.03 17:48:01.547582 [ 31 ] {} <Information> BaseDaemon: Stop SignalListener thread
+2026.01.03 17:49:43.855106 [ 1 ] {} <Information> Application: Starting ClickHouse Keeper 25.12.1.649 (revision: 54505, git hash: bf4280aa19d3bade619578a749919e25ce490861, build id: 850543EC7BBD2A9A1CC4C04C027F5A030A3C0566), PID 1
+2026.01.03 17:49:43.855134 [ 1 ] {} <Information> Application: starting up
+2026.01.03 17:49:43.855139 [ 1 ] {} <Information> Application: OS Name = Linux, OS Version = 6.6.87.2-microsoft-standard-WSL2, OS Architecture = x86_64
+2026.01.03 17:49:43.856021 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 17:49:43.865868 [ 1 ] {} <Information> CgroupsReader: Will create cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 17:49:43.865920 [ 1 ] {} <Information> MemoryWorker: Starting background memory thread with period of 50ms, using Cgroups as source
+2026.01.03 17:49:43.870978 [ 1 ] {} <Information> AsynchronousMetrics: Will use cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 17:49:43.871482 [ 1 ] {} <Information> Context: Cannot connect to ZooKeeper (or Keeper) before internal Keeper start, will wait for Keeper synchronously
+2026.01.03 17:49:43.871890 [ 1 ] {} <Information> KeeperContext: Keeper feature flag FILTERED_LIST: enabled
+2026.01.03 17:49:43.871907 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_READ: enabled
+2026.01.03 17:49:43.871908 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_NOT_EXISTS: enabled
+2026.01.03 17:49:43.871908 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_IF_NOT_EXISTS: enabled
+2026.01.03 17:49:43.871909 [ 1 ] {} <Information> KeeperContext: Keeper feature flag REMOVE_RECURSIVE: enabled
+2026.01.03 17:49:43.871910 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_WATCHES: enabled
+2026.01.03 17:49:43.871911 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_STAT: disabled
+2026.01.03 17:49:43.871912 [ 1 ] {} <Information> KeeperContext: Keeper feature flag PERSISTENT_WATCHES: enabled
+2026.01.03 17:49:43.871913 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_WITH_STATS: disabled
+2026.01.03 17:49:43.892926 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2026.01.03 17:49:43.893653 [ 1 ] {} <Information> KeeperLogStore: force_sync enabled
+2026.01.03 17:49:43.893680 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2026.01.03 17:49:43.893718 [ 1 ] {} <Information> KeeperServer: No config in log store and snapshot, probably it's initial run. Will use config from .xml on disk
+2026.01.03 17:49:43.901284 [ 47 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_1, current threads: 0
+2026.01.03 17:49:43.901301 [ 45 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_0, current threads: 0
+2026.01.03 17:49:43.901474 [ 46 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_2, current threads: 2
+2026.01.03 17:49:43.901604 [ 49 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_3, current threads: 3
+2026.01.03 17:49:43.901692 [ 48 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_4, current threads: 4
+2026.01.03 17:49:43.901778 [ 50 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_5, current threads: 5
+2026.01.03 17:49:43.901806 [ 44 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_6, current threads: 5
+2026.01.03 17:49:43.902224 [ 52 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_7, current threads: 7
+2026.01.03 17:49:43.902344 [ 53 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_8, current threads: 8
+2026.01.03 17:49:43.902349 [ 54 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_9, current threads: 8
+2026.01.03 17:49:43.902422 [ 55 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_10, current threads: 10
+2026.01.03 17:49:43.902631 [ 56 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_11, current threads: 11
+2026.01.03 17:49:43.902707 [ 58 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_12, current threads: 12
+2026.01.03 17:49:43.902743 [ 57 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_13, current threads: 12
+2026.01.03 17:49:43.902888 [ 59 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_14, current threads: 14
+2026.01.03 17:49:43.903004 [ 60 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_16, current threads: 15
+2026.01.03 17:49:43.903010 [ 62 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_15, current threads: 15
+2026.01.03 17:49:43.903078 [ 63 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_17, current threads: 17
+2026.01.03 17:49:43.903188 [ 64 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_18, current threads: 18
+2026.01.03 17:49:43.903210 [ 66 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_19, current threads: 18
+2026.01.03 17:49:43.903264 [ 67 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_21, current threads: 20
+2026.01.03 17:49:43.903274 [ 61 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_20, current threads: 19
+2026.01.03 17:49:43.903336 [ 68 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_22, current threads: 22
+2026.01.03 17:49:43.903414 [ 70 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_23, current threads: 23
+2026.01.03 17:49:43.903459 [ 71 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_25, current threads: 24
+2026.01.03 17:49:43.903477 [ 65 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_24, current threads: 23
+2026.01.03 17:49:43.903575 [ 72 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_27, current threads: 26
+2026.01.03 17:49:43.903597 [ 69 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_26, current threads: 26
+2026.01.03 17:49:43.903605 [ 73 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_28, current threads: 26
+2026.01.03 17:49:43.903766 [ 75 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_29, current threads: 29
+2026.01.03 17:49:43.903849 [ 74 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_30, current threads: 30
+2026.01.03 17:49:43.904172 [ 76 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_31, current threads: 31
+2026.01.03 17:49:43.904180 [ 1 ] {} <Information> RaftInstance: Raft ASIO listener initiated on :::9234, unsecured
+2026.01.03 17:49:43.904514 [ 1 ] {} <Information> RaftInstance: parameters: election timeout range 1000 - 2000, heartbeat 500, leadership expiry 10000, max batch 100, backoff 50, snapshot distance 100000, enable randomized snapshot creation NO, log sync stop gap 99999, use new joiner type NO, reserved logs 100000, client timeout 10000, auto forwarding on, API call type async, custom commit quorum size 0, custom election quorum size 0, snapshot receiver included, leadership transfer wait time 0, grace period of lagging state machine 0, snapshot IO: blocking, parallel log appending: on, streaming mode max log gap 0, max bytes 0
+2026.01.03 17:49:43.904520 [ 1 ] {} <Information> RaftInstance: new election timeout range: 1000 - 2000
+2026.01.03 17:49:43.904534 [ 1 ] {} <Information> RaftInstance:    === INIT RAFT SERVER ===
+commit index 0
+term 0
+election timer allowed
+catching-up no
+log store start 1, end 0
+config log idx 0, prev log idx 0
+ -- ASYNC REPLICATION --
+2026.01.03 17:49:43.905464 [ 1 ] {} <Information> RaftInstance: peer 1: DC ID 0, clickhouse-keeper-01:9234, voting member, 1
+peer 2: DC ID 0, clickhouse-keeper-02:9234, voting member, 1
+peer 3: DC ID 0, clickhouse-keeper-03:9234, voting member, 1
+my id: 1, voting_member
+num peers: 2
+2026.01.03 17:49:43.905475 [ 1 ] {} <Information> RaftInstance: global manager does not exist. will use local thread for commit and append
+2026.01.03 17:49:43.905700 [ 1 ] {} <Information> RaftInstance: wait for HB, for 50 + [1000, 2000] ms
+2026.01.03 17:49:43.906545 [ 78 ] {} <Information> RaftInstance: bg append_entries thread initiated
+2026.01.03 17:49:43.916922 [ 31 ] {} <Information> MemoryTracker: Correcting the value of global memory tracker from 8.42 MiB to 48.26 MiB
+2026.01.03 17:49:45.068850 [ 45 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2026.01.03 17:49:45.068877 [ 45 ] {} <Information> RaftInstance: [PRIORITY] decay, target 1 -> 1, mine 1
+2026.01.03 17:49:45.069134 [ 45 ] {} <Information> RaftInstance: [ELECTION TIMEOUT] current role: follower, log last term 0, state term 0, target p 1, my p 1, hb dead, pre-vote NOT done
+2026.01.03 17:49:45.069151 [ 45 ] {} <Information> RaftInstance: [PRE-VOTE INIT] my id 1, my role candidate, term 0, log idx 0, log term 0, priority (target 1 / mine 1)
+2026.01.03 17:49:45.070200 [ 49 ] {} <Information> RaftInstance: 0x78558c9b1418 connected to clickhouse-keeper-03:9234 (as a client)
+2026.01.03 17:49:45.070273 [ 52 ] {} <Information> RaftInstance: 0x78558c9b1018 connected to clickhouse-keeper-02:9234 (as a client)
+2026.01.03 17:49:45.070615 [ 53 ] {} <Information> RaftInstance: [PRE-VOTE RESP] peer 3 (O), term 0, resp term 0, my role candidate, dead 2, live 0, abandoned 0, num voting members 3, quorum 2
+2026.01.03 17:49:45.070616 [ 53 ] {} <Information> RaftInstance: [PRE-VOTE DONE] SUCCESS, term 0
+2026.01.03 17:49:45.070617 [ 53 ] {} <Information> RaftInstance: [PRE-VOTE DONE] initiate actual vote
+2026.01.03 17:49:45.075649 [ 53 ] {} <Information> RaftInstance: [VOTE INIT] my id 1, my role candidate, term 1, log idx 0, log term 0, priority (target 1 / mine 1)
+2026.01.03 17:49:45.075781 [ 58 ] {} <Information> RaftInstance: [PRE-VOTE RESP] peer 2 (O), term 0, resp term 0, my role candidate, dead 3, live 0, abandoned 0, num voting members 3, quorum 2
+2026.01.03 17:49:45.075783 [ 58 ] {} <Information> RaftInstance: [PRE-VOTE DONE] SUCCESS, term 0
+2026.01.03 17:49:45.075784 [ 58 ] {} <Information> RaftInstance: [PRE-VOTE DONE] actual vote is already initiated, do nothing
+2026.01.03 17:49:45.088197 [ 57 ] {} <Information> RaftInstance: [VOTE RESP] peer 3 (O), resp term 1, my role candidate, granted 2, responded 2, num voting members 3, quorum 2
+2026.01.03 17:49:45.088207 [ 57 ] {} <Information> RaftInstance: Server is elected as leader for term 1
+2026.01.03 17:49:45.088216 [ 57 ] {} <Information> RaftInstance: number of pending commit elements: 0
+2026.01.03 17:49:45.088219 [ 57 ] {} <Information> RaftInstance: state machine commit index 0, precommit index 0, last log index 0
+2026.01.03 17:49:45.098274 [ 57 ] {} <Information> RaftInstance: [BECOME LEADER] appended new config at 1
+2026.01.03 17:49:45.098383 [ 57 ] {} <Information> RaftInstance:   === LEADER (term 1) ===
+2026.01.03 17:49:45.098422 [ 64 ] {} <Information> RaftInstance: Election completed, will ignore the voting result from this server
+2026.01.03 17:49:45.105393 [ 77 ] {} <Information> RaftInstance: config at index 1 is committed, prev config log idx 0
+2026.01.03 17:49:45.105412 [ 77 ] {} <Information> RaftInstance: new config log idx 1, prev log idx 0, cur config log idx 0, prev log idx 0
+2026.01.03 17:49:45.105435 [ 77 ] {} <Information> RaftInstance: new configuration: log idx 1, prev log idx 0
+peer 1, DC ID 0, clickhouse-keeper-01:9234, voting member, regular member, 1
+peer 2, DC ID 0, clickhouse-keeper-02:9234, voting member, regular member, 1
+peer 3, DC ID 0, clickhouse-keeper-03:9234, voting member, regular member, 1
+my id: 1, leader: 1, term: 1
+2026.01.03 17:49:45.105710 [ 1 ] {} <Information> Application: Listening for Keeper (tcp): 0.0.0.0:9181
+2026.01.03 17:49:45.114972 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 17:49:45.115417 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 17:49:45.115433 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 17:49:45.115862 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Started cgroup current memory usage observer thread
+2026.01.03 17:49:45.115873 [ 1 ] {} <Information> Application: Ready for connections.
+2026.01.03 17:49:45.116041 [ 85 ] {} <Information> CgroupsMemoryUsageObserver: Memory amount initially available to the process is 15.47 GiB
+2026.01.03 17:49:52.501806 [ 30 ] {} <Information> Application: Received termination signal (Terminated)
+2026.01.03 17:49:52.502185 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Stopped cgroup current memory usage observer thread
+2026.01.03 17:49:52.502240 [ 1 ] {} <Information> Application: Shutting down.
+2026.01.03 17:49:52.504564 [ 1 ] {} <Information> Application: Closed all listening sockets.
+2026.01.03 17:49:52.504577 [ 1 ] {} <Information> Application: Closed connections to Keeper.
+2026.01.03 17:49:52.607407 [ 1 ] {} <Information> RaftInstance: shutting down raft core
+2026.01.03 17:49:52.607431 [ 1 ] {} <Information> RaftInstance: sent stop signal to the commit thread.
+2026.01.03 17:49:52.607576 [ 1 ] {} <Information> RaftInstance: cancelled all schedulers.
+2026.01.03 17:49:52.607577 [ 1 ] {} <Information> RaftInstance: commit thread stopped.
+2026.01.03 17:49:52.607578 [ 1 ] {} <Information> RaftInstance: all pending commit elements dropped.
+2026.01.03 17:49:52.607579 [ 1 ] {} <Information> RaftInstance: reset all pointers.
+2026.01.03 17:49:52.607580 [ 1 ] {} <Information> RaftInstance: joined terminated commit thread.
+2026.01.03 17:49:52.607597 [ 1 ] {} <Information> RaftInstance: sent stop signal to background append thread.
+2026.01.03 17:49:52.607600 [ 78 ] {} <Information> RaftInstance: bg append_entries thread terminated
+2026.01.03 17:49:52.607618 [ 1 ] {} <Information> RaftInstance: clean up auto-forwarding queue: 0 elems
+2026.01.03 17:49:52.607619 [ 1 ] {} <Information> RaftInstance: clean up auto-forwarding clients
+2026.01.03 17:49:52.607620 [ 1 ] {} <Information> RaftInstance: raft_server shutdown completed.
+2026.01.03 17:49:52.607621 [ 1 ] {} <Information> RaftInstance: manually create a snapshot on 1
+2026.01.03 17:49:52.607622 [ 1 ] {} <Information> RaftInstance: creating a snapshot for index 1
+2026.01.03 17:49:52.607624 [ 1 ] {} <Information> RaftInstance: create snapshot idx 1 log_term 1
+2026.01.03 17:49:52.607634 [ 1 ] {} <Information> KeeperStateMachine: Creating a snapshot during shutdown because 'create_snapshot_on_exit' is enabled.
+2026.01.03 17:49:52.613521 [ 1 ] {} <Information> RaftInstance: snapshot idx 1 log_term 1 created, compact the log store if needed
+2026.01.03 17:49:52.613529 [ 1 ] {} <Information> RaftInstance: create snapshot idx 1 log_term 1 done: 5903 us elapsed
+2026.01.03 17:49:52.614078 [ 52 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_7, remaining threads: 31
+2026.01.03 17:49:52.614125 [ 48 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_4, remaining threads: 30
+2026.01.03 17:49:52.614133 [ 56 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_11, remaining threads: 29
+2026.01.03 17:49:52.614151 [ 49 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_3, remaining threads: 28
+2026.01.03 17:49:52.614173 [ 62 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_15, remaining threads: 27
+2026.01.03 17:49:52.614183 [ 44 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_6, remaining threads: 26
+2026.01.03 17:49:52.614225 [ 54 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_9, remaining threads: 25
+2026.01.03 17:49:52.614233 [ 58 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_12, remaining threads: 24
+2026.01.03 17:49:52.614243 [ 66 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_19, remaining threads: 23
+2026.01.03 17:49:52.614270 [ 59 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_14, remaining threads: 22
+2026.01.03 17:49:52.614279 [ 53 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_8, remaining threads: 21
+2026.01.03 17:49:52.614294 [ 60 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_16, remaining threads: 20
+2026.01.03 17:49:52.614310 [ 57 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_13, remaining threads: 19
+2026.01.03 17:49:52.614327 [ 65 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_24, remaining threads: 18
+2026.01.03 17:49:52.614343 [ 70 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_23, remaining threads: 17
+2026.01.03 17:49:52.614363 [ 64 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_18, remaining threads: 16
+2026.01.03 17:49:52.614377 [ 72 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_27, remaining threads: 15
+2026.01.03 17:49:52.614389 [ 73 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_28, remaining threads: 14
+2026.01.03 17:49:52.614406 [ 71 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_25, remaining threads: 13
+2026.01.03 17:49:52.614420 [ 63 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_17, remaining threads: 12
+2026.01.03 17:49:52.614444 [ 61 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_20, remaining threads: 11
+2026.01.03 17:49:52.614455 [ 74 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_30, remaining threads: 10
+2026.01.03 17:49:52.614471 [ 46 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_2, remaining threads: 9
+2026.01.03 17:49:52.614486 [ 50 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_5, remaining threads: 8
+2026.01.03 17:49:52.614502 [ 69 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_26, remaining threads: 7
+2026.01.03 17:49:52.614520 [ 47 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_1, remaining threads: 6
+2026.01.03 17:49:52.614540 [ 75 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_29, remaining threads: 5
+2026.01.03 17:49:52.614551 [ 67 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_21, remaining threads: 4
+2026.01.03 17:49:52.614566 [ 68 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_22, remaining threads: 3
+2026.01.03 17:49:52.614581 [ 45 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_0, remaining threads: 2
+2026.01.03 17:49:52.614604 [ 76 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_31, remaining threads: 1
+2026.01.03 17:49:52.614609 [ 55 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_10, remaining threads: 0
+2026.01.03 17:49:52.622257 [ 1 ] {} <Information> KeeperSnapshotManagerS3: KeeperSnapshotManagerS3 shut down
+2026.01.03 17:49:52.622485 [ 1 ] {} <Information> KeeperLogStore: Changelog is shut down
+2026.01.03 17:49:52.622737 [ 1 ] {} <Information> Application: Waiting for background threads
+2026.01.03 17:49:52.623560 [ 1 ] {} <Information> Application: Background threads finished in 0 ms
+2026.01.03 17:49:52.623563 [ 1 ] {} <Information> Application: shutting down
+2026.01.03 17:49:52.623618 [ 30 ] {} <Information> BaseDaemon: Stop SignalListener thread
+2026.01.03 17:50:11.102090 [ 1 ] {} <Information> Application: Starting ClickHouse Keeper 25.12.1.649 (revision: 54505, git hash: bf4280aa19d3bade619578a749919e25ce490861, build id: 850543EC7BBD2A9A1CC4C04C027F5A030A3C0566), PID 1
+2026.01.03 17:50:11.102122 [ 1 ] {} <Information> Application: starting up
+2026.01.03 17:50:11.102130 [ 1 ] {} <Information> Application: OS Name = Linux, OS Version = 6.6.87.2-microsoft-standard-WSL2, OS Architecture = x86_64
+2026.01.03 17:50:11.102394 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 17:50:11.108060 [ 1 ] {} <Information> CgroupsReader: Will create cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 17:50:11.108101 [ 1 ] {} <Information> MemoryWorker: Starting background memory thread with period of 50ms, using Cgroups as source
+2026.01.03 17:50:11.109466 [ 1 ] {} <Information> AsynchronousMetrics: Will use cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 17:50:11.109960 [ 1 ] {} <Information> Context: Cannot connect to ZooKeeper (or Keeper) before internal Keeper start, will wait for Keeper synchronously
+2026.01.03 17:50:11.110036 [ 1 ] {} <Information> KeeperContext: Keeper feature flag FILTERED_LIST: enabled
+2026.01.03 17:50:11.110037 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_READ: enabled
+2026.01.03 17:50:11.110038 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_NOT_EXISTS: enabled
+2026.01.03 17:50:11.110039 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_IF_NOT_EXISTS: enabled
+2026.01.03 17:50:11.110040 [ 1 ] {} <Information> KeeperContext: Keeper feature flag REMOVE_RECURSIVE: enabled
+2026.01.03 17:50:11.110041 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_WATCHES: enabled
+2026.01.03 17:50:11.110042 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_STAT: disabled
+2026.01.03 17:50:11.110043 [ 1 ] {} <Information> KeeperContext: Keeper feature flag PERSISTENT_WATCHES: enabled
+2026.01.03 17:50:11.110043 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_WITH_STATS: disabled
+2026.01.03 17:50:11.112421 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2026.01.03 17:50:11.112675 [ 1 ] {} <Information> KeeperLogStore: force_sync enabled
+2026.01.03 17:50:11.112697 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2026.01.03 17:50:11.112743 [ 1 ] {} <Information> KeeperServer: No config in log store and snapshot, probably it's initial run. Will use config from .xml on disk
+2026.01.03 17:50:11.115502 [ 46 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_0, current threads: 0
+2026.01.03 17:50:11.115526 [ 45 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_1, current threads: 0
+2026.01.03 17:50:11.115640 [ 47 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_2, current threads: 2
+2026.01.03 17:50:11.115754 [ 50 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_4, current threads: 3
+2026.01.03 17:50:11.115804 [ 48 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_3, current threads: 3
+2026.01.03 17:50:11.115810 [ 49 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_5, current threads: 3
+2026.01.03 17:50:11.115861 [ 51 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_6, current threads: 6
+2026.01.03 17:50:11.115935 [ 53 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_7, current threads: 7
+2026.01.03 17:50:11.116020 [ 52 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_8, current threads: 8
+2026.01.03 17:50:11.116049 [ 55 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_9, current threads: 8
+2026.01.03 17:50:11.116188 [ 54 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_10, current threads: 10
+2026.01.03 17:50:11.116236 [ 57 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_11, current threads: 11
+2026.01.03 17:50:11.116290 [ 58 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_13, current threads: 12
+2026.01.03 17:50:11.116353 [ 56 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_12, current threads: 11
+2026.01.03 17:50:11.116421 [ 59 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_14, current threads: 14
+2026.01.03 17:50:11.116601 [ 61 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_15, current threads: 15
+2026.01.03 17:50:11.116778 [ 60 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_17, current threads: 16
+2026.01.03 17:50:11.116837 [ 62 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_16, current threads: 16
+2026.01.03 17:50:11.116908 [ 63 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_18, current threads: 18
+2026.01.03 17:50:11.117078 [ 64 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_19, current threads: 19
+2026.01.03 17:50:11.117113 [ 67 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_20, current threads: 19
+2026.01.03 17:50:11.117168 [ 65 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_21, current threads: 19
+2026.01.03 17:50:11.117372 [ 70 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_24, current threads: 22
+2026.01.03 17:50:11.117440 [ 68 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_22, current threads: 22
+2026.01.03 17:50:11.117441 [ 69 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_25, current threads: 22
+2026.01.03 17:50:11.117458 [ 66 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_23, current threads: 22
+2026.01.03 17:50:11.117669 [ 71 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_27, current threads: 26
+2026.01.03 17:50:11.117678 [ 72 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_26, current threads: 26
+2026.01.03 17:50:11.117752 [ 74 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_28, current threads: 26
+2026.01.03 17:50:11.117773 [ 73 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_29, current threads: 28
+2026.01.03 17:50:11.117856 [ 1 ] {} <Information> RaftInstance: Raft ASIO listener initiated on :::9234, unsecured
+2026.01.03 17:50:11.117909 [ 1 ] {} <Information> RaftInstance: parameters: election timeout range 1000 - 2000, heartbeat 500, leadership expiry 10000, max batch 100, backoff 50, snapshot distance 100000, enable randomized snapshot creation NO, log sync stop gap 99999, use new joiner type NO, reserved logs 100000, client timeout 10000, auto forwarding on, API call type async, custom commit quorum size 0, custom election quorum size 0, snapshot receiver included, leadership transfer wait time 0, grace period of lagging state machine 0, snapshot IO: blocking, parallel log appending: on, streaming mode max log gap 0, max bytes 0
+2026.01.03 17:50:11.117911 [ 1 ] {} <Information> RaftInstance: new election timeout range: 1000 - 2000
+2026.01.03 17:50:11.117921 [ 1 ] {} <Information> RaftInstance:    === INIT RAFT SERVER ===
+commit index 0
+term 0
+election timer allowed
+catching-up no
+log store start 1, end 0
+config log idx 0, prev log idx 0
+ -- ASYNC REPLICATION --
+2026.01.03 17:50:11.117990 [ 75 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_30, current threads: 30
+2026.01.03 17:50:11.118024 [ 76 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_31, current threads: 30
+2026.01.03 17:50:11.118094 [ 1 ] {} <Information> RaftInstance: peer 1: DC ID 0, clickhouse-keeper-01:9234, voting member, 1
+peer 2: DC ID 0, clickhouse-keeper-02:9234, voting member, 1
+peer 3: DC ID 0, clickhouse-keeper-03:9234, voting member, 1
+my id: 1, voting_member
+num peers: 2
+2026.01.03 17:50:11.118108 [ 1 ] {} <Information> RaftInstance: global manager does not exist. will use local thread for commit and append
+2026.01.03 17:50:11.118241 [ 1 ] {} <Information> RaftInstance: wait for HB, for 50 + [1000, 2000] ms
+2026.01.03 17:50:11.118474 [ 78 ] {} <Information> RaftInstance: bg append_entries thread initiated
+2026.01.03 17:50:11.158968 [ 32 ] {} <Information> MemoryTracker: Correcting the value of global memory tracker from 8.42 MiB to 47.88 MiB
+2026.01.03 17:50:12.557377 [ 46 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2026.01.03 17:50:12.557407 [ 46 ] {} <Information> RaftInstance: [PRIORITY] decay, target 1 -> 1, mine 1
+2026.01.03 17:50:12.557523 [ 46 ] {} <Information> RaftInstance: [ELECTION TIMEOUT] current role: follower, log last term 0, state term 0, target p 1, my p 1, hb dead, pre-vote NOT done
+2026.01.03 17:50:12.557532 [ 46 ] {} <Information> RaftInstance: [PRE-VOTE INIT] my id 1, my role candidate, term 0, log idx 0, log term 0, priority (target 1 / mine 1)
+2026.01.03 17:50:12.558386 [ 47 ] {} <Information> RaftInstance: 0x7bfebfa46018 connected to clickhouse-keeper-03:9234 (as a client)
+2026.01.03 17:50:12.558620 [ 51 ] {} <Information> RaftInstance: 0x7bfebfa3bc18 connected to clickhouse-keeper-02:9234 (as a client)
+2026.01.03 17:50:12.558929 [ 52 ] {} <Information> RaftInstance: [PRE-VOTE RESP] peer 3 (O), term 0, resp term 0, my role candidate, dead 2, live 0, abandoned 0, num voting members 3, quorum 2
+2026.01.03 17:50:12.558932 [ 52 ] {} <Information> RaftInstance: [PRE-VOTE DONE] SUCCESS, term 0
+2026.01.03 17:50:12.558938 [ 52 ] {} <Information> RaftInstance: [PRE-VOTE DONE] initiate actual vote
+2026.01.03 17:50:12.564393 [ 52 ] {} <Information> RaftInstance: [VOTE INIT] my id 1, my role candidate, term 1, log idx 0, log term 0, priority (target 1 / mine 1)
+2026.01.03 17:50:12.564608 [ 57 ] {} <Information> RaftInstance: [PRE-VOTE RESP] peer 2 (O), term 0, resp term 0, my role candidate, dead 3, live 0, abandoned 0, num voting members 3, quorum 2
+2026.01.03 17:50:12.564621 [ 57 ] {} <Information> RaftInstance: [PRE-VOTE DONE] SUCCESS, term 0
+2026.01.03 17:50:12.564622 [ 57 ] {} <Information> RaftInstance: [PRE-VOTE DONE] actual vote is already initiated, do nothing
+2026.01.03 17:50:12.581802 [ 58 ] {} <Information> RaftInstance: [VOTE RESP] peer 3 (O), resp term 1, my role candidate, granted 2, responded 2, num voting members 3, quorum 2
+2026.01.03 17:50:12.581814 [ 58 ] {} <Information> RaftInstance: Server is elected as leader for term 1
+2026.01.03 17:50:12.581825 [ 58 ] {} <Information> RaftInstance: number of pending commit elements: 0
+2026.01.03 17:50:12.581828 [ 58 ] {} <Information> RaftInstance: state machine commit index 0, precommit index 0, last log index 0
+2026.01.03 17:50:12.589873 [ 58 ] {} <Information> RaftInstance: [BECOME LEADER] appended new config at 1
+2026.01.03 17:50:12.589988 [ 58 ] {} <Information> RaftInstance:   === LEADER (term 1) ===
+2026.01.03 17:50:12.590149 [ 62 ] {} <Information> RaftInstance: Election completed, will ignore the voting result from this server
+2026.01.03 17:50:12.595030 [ 77 ] {} <Information> RaftInstance: config at index 1 is committed, prev config log idx 0
+2026.01.03 17:50:12.595090 [ 77 ] {} <Information> RaftInstance: new config log idx 1, prev log idx 0, cur config log idx 0, prev log idx 0
+2026.01.03 17:50:12.595112 [ 77 ] {} <Information> RaftInstance: new configuration: log idx 1, prev log idx 0
+peer 1, DC ID 0, clickhouse-keeper-01:9234, voting member, regular member, 1
+peer 2, DC ID 0, clickhouse-keeper-02:9234, voting member, regular member, 1
+peer 3, DC ID 0, clickhouse-keeper-03:9234, voting member, regular member, 1
+my id: 1, leader: 1, term: 1
+2026.01.03 17:50:12.595394 [ 1 ] {} <Information> Application: Listening for Keeper (tcp): 0.0.0.0:9181
+2026.01.03 17:50:12.604088 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 17:50:12.604446 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 17:50:12.604450 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 17:50:12.604815 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Started cgroup current memory usage observer thread
+2026.01.03 17:50:12.604817 [ 1 ] {} <Information> Application: Ready for connections.
+2026.01.03 17:50:12.604945 [ 84 ] {} <Information> CgroupsMemoryUsageObserver: Memory amount initially available to the process is 15.47 GiB
+2026.01.03 17:50:20.025291 [ 33 ] {} <Information> KeeperTCPHandler: Requesting session ID for the new client
+2026.01.03 17:50:20.030228 [ 33 ] {} <Information> KeeperTCPHandler: Received session ID 1
+2026.01.03 17:50:20.236790 [ 75 ] {} <Information> RaftInstance: receive a incoming rpc connection
+2026.01.03 17:50:20.236811 [ 75 ] {} <Information> RaftInstance: session 1 got connection from ::ffff:172.19.0.15:58318 (as a server)
+2026.01.03 17:50:28.055200 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 7950 ms
+2026.01.03 17:50:30.030977 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 1962 ms
+2026.01.03 17:50:40.030101 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9994 ms
+2026.01.03 17:50:50.030120 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9990 ms
+2026.01.03 17:51:00.030134 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9993 ms
+2026.01.03 17:51:10.029389 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9993 ms
+2026.01.03 17:51:20.029275 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9993 ms
+2026.01.03 17:51:30.029425 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9993 ms
+2026.01.03 17:51:40.028677 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9993 ms
+2026.01.03 17:51:50.028586 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9992 ms
+2026.01.03 17:52:00.028535 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9991 ms
+2026.01.03 17:52:29.097224 [ 31 ] {} <Information> Application: Received termination signal (Terminated)
+2026.01.03 17:52:29.097350 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Stopped cgroup current memory usage observer thread
+2026.01.03 17:52:29.097375 [ 1 ] {} <Information> Application: Shutting down.
+2026.01.03 17:52:29.097745 [ 1 ] {} <Information> Application: Closed all listening sockets.
+2026.01.03 17:52:29.097748 [ 1 ] {} <Information> Application: Closed connections to Keeper.
+2026.01.03 17:52:29.120860 [ 1 ] {} <Information> RaftInstance: shutting down raft core
+2026.01.03 17:52:29.120880 [ 1 ] {} <Information> RaftInstance: sent stop signal to the commit thread.
+2026.01.03 17:52:29.121005 [ 1 ] {} <Information> RaftInstance: cancelled all schedulers.
+2026.01.03 17:52:29.121006 [ 1 ] {} <Information> RaftInstance: commit thread stopped.
+2026.01.03 17:52:29.121007 [ 1 ] {} <Information> RaftInstance: all pending commit elements dropped.
+2026.01.03 17:52:29.121008 [ 1 ] {} <Information> RaftInstance: reset all pointers.
+2026.01.03 17:52:29.121009 [ 1 ] {} <Information> RaftInstance: joined terminated commit thread.
+2026.01.03 17:52:29.121026 [ 1 ] {} <Information> RaftInstance: sent stop signal to background append thread.
+2026.01.03 17:52:29.121032 [ 78 ] {} <Information> RaftInstance: bg append_entries thread terminated
+2026.01.03 17:52:29.121055 [ 1 ] {} <Information> RaftInstance: clean up auto-forwarding queue: 0 elems
+2026.01.03 17:52:29.121056 [ 1 ] {} <Information> RaftInstance: clean up auto-forwarding clients
+2026.01.03 17:52:29.121057 [ 1 ] {} <Information> RaftInstance: raft_server shutdown completed.
+2026.01.03 17:52:29.121058 [ 1 ] {} <Information> RaftInstance: manually create a snapshot on 46
+2026.01.03 17:52:29.121059 [ 1 ] {} <Information> RaftInstance: creating a snapshot for index 46
+2026.01.03 17:52:29.121061 [ 1 ] {} <Information> RaftInstance: create snapshot idx 46 log_term 1
+2026.01.03 17:52:29.121070 [ 1 ] {} <Information> KeeperStateMachine: Creating a snapshot during shutdown because 'create_snapshot_on_exit' is enabled.
+2026.01.03 17:52:29.127767 [ 1 ] {} <Information> RaftInstance: snapshot idx 46 log_term 1 created, compact the log store if needed
+2026.01.03 17:52:29.127771 [ 1 ] {} <Information> RaftInstance: create snapshot idx 46 log_term 1 done: 6709 us elapsed
+2026.01.03 17:52:29.127809 [ 52 ] {} <Error> RaftInstance: failed to accept a rpc connection due to error 125, Operation canceled
+2026.01.03 17:52:29.128104 [ 65 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_21, remaining threads: 31
+2026.01.03 17:52:29.128108 [ 47 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_2, remaining threads: 30
+2026.01.03 17:52:29.128124 [ 53 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_7, remaining threads: 29
+2026.01.03 17:52:29.128140 [ 66 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_23, remaining threads: 28
+2026.01.03 17:52:29.128177 [ 60 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_17, remaining threads: 27
+2026.01.03 17:52:29.128191 [ 52 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_8, remaining threads: 25
+2026.01.03 17:52:29.128199 [ 73 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_29, remaining threads: 26
+2026.01.03 17:52:29.128222 [ 75 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_30, remaining threads: 23
+2026.01.03 17:52:29.128228 [ 51 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_6, remaining threads: 24
+2026.01.03 17:52:29.128238 [ 67 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_20, remaining threads: 22
+2026.01.03 17:52:29.128251 [ 59 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_14, remaining threads: 21
+2026.01.03 17:52:29.128288 [ 50 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_4, remaining threads: 19
+2026.01.03 17:52:29.128285 [ 70 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_24, remaining threads: 20
+2026.01.03 17:52:29.128295 [ 61 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_15, remaining threads: 18
+2026.01.03 17:52:29.128335 [ 56 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_12, remaining threads: 15
+2026.01.03 17:52:29.128342 [ 62 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_16, remaining threads: 16
+2026.01.03 17:52:29.128343 [ 74 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_28, remaining threads: 17
+2026.01.03 17:52:29.128354 [ 63 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_18, remaining threads: 14
+2026.01.03 17:52:29.128364 [ 58 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_13, remaining threads: 13
+2026.01.03 17:52:29.128378 [ 57 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_11, remaining threads: 12
+2026.01.03 17:52:29.128403 [ 46 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_0, remaining threads: 11
+2026.01.03 17:52:29.128415 [ 54 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_10, remaining threads: 10
+2026.01.03 17:52:29.128429 [ 64 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_19, remaining threads: 9
+2026.01.03 17:52:29.128444 [ 55 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_9, remaining threads: 8
+2026.01.03 17:52:29.128462 [ 48 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_3, remaining threads: 7
+2026.01.03 17:52:29.128475 [ 71 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_27, remaining threads: 6
+2026.01.03 17:52:29.128503 [ 45 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_1, remaining threads: 4
+2026.01.03 17:52:29.128517 [ 72 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_26, remaining threads: 3
+2026.01.03 17:52:29.128511 [ 68 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_22, remaining threads: 5
+2026.01.03 17:52:29.128530 [ 76 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_31, remaining threads: 2
+2026.01.03 17:52:29.128544 [ 69 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_25, remaining threads: 1
+2026.01.03 17:52:29.128550 [ 49 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_5, remaining threads: 0
+2026.01.03 17:52:29.130545 [ 1 ] {} <Information> KeeperSnapshotManagerS3: KeeperSnapshotManagerS3 shut down
+2026.01.03 17:52:29.130829 [ 1 ] {} <Information> KeeperLogStore: Changelog is shut down
+2026.01.03 17:52:29.131206 [ 1 ] {} <Information> Application: Waiting for background threads
+2026.01.03 17:52:29.131955 [ 1 ] {} <Information> Application: Background threads finished in 0 ms
+2026.01.03 17:52:29.131966 [ 1 ] {} <Information> Application: shutting down
+2026.01.03 17:52:29.132003 [ 31 ] {} <Information> BaseDaemon: Stop SignalListener thread
+2026.01.03 17:52:35.237520 [ 1 ] {} <Information> Application: Starting ClickHouse Keeper 25.12.1.649 (revision: 54505, git hash: bf4280aa19d3bade619578a749919e25ce490861, build id: 850543EC7BBD2A9A1CC4C04C027F5A030A3C0566), PID 1
+2026.01.03 17:52:35.237555 [ 1 ] {} <Information> Application: starting up
+2026.01.03 17:52:35.237563 [ 1 ] {} <Information> Application: OS Name = Linux, OS Version = 6.6.87.2-microsoft-standard-WSL2, OS Architecture = x86_64
+2026.01.03 17:52:35.237848 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 17:52:35.245372 [ 1 ] {} <Information> CgroupsReader: Will create cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 17:52:35.245406 [ 1 ] {} <Information> MemoryWorker: Starting background memory thread with period of 50ms, using Cgroups as source
+2026.01.03 17:52:35.246903 [ 1 ] {} <Information> AsynchronousMetrics: Will use cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 17:52:35.247843 [ 1 ] {} <Information> Context: Cannot connect to ZooKeeper (or Keeper) before internal Keeper start, will wait for Keeper synchronously
+2026.01.03 17:52:35.247981 [ 1 ] {} <Information> KeeperContext: Keeper feature flag FILTERED_LIST: enabled
+2026.01.03 17:52:35.247985 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_READ: enabled
+2026.01.03 17:52:35.247986 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_NOT_EXISTS: enabled
+2026.01.03 17:52:35.247988 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_IF_NOT_EXISTS: enabled
+2026.01.03 17:52:35.247989 [ 1 ] {} <Information> KeeperContext: Keeper feature flag REMOVE_RECURSIVE: enabled
+2026.01.03 17:52:35.247990 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_WATCHES: enabled
+2026.01.03 17:52:35.247992 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_STAT: disabled
+2026.01.03 17:52:35.247994 [ 1 ] {} <Information> KeeperContext: Keeper feature flag PERSISTENT_WATCHES: enabled
+2026.01.03 17:52:35.247995 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_WITH_STATS: disabled
+2026.01.03 17:52:35.250429 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2026.01.03 17:52:35.250862 [ 1 ] {} <Information> KeeperLogStore: force_sync enabled
+2026.01.03 17:52:35.250900 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2026.01.03 17:52:35.250987 [ 1 ] {} <Information> KeeperServer: No config in log store and snapshot, probably it's initial run. Will use config from .xml on disk
+2026.01.03 17:52:35.255191 [ 44 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_0, current threads: 0
+2026.01.03 17:52:35.255269 [ 45 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_1, current threads: 1
+2026.01.03 17:52:35.255556 [ 47 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_3, current threads: 2
+2026.01.03 17:52:35.255560 [ 46 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_2, current threads: 2
+2026.01.03 17:52:35.255688 [ 48 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_4, current threads: 4
+2026.01.03 17:52:35.255801 [ 49 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_5, current threads: 5
+2026.01.03 17:52:35.255855 [ 50 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_6, current threads: 6
+2026.01.03 17:52:35.256100 [ 52 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_8, current threads: 7
+2026.01.03 17:52:35.256104 [ 51 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_7, current threads: 7
+2026.01.03 17:52:35.256318 [ 53 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_9, current threads: 9
+2026.01.03 17:52:35.256347 [ 54 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_10, current threads: 9
+2026.01.03 17:52:35.256467 [ 55 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_11, current threads: 11
+2026.01.03 17:52:35.256732 [ 56 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_12, current threads: 12
+2026.01.03 17:52:35.256911 [ 57 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_13, current threads: 13
+2026.01.03 17:52:35.256970 [ 58 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_14, current threads: 14
+2026.01.03 17:52:35.257187 [ 59 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_15, current threads: 15
+2026.01.03 17:52:35.257265 [ 62 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_17, current threads: 16
+2026.01.03 17:52:35.257265 [ 60 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_16, current threads: 16
+2026.01.03 17:52:35.257445 [ 63 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_18, current threads: 18
+2026.01.03 17:52:35.257483 [ 61 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_19, current threads: 18
+2026.01.03 17:52:35.257560 [ 64 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_20, current threads: 19
+2026.01.03 17:52:35.257585 [ 65 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_21, current threads: 19
+2026.01.03 17:52:35.257680 [ 66 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_22, current threads: 22
+2026.01.03 17:52:35.257718 [ 67 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_23, current threads: 22
+2026.01.03 17:52:35.257783 [ 68 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_24, current threads: 23
+2026.01.03 17:52:35.257857 [ 69 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_25, current threads: 24
+2026.01.03 17:52:35.258112 [ 72 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_26, current threads: 26
+2026.01.03 17:52:35.258187 [ 70 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_27, current threads: 27
+2026.01.03 17:52:35.258539 [ 73 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_29, current threads: 28
+2026.01.03 17:52:35.258541 [ 1 ] {} <Information> RaftInstance: Raft ASIO listener initiated on :::9234, unsecured
+2026.01.03 17:52:35.258546 [ 76 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_30, current threads: 28
+2026.01.03 17:52:35.258559 [ 71 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_28, current threads: 28
+2026.01.03 17:52:35.258590 [ 74 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_31, current threads: 28
+2026.01.03 17:52:35.258621 [ 1 ] {} <Information> RaftInstance: parameters: election timeout range 1000 - 2000, heartbeat 500, leadership expiry 10000, max batch 100, backoff 50, snapshot distance 100000, enable randomized snapshot creation NO, log sync stop gap 99999, use new joiner type NO, reserved logs 100000, client timeout 10000, auto forwarding on, API call type async, custom commit quorum size 0, custom election quorum size 0, snapshot receiver included, leadership transfer wait time 0, grace period of lagging state machine 0, snapshot IO: blocking, parallel log appending: on, streaming mode max log gap 0, max bytes 0
+2026.01.03 17:52:35.258625 [ 1 ] {} <Information> RaftInstance: new election timeout range: 1000 - 2000
+2026.01.03 17:52:35.258643 [ 1 ] {} <Information> RaftInstance:    === INIT RAFT SERVER ===
+commit index 0
+term 0
+election timer allowed
+catching-up no
+log store start 1, end 0
+config log idx 0, prev log idx 0
+ -- ASYNC REPLICATION --
+2026.01.03 17:52:35.258815 [ 1 ] {} <Information> RaftInstance: peer 1: DC ID 0, clickhouse-keeper-01:9234, voting member, 1
+peer 2: DC ID 0, clickhouse-keeper-02:9234, voting member, 1
+peer 3: DC ID 0, clickhouse-keeper-03:9234, voting member, 1
+my id: 1, voting_member
+num peers: 2
+2026.01.03 17:52:35.258838 [ 1 ] {} <Information> RaftInstance: global manager does not exist. will use local thread for commit and append
+2026.01.03 17:52:35.259124 [ 1 ] {} <Information> RaftInstance: wait for HB, for 50 + [1000, 2000] ms
+2026.01.03 17:52:35.259317 [ 78 ] {} <Information> RaftInstance: bg append_entries thread initiated
+2026.01.03 17:52:35.296863 [ 31 ] {} <Information> MemoryTracker: Correcting the value of global memory tracker from 8.42 MiB to 47.66 MiB
+2026.01.03 17:52:36.343309 [ 73 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2026.01.03 17:52:36.343340 [ 73 ] {} <Information> RaftInstance: [PRIORITY] decay, target 1 -> 1, mine 1
+2026.01.03 17:52:36.343376 [ 73 ] {} <Information> RaftInstance: [ELECTION TIMEOUT] current role: follower, log last term 0, state term 0, target p 1, my p 1, hb dead, pre-vote NOT done
+2026.01.03 17:52:36.343386 [ 73 ] {} <Information> RaftInstance: [PRE-VOTE INIT] my id 1, my role candidate, term 0, log idx 0, log term 0, priority (target 1 / mine 1)
+2026.01.03 17:52:36.344521 [ 46 ] {} <Information> RaftInstance: 0x728993a46018 connected to clickhouse-keeper-03:9234 (as a client)
+2026.01.03 17:52:36.344729 [ 49 ] {} <Information> RaftInstance: [PRE-VOTE RESP] peer 3 (O), term 0, resp term 0, my role candidate, dead 2, live 0, abandoned 0, num voting members 3, quorum 2
+2026.01.03 17:52:36.344731 [ 49 ] {} <Information> RaftInstance: [PRE-VOTE DONE] SUCCESS, term 0
+2026.01.03 17:52:36.344732 [ 49 ] {} <Information> RaftInstance: [PRE-VOTE DONE] initiate actual vote
+2026.01.03 17:52:36.344738 [ 50 ] {} <Information> RaftInstance: 0x728993a3bc18 connected to clickhouse-keeper-02:9234 (as a client)
+2026.01.03 17:52:36.349347 [ 49 ] {} <Information> RaftInstance: [VOTE INIT] my id 1, my role candidate, term 1, log idx 0, log term 0, priority (target 1 / mine 1)
+2026.01.03 17:52:36.349694 [ 55 ] {} <Information> RaftInstance: [PRE-VOTE RESP] peer 2 (O), term 0, resp term 0, my role candidate, dead 3, live 0, abandoned 0, num voting members 3, quorum 2
+2026.01.03 17:52:36.349697 [ 55 ] {} <Information> RaftInstance: [PRE-VOTE DONE] SUCCESS, term 0
+2026.01.03 17:52:36.349703 [ 55 ] {} <Information> RaftInstance: [PRE-VOTE DONE] actual vote is already initiated, do nothing
+2026.01.03 17:52:36.361996 [ 57 ] {} <Information> RaftInstance: [VOTE RESP] peer 3 (O), resp term 1, my role candidate, granted 2, responded 2, num voting members 3, quorum 2
+2026.01.03 17:52:36.362009 [ 57 ] {} <Information> RaftInstance: Server is elected as leader for term 1
+2026.01.03 17:52:36.362021 [ 57 ] {} <Information> RaftInstance: number of pending commit elements: 0
+2026.01.03 17:52:36.362025 [ 57 ] {} <Information> RaftInstance: state machine commit index 0, precommit index 0, last log index 0
+2026.01.03 17:52:36.371795 [ 57 ] {} <Information> RaftInstance: [BECOME LEADER] appended new config at 1
+2026.01.03 17:52:36.371930 [ 57 ] {} <Information> RaftInstance:   === LEADER (term 1) ===
+2026.01.03 17:52:36.372156 [ 63 ] {} <Information> RaftInstance: Election completed, will ignore the voting result from this server
+2026.01.03 17:52:36.376542 [ 77 ] {} <Information> RaftInstance: config at index 1 is committed, prev config log idx 0
+2026.01.03 17:52:36.376571 [ 77 ] {} <Information> RaftInstance: new config log idx 1, prev log idx 0, cur config log idx 0, prev log idx 0
+2026.01.03 17:52:36.376581 [ 77 ] {} <Information> RaftInstance: new configuration: log idx 1, prev log idx 0
+peer 1, DC ID 0, clickhouse-keeper-01:9234, voting member, regular member, 1
+peer 2, DC ID 0, clickhouse-keeper-02:9234, voting member, regular member, 1
+peer 3, DC ID 0, clickhouse-keeper-03:9234, voting member, regular member, 1
+my id: 1, leader: 1, term: 1
+2026.01.03 17:52:36.376832 [ 1 ] {} <Information> Application: Listening for Keeper (tcp): 0.0.0.0:9181
+2026.01.03 17:52:36.389361 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 17:52:36.389854 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 17:52:36.389871 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 17:52:36.390315 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Started cgroup current memory usage observer thread
+2026.01.03 17:52:36.390316 [ 1 ] {} <Information> Application: Ready for connections.
+2026.01.03 17:52:36.390468 [ 84 ] {} <Information> CgroupsMemoryUsageObserver: Memory amount initially available to the process is 15.47 GiB
+2026.01.03 17:52:44.521298 [ 32 ] {} <Information> KeeperTCPHandler: Requesting session ID for the new client
+2026.01.03 17:52:44.526663 [ 32 ] {} <Information> KeeperTCPHandler: Received session ID 1
+2026.01.03 17:52:44.550195 [ 58 ] {} <Information> RaftInstance: receive a incoming rpc connection
+2026.01.03 17:52:44.550217 [ 58 ] {} <Information> RaftInstance: session 1 got connection from ::ffff:172.19.0.15:58776 (as a server)
+2026.01.03 17:52:52.612591 [ 32 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 7955 ms
+2026.01.03 17:52:54.527248 [ 32 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 1897 ms
+2026.01.03 17:53:04.527222 [ 32 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9993 ms
+2026.01.03 17:53:14.526338 [ 32 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9993 ms
+2026.01.03 17:53:24.526340 [ 32 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9992 ms
+2026.01.03 17:53:34.526394 [ 32 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9994 ms
+2026.01.03 17:53:44.525489 [ 32 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9994 ms
+2026.01.03 17:53:54.525494 [ 32 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9994 ms
+2026.01.03 17:54:04.525494 [ 32 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9993 ms
+2026.01.03 17:54:14.524723 [ 32 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9993 ms
+2026.01.03 17:54:24.524764 [ 32 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9992 ms
+2026.01.03 17:54:34.524634 [ 32 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9993 ms
+2026.01.03 17:54:43.951389 [ 30 ] {} <Information> Application: Received termination signal (Terminated)
+2026.01.03 17:54:43.951541 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Stopped cgroup current memory usage observer thread
+2026.01.03 17:54:43.951546 [ 1 ] {} <Information> Application: Shutting down.
+2026.01.03 17:54:43.952000 [ 1 ] {} <Information> Application: Closed all listening sockets. Waiting for 1 outstanding connections.
+2026.01.03 17:54:44.410236 [ 57 ] {} <Warning> RaftInstance: peer (3) response error: failed to read response to peer 3, clickhouse-keeper-03:9234, error 2, End of file
+2026.01.03 17:54:44.523789 [ 32 ] {} <Information> KeeperTCPHandler: Receiving request for session 1 took 9994 ms
+2026.01.03 17:54:44.524558 [ 62 ] {} <Warning> RaftInstance: peer (3) response error: failed to connect to peer 3, clickhouse-keeper-03:9234, error 111, Connection refused
+2026.01.03 17:54:44.534438 [ 44 ] {} <Warning> RaftInstance: peer (3) response error: failed to connect to peer 3, clickhouse-keeper-03:9234, error 111, Connection refused
+2026.01.03 17:54:44.561613 [ 53 ] {} <Warning> RaftInstance: peer (3) response error: failed to connect to peer 3, clickhouse-keeper-03:9234, error 111, Connection refused
+2026.01.03 17:54:44.571809 [ 64 ] {} <Warning> RaftInstance: peer (3) response error: failed to connect to peer 3, clickhouse-keeper-03:9234, error 111, Connection refused
+2026.01.03 17:55:36.304925 [ 1 ] {} <Information> Application: Starting ClickHouse Keeper 25.12.1.649 (revision: 54505, git hash: bf4280aa19d3bade619578a749919e25ce490861, build id: 850543EC7BBD2A9A1CC4C04C027F5A030A3C0566), PID 1
+2026.01.03 17:55:36.304967 [ 1 ] {} <Information> Application: starting up
+2026.01.03 17:55:36.304977 [ 1 ] {} <Information> Application: OS Name = Linux, OS Version = 6.6.87.2-microsoft-standard-WSL2, OS Architecture = x86_64
+2026.01.03 17:55:36.306031 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 17:55:36.306548 [ 1 ] {} <Information> CgroupsReader: Will create cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 17:55:36.306560 [ 1 ] {} <Information> MemoryWorker: Starting background memory thread with period of 50ms, using Cgroups as source
+2026.01.03 17:55:36.311031 [ 1 ] {} <Information> AsynchronousMetrics: Will use cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 17:55:36.311730 [ 1 ] {} <Information> Context: Cannot connect to ZooKeeper (or Keeper) before internal Keeper start, will wait for Keeper synchronously
+2026.01.03 17:55:36.311998 [ 1 ] {} <Information> KeeperContext: Keeper feature flag FILTERED_LIST: enabled
+2026.01.03 17:55:36.312000 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_READ: enabled
+2026.01.03 17:55:36.312002 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_NOT_EXISTS: enabled
+2026.01.03 17:55:36.312002 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_IF_NOT_EXISTS: enabled
+2026.01.03 17:55:36.312003 [ 1 ] {} <Information> KeeperContext: Keeper feature flag REMOVE_RECURSIVE: enabled
+2026.01.03 17:55:36.312004 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_WATCHES: enabled
+2026.01.03 17:55:36.312005 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_STAT: disabled
+2026.01.03 17:55:36.312006 [ 1 ] {} <Information> KeeperContext: Keeper feature flag PERSISTENT_WATCHES: enabled
+2026.01.03 17:55:36.312007 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_WITH_STATS: disabled
+2026.01.03 17:55:36.316117 [ 1 ] {} <Information> KeeperLogStore: force_sync enabled
+2026.01.03 17:55:36.318142 [ 1 ] {} <Information> KeeperServer: No config in snapshot, will use config from log store with log index 1
+2026.01.03 17:55:36.324459 [ 47 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_0, current threads: 0
+2026.01.03 17:55:36.324463 [ 46 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_1, current threads: 0
+2026.01.03 17:55:36.324730 [ 49 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_3, current threads: 2
+2026.01.03 17:55:36.324717 [ 48 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_2, current threads: 2
+2026.01.03 17:55:36.324895 [ 51 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_4, current threads: 4
+2026.01.03 17:55:36.324958 [ 53 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_5, current threads: 4
+2026.01.03 17:55:36.325089 [ 50 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_6, current threads: 6
+2026.01.03 17:55:36.325317 [ 52 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_7, current threads: 7
+2026.01.03 17:55:36.325526 [ 55 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_9, current threads: 8
+2026.01.03 17:55:36.325551 [ 56 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_8, current threads: 8
+2026.01.03 17:55:36.325599 [ 58 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_10, current threads: 9
+2026.01.03 17:55:36.325690 [ 57 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_11, current threads: 11
+2026.01.03 17:55:36.325769 [ 54 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_12, current threads: 12
+2026.01.03 17:55:36.325858 [ 61 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_14, current threads: 13
+2026.01.03 17:55:36.325911 [ 59 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_13, current threads: 12
+2026.01.03 17:55:36.326219 [ 62 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_15, current threads: 15
+2026.01.03 17:55:36.326309 [ 63 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_16, current threads: 15
+2026.01.03 17:55:36.326325 [ 60 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_17, current threads: 16
+2026.01.03 17:55:36.326566 [ 64 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_18, current threads: 18
+2026.01.03 17:55:36.326572 [ 65 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_19, current threads: 18
+2026.01.03 17:55:36.326610 [ 66 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_20, current threads: 18
+2026.01.03 17:55:36.326711 [ 67 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_21, current threads: 21
+2026.01.03 17:55:36.326814 [ 69 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_22, current threads: 22
+2026.01.03 17:55:36.327005 [ 68 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_23, current threads: 23
+2026.01.03 17:55:36.327151 [ 73 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_27, current threads: 24
+2026.01.03 17:55:36.327171 [ 70 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_25, current threads: 24
+2026.01.03 17:55:36.327189 [ 71 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_24, current threads: 24
+2026.01.03 17:55:36.327221 [ 72 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_26, current threads: 24
+2026.01.03 17:55:36.327232 [ 75 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_28, current threads: 25
+2026.01.03 17:55:36.327273 [ 76 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_30, current threads: 29
+2026.01.03 17:55:36.327346 [ 74 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_29, current threads: 28
+2026.01.03 17:55:36.327404 [ 1 ] {} <Information> RaftInstance: Raft ASIO listener initiated on :::9234, unsecured
+2026.01.03 17:55:36.327478 [ 77 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_31, current threads: 31
+2026.01.03 17:55:36.328338 [ 1 ] {} <Information> KeeperStateManager: Read state from /var/lib/clickhouse-keeper/coordination/state
+2026.01.03 17:55:36.328385 [ 1 ] {} <Information> RaftInstance: parameters: election timeout range 1000 - 2000, heartbeat 500, leadership expiry 10000, max batch 100, backoff 50, snapshot distance 100000, enable randomized snapshot creation NO, log sync stop gap 99999, use new joiner type NO, reserved logs 100000, client timeout 10000, auto forwarding on, API call type async, custom commit quorum size 0, custom election quorum size 0, snapshot receiver included, leadership transfer wait time 0, grace period of lagging state machine 0, snapshot IO: blocking, parallel log appending: on, streaming mode max log gap 0, max bytes 0
+2026.01.03 17:55:36.328387 [ 1 ] {} <Information> RaftInstance: new election timeout range: 1000 - 2000
+2026.01.03 17:55:36.328395 [ 1 ] {} <Information> RaftInstance:    === INIT RAFT SERVER ===
+commit index 0
+term 1
+election timer allowed
+catching-up no
+log store start 1, end 50
+config log idx 1, prev log idx 0
+ -- ASYNC REPLICATION --
+2026.01.03 17:55:36.328397 [ 1 ] {} <Information> RaftInstance: detect a configuration change that is not committed yet at index 1
+2026.01.03 17:55:36.329072 [ 1 ] {} <Information> RaftInstance: peer 1: DC ID 0, clickhouse-keeper-01:9234, voting member, 1
+peer 2: DC ID 0, clickhouse-keeper-02:9234, voting member, 1
+peer 3: DC ID 0, clickhouse-keeper-03:9234, voting member, 1
+my id: 1, voting_member
+num peers: 2
+2026.01.03 17:55:36.329083 [ 1 ] {} <Information> RaftInstance: global manager does not exist. will use local thread for commit and append
+2026.01.03 17:55:36.329234 [ 1 ] {} <Information> RaftInstance: wait for HB, for 50 + [1000, 2000] ms
+2026.01.03 17:55:36.329386 [ 80 ] {} <Information> RaftInstance: bg append_entries thread initiated
+2026.01.03 17:55:36.357581 [ 32 ] {} <Information> MemoryTracker: Correcting the value of global memory tracker from 8.58 MiB to 47.07 MiB
+2026.01.03 17:55:37.563078 [ 47 ] {} <Information> RaftInstance: receive a incoming rpc connection
+2026.01.03 17:55:37.563126 [ 47 ] {} <Information> RaftInstance: session 1 got connection from ::ffff:172.19.0.5:60862 (as a server)
+2026.01.03 17:55:37.563222 [ 51 ] {} <Information> RaftInstance: [PRE-VOTE REQ] my role follower, from peer 2, log term: req 1 / mine 1
+last idx: req 50 / mine 50, term: req 1 / mine 1
+HB dead
+2026.01.03 17:55:37.563225 [ 51 ] {} <Information> RaftInstance: pre-vote decision: O (grant)
+2026.01.03 17:55:37.577379 [ 49 ] {} <Information> RaftInstance: [BECOME FOLLOWER] term 2
+2026.01.03 17:55:37.577416 [ 49 ] {} <Information> RaftInstance: [PRIORITY] decay, target 1 -> 1, mine 1
+2026.01.03 17:55:37.577420 [ 49 ] {} <Information> RaftInstance: [VOTE REQ] my role follower, from peer 2, log term: req 1 / mine 1
+last idx: req 50 / mine 50, term: req 2 / mine 2
+priority: target 1 / mine 1, voted_for -1
+2026.01.03 17:55:37.577422 [ 49 ] {} <Information> RaftInstance: decision: O (grant), voted_for 2, term 2
+2026.01.03 17:55:37.590753 [ 1 ] {} <Information> Application: Listening for Keeper (tcp): 0.0.0.0:9181
+2026.01.03 17:55:37.590984 [ 79 ] {} <Information> RaftInstance: config at index 1 is committed, prev config log idx 1
+2026.01.03 17:55:37.590987 [ 79 ] {} <Information> RaftInstance: skipped config 1, latest config 1
+2026.01.03 17:55:37.592136 [ 79 ] {} <Information> KeeperServer: All local log entries preprocessed
+2026.01.03 17:55:37.602115 [ 62 ] {} <Information> RaftInstance: receive a config change from leader at 51
+2026.01.03 17:55:37.602626 [ 79 ] {} <Information> RaftInstance: config at index 51 is committed, prev config log idx 1
+2026.01.03 17:55:37.602646 [ 79 ] {} <Information> RaftInstance: new config log idx 51, prev log idx 1, cur config log idx 1, prev log idx 0
+2026.01.03 17:55:37.602655 [ 79 ] {} <Information> RaftInstance: new configuration: log idx 51, prev log idx 1
+peer 1, DC ID 0, clickhouse-keeper-01:9234, voting member, regular member, 1
+peer 2, DC ID 0, clickhouse-keeper-02:9234, voting member, regular member, 1
+peer 3, DC ID 0, clickhouse-keeper-03:9234, voting member, regular member, 1
+my id: 1, leader: 2, term: 2
+2026.01.03 17:55:37.607868 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 17:55:37.608591 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 17:55:37.608606 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 17:55:37.609085 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Started cgroup current memory usage observer thread
+2026.01.03 17:55:37.609087 [ 1 ] {} <Information> Application: Ready for connections.
+2026.01.03 17:55:37.609296 [ 86 ] {} <Information> CgroupsMemoryUsageObserver: Memory amount initially available to the process is 15.47 GiB
+2026.01.03 17:55:49.851115 [ 31 ] {} <Information> Application: Received termination signal (Terminated)
+2026.01.03 17:55:49.851242 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Stopped cgroup current memory usage observer thread
+2026.01.03 17:55:49.851245 [ 1 ] {} <Information> Application: Shutting down.
+2026.01.03 17:55:49.853964 [ 1 ] {} <Information> Application: Closed all listening sockets.
+2026.01.03 17:55:49.854024 [ 1 ] {} <Information> Application: Closed connections to Keeper.
+2026.01.03 17:55:50.093066 [ 1 ] {} <Information> RaftInstance: shutting down raft core
+2026.01.03 17:55:50.093098 [ 1 ] {} <Information> RaftInstance: sent stop signal to the commit thread.
+2026.01.03 17:55:50.093147 [ 1 ] {} <Information> RaftInstance: cancelled all schedulers.
+2026.01.03 17:55:50.093148 [ 1 ] {} <Information> RaftInstance: commit thread stopped.
+2026.01.03 17:55:50.093150 [ 1 ] {} <Information> RaftInstance: all pending commit elements dropped.
+2026.01.03 17:55:50.093151 [ 1 ] {} <Information> RaftInstance: reset all pointers.
+2026.01.03 17:55:50.093152 [ 1 ] {} <Information> RaftInstance: joined terminated commit thread.
+2026.01.03 17:55:50.093190 [ 1 ] {} <Information> RaftInstance: sent stop signal to background append thread.
+2026.01.03 17:55:50.093191 [ 80 ] {} <Information> RaftInstance: bg append_entries thread terminated
+2026.01.03 17:55:50.093226 [ 1 ] {} <Information> RaftInstance: clean up auto-forwarding queue: 0 elems
+2026.01.03 17:55:50.093229 [ 1 ] {} <Information> RaftInstance: clean up auto-forwarding clients
+2026.01.03 17:55:50.093230 [ 1 ] {} <Information> RaftInstance: raft_server shutdown completed.
+2026.01.03 17:55:50.093232 [ 1 ] {} <Information> RaftInstance: manually create a snapshot on 51
+2026.01.03 17:55:50.093242 [ 1 ] {} <Information> RaftInstance: creating a snapshot for index 51
+2026.01.03 17:55:50.093244 [ 1 ] {} <Information> RaftInstance: create snapshot idx 51 log_term 2
+2026.01.03 17:55:50.093262 [ 1 ] {} <Information> KeeperStateMachine: Creating a snapshot during shutdown because 'create_snapshot_on_exit' is enabled.
+2026.01.03 17:55:50.094503 [ 66 ] {} <Error> RaftInstance: session 1 failed to read rpc header from socket ::ffff:172.19.0.5:60862 due to error 2, End of file, ref count 1
+2026.01.03 17:55:50.099743 [ 1 ] {} <Information> RaftInstance: snapshot idx 51 log_term 2 created, compact the log store if needed
+2026.01.03 17:55:50.099799 [ 1 ] {} <Information> RaftInstance: create snapshot idx 51 log_term 2 done: 6538 us elapsed
+2026.01.03 17:55:50.099957 [ 67 ] {} <Error> RaftInstance: failed to accept a rpc connection due to error 125, Operation canceled
+2026.01.03 17:55:50.100185 [ 77 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_31, remaining threads: 31
+2026.01.03 17:55:50.100200 [ 70 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_25, remaining threads: 30
+2026.01.03 17:55:50.100224 [ 53 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_5, remaining threads: 28
+2026.01.03 17:55:50.100228 [ 75 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_28, remaining threads: 29
+2026.01.03 17:55:50.100243 [ 66 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_20, remaining threads: 27
+2026.01.03 17:55:50.100246 [ 46 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_1, remaining threads: 26
+2026.01.03 17:55:50.100252 [ 76 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_30, remaining threads: 24
+2026.01.03 17:55:50.100253 [ 73 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_27, remaining threads: 25
+2026.01.03 17:55:50.100272 [ 47 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_0, remaining threads: 22
+2026.01.03 17:55:50.100275 [ 74 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_29, remaining threads: 22
+2026.01.03 17:55:50.100284 [ 55 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_9, remaining threads: 21
+2026.01.03 17:55:50.100312 [ 56 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_8, remaining threads: 20
+2026.01.03 17:55:50.100325 [ 50 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_6, remaining threads: 19
+2026.01.03 17:55:50.100347 [ 64 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_18, remaining threads: 17
+2026.01.03 17:55:50.100347 [ 72 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_26, remaining threads: 18
+2026.01.03 17:55:50.100351 [ 51 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_4, remaining threads: 16
+2026.01.03 17:55:50.100386 [ 67 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_21, remaining threads: 15
+2026.01.03 17:55:50.100388 [ 49 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_3, remaining threads: 14
+2026.01.03 17:55:50.100394 [ 48 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_2, remaining threads: 13
+2026.01.03 17:55:50.100429 [ 63 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_16, remaining threads: 12
+2026.01.03 17:55:50.100432 [ 69 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_22, remaining threads: 11
+2026.01.03 17:55:50.100439 [ 58 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_10, remaining threads: 10
+2026.01.03 17:55:50.100537 [ 65 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_19, remaining threads: 9
+2026.01.03 17:55:50.100543 [ 62 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_15, remaining threads: 8
+2026.01.03 17:55:50.100551 [ 54 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_12, remaining threads: 7
+2026.01.03 17:55:50.100573 [ 59 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_13, remaining threads: 6
+2026.01.03 17:55:50.100580 [ 60 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_17, remaining threads: 5
+2026.01.03 17:55:50.100587 [ 68 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_23, remaining threads: 4
+2026.01.03 17:55:50.100589 [ 52 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_7, remaining threads: 3
+2026.01.03 17:55:50.100597 [ 71 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_24, remaining threads: 2
+2026.01.03 17:55:50.100601 [ 61 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_14, remaining threads: 1
+2026.01.03 17:55:50.100613 [ 57 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_11, remaining threads: 0
+2026.01.03 17:55:50.105569 [ 44 ] {} <Information> KeeperLogStore: Raft server is not set in LogStore.
+2026.01.03 17:55:50.106711 [ 1 ] {} <Information> KeeperSnapshotManagerS3: KeeperSnapshotManagerS3 shut down
+2026.01.03 17:55:50.106930 [ 1 ] {} <Information> KeeperLogStore: Changelog is shut down
+2026.01.03 17:55:50.107320 [ 1 ] {} <Information> Application: Waiting for background threads
+2026.01.03 17:55:50.108233 [ 1 ] {} <Information> Application: Background threads finished in 0 ms
+2026.01.03 17:55:50.108236 [ 1 ] {} <Information> Application: shutting down
+2026.01.03 17:55:50.108325 [ 31 ] {} <Information> BaseDaemon: Stop SignalListener thread
+2026.01.03 17:56:05.094188 [ 1 ] {} <Information> Application: Starting ClickHouse Keeper 25.12.1.649 (revision: 54505, git hash: bf4280aa19d3bade619578a749919e25ce490861, build id: 850543EC7BBD2A9A1CC4C04C027F5A030A3C0566), PID 1
+2026.01.03 17:56:05.094220 [ 1 ] {} <Information> Application: starting up
+2026.01.03 17:56:05.094227 [ 1 ] {} <Information> Application: OS Name = Linux, OS Version = 6.6.87.2-microsoft-standard-WSL2, OS Architecture = x86_64
+2026.01.03 17:56:05.094476 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 17:56:05.099778 [ 1 ] {} <Information> CgroupsReader: Will create cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 17:56:05.099804 [ 1 ] {} <Information> MemoryWorker: Starting background memory thread with period of 50ms, using Cgroups as source
+2026.01.03 17:56:05.101338 [ 1 ] {} <Information> AsynchronousMetrics: Will use cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 17:56:05.101677 [ 1 ] {} <Information> Context: Cannot connect to ZooKeeper (or Keeper) before internal Keeper start, will wait for Keeper synchronously
+2026.01.03 17:56:05.101732 [ 1 ] {} <Information> KeeperContext: Keeper feature flag FILTERED_LIST: enabled
+2026.01.03 17:56:05.101733 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_READ: enabled
+2026.01.03 17:56:05.101734 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_NOT_EXISTS: enabled
+2026.01.03 17:56:05.101734 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_IF_NOT_EXISTS: enabled
+2026.01.03 17:56:05.101735 [ 1 ] {} <Information> KeeperContext: Keeper feature flag REMOVE_RECURSIVE: enabled
+2026.01.03 17:56:05.101736 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_WATCHES: enabled
+2026.01.03 17:56:05.101736 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_STAT: disabled
+2026.01.03 17:56:05.101737 [ 1 ] {} <Information> KeeperContext: Keeper feature flag PERSISTENT_WATCHES: enabled
+2026.01.03 17:56:05.101738 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_WITH_STATS: disabled
+2026.01.03 17:56:05.103457 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2026.01.03 17:56:05.103821 [ 1 ] {} <Information> KeeperLogStore: force_sync enabled
+2026.01.03 17:56:05.103841 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2026.01.03 17:56:05.103891 [ 1 ] {} <Information> KeeperServer: No config in log store and snapshot, probably it's initial run. Will use config from .xml on disk
+2026.01.03 17:56:05.106448 [ 46 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_0, current threads: 0
+2026.01.03 17:56:05.106538 [ 47 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_2, current threads: 1
+2026.01.03 17:56:05.106559 [ 45 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_1, current threads: 0
+2026.01.03 17:56:05.106560 [ 44 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_3, current threads: 1
+2026.01.03 17:56:05.106639 [ 49 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_4, current threads: 4
+2026.01.03 17:56:05.106821 [ 48 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_5, current threads: 5
+2026.01.03 17:56:05.106906 [ 52 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_6, current threads: 6
+2026.01.03 17:56:05.107065 [ 55 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_7, current threads: 7
+2026.01.03 17:56:05.107171 [ 50 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_8, current threads: 8
+2026.01.03 17:56:05.107175 [ 51 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_9, current threads: 8
+2026.01.03 17:56:05.107190 [ 57 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_10, current threads: 8
+2026.01.03 17:56:05.107256 [ 58 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_11, current threads: 11
+2026.01.03 17:56:05.107386 [ 59 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_12, current threads: 12
+2026.01.03 17:56:05.107419 [ 54 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_13, current threads: 12
+2026.01.03 17:56:05.107460 [ 56 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_14, current threads: 14
+2026.01.03 17:56:05.107507 [ 60 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_15, current threads: 15
+2026.01.03 17:56:05.107571 [ 62 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_16, current threads: 16
+2026.01.03 17:56:05.107648 [ 63 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_18, current threads: 17
+2026.01.03 17:56:05.107661 [ 61 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_17, current threads: 17
+2026.01.03 17:56:05.107698 [ 64 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_19, current threads: 19
+2026.01.03 17:56:05.107832 [ 66 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_20, current threads: 20
+2026.01.03 17:56:05.107891 [ 67 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_21, current threads: 21
+2026.01.03 17:56:05.107913 [ 65 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_22, current threads: 21
+2026.01.03 17:56:05.107989 [ 69 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_23, current threads: 23
+2026.01.03 17:56:05.108012 [ 70 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_24, current threads: 23
+2026.01.03 17:56:05.108039 [ 68 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_25, current threads: 24
+2026.01.03 17:56:05.108113 [ 71 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_26, current threads: 26
+2026.01.03 17:56:05.108162 [ 72 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_27, current threads: 27
+2026.01.03 17:56:05.108211 [ 73 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_28, current threads: 28
+2026.01.03 17:56:05.108246 [ 74 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_29, current threads: 29
+2026.01.03 17:56:05.108326 [ 75 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_30, current threads: 30
+2026.01.03 17:56:05.108337 [ 1 ] {} <Information> RaftInstance: Raft ASIO listener initiated on :::9234, unsecured
+2026.01.03 17:56:05.108380 [ 1 ] {} <Information> RaftInstance: parameters: election timeout range 1000 - 2000, heartbeat 500, leadership expiry 10000, max batch 100, backoff 50, snapshot distance 100000, enable randomized snapshot creation NO, log sync stop gap 99999, use new joiner type NO, reserved logs 100000, client timeout 10000, auto forwarding on, API call type async, custom commit quorum size 0, custom election quorum size 0, snapshot receiver included, leadership transfer wait time 0, grace period of lagging state machine 0, snapshot IO: blocking, parallel log appending: on, streaming mode max log gap 0, max bytes 0
+2026.01.03 17:56:05.108382 [ 1 ] {} <Information> RaftInstance: new election timeout range: 1000 - 2000
+2026.01.03 17:56:05.108389 [ 76 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_31, current threads: 31
+2026.01.03 17:56:05.108393 [ 1 ] {} <Information> RaftInstance:    === INIT RAFT SERVER ===
+commit index 0
+term 0
+election timer allowed
+catching-up no
+log store start 1, end 0
+config log idx 0, prev log idx 0
+ -- ASYNC REPLICATION --
+2026.01.03 17:56:05.108533 [ 1 ] {} <Information> RaftInstance: peer 1: DC ID 0, clickhouse-keeper-01:9234, voting member, 1
+peer 2: DC ID 0, clickhouse-keeper-02:9234, voting member, 1
+peer 3: DC ID 0, clickhouse-keeper-03:9234, voting member, 1
+my id: 1, voting_member
+num peers: 2
+2026.01.03 17:56:05.108543 [ 1 ] {} <Information> RaftInstance: global manager does not exist. will use local thread for commit and append
+2026.01.03 17:56:05.108659 [ 1 ] {} <Information> RaftInstance: wait for HB, for 50 + [1000, 2000] ms
+2026.01.03 17:56:05.108770 [ 78 ] {} <Information> RaftInstance: bg append_entries thread initiated
+2026.01.03 17:56:05.151138 [ 32 ] {} <Information> MemoryTracker: Correcting the value of global memory tracker from 8.42 MiB to 48.03 MiB
+2026.01.03 17:56:06.267271 [ 75 ] {} <Information> RaftInstance: receive a incoming rpc connection
+2026.01.03 17:56:06.267301 [ 75 ] {} <Information> RaftInstance: session 1 got connection from ::ffff:172.19.0.6:37392 (as a server)
+2026.01.03 17:56:06.267380 [ 48 ] {} <Information> RaftInstance: [PRE-VOTE REQ] my role follower, from peer 2, log term: req 0 / mine 0
+last idx: req 0 / mine 0, term: req 0 / mine 0
+HB dead
+2026.01.03 17:56:06.267382 [ 48 ] {} <Information> RaftInstance: pre-vote decision: O (grant)
+2026.01.03 17:56:06.281800 [ 45 ] {} <Information> RaftInstance: [BECOME FOLLOWER] term 1
+2026.01.03 17:56:06.281837 [ 45 ] {} <Information> RaftInstance: [PRIORITY] decay, target 1 -> 1, mine 1
+2026.01.03 17:56:06.281841 [ 45 ] {} <Information> RaftInstance: [VOTE REQ] my role follower, from peer 2, log term: req 0 / mine 0
+last idx: req 0 / mine 0, term: req 1 / mine 1
+priority: target 1 / mine 1, voted_for -1
+2026.01.03 17:56:06.281844 [ 45 ] {} <Information> RaftInstance: decision: O (grant), voted_for 2, term 1
+2026.01.03 17:56:06.305335 [ 55 ] {} <Information> RaftInstance: receive a config change from leader at 1
+2026.01.03 17:56:06.305822 [ 77 ] {} <Information> RaftInstance: config at index 1 is committed, prev config log idx 0
+2026.01.03 17:56:06.305844 [ 1 ] {} <Information> Application: Listening for Keeper (tcp): 0.0.0.0:9181
+2026.01.03 17:56:06.305907 [ 77 ] {} <Information> RaftInstance: new config log idx 1, prev log idx 0, cur config log idx 0, prev log idx 0
+2026.01.03 17:56:06.305934 [ 77 ] {} <Information> RaftInstance: new configuration: log idx 1, prev log idx 0
+peer 1, DC ID 0, clickhouse-keeper-01:9234, voting member, regular member, 1
+peer 2, DC ID 0, clickhouse-keeper-02:9234, voting member, regular member, 1
+peer 3, DC ID 0, clickhouse-keeper-03:9234, voting member, regular member, 1
+my id: 1, leader: 2, term: 1
+2026.01.03 17:56:06.315596 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 17:56:06.316117 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 17:56:06.316133 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 17:56:06.316586 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Started cgroup current memory usage observer thread
+2026.01.03 17:56:06.316588 [ 1 ] {} <Information> Application: Ready for connections.
+2026.01.03 17:56:06.316907 [ 84 ] {} <Information> CgroupsMemoryUsageObserver: Memory amount initially available to the process is 15.47 GiB
+2026.01.03 17:56:11.299604 [ 33 ] {} <Information> KeeperTCPHandler: Requesting session ID for the new client
+2026.01.03 17:56:11.300651 [ 73 ] {} <Information> RaftInstance: 0x761402b44418 connected to clickhouse-keeper-02:9234 (as a client)
+2026.01.03 17:56:11.305630 [ 33 ] {} <Information> KeeperTCPHandler: Received session ID 4
+2026.01.03 17:56:21.305180 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9911 ms
+2026.01.03 17:56:31.305182 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9994 ms
+2026.01.03 17:56:41.305191 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9992 ms
+2026.01.03 17:56:51.304443 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 17:57:01.304344 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9991 ms
+2026.01.03 17:57:11.304338 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 17:57:21.303580 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9994 ms
+2026.01.03 17:57:31.303551 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 17:57:41.303533 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9991 ms
+2026.01.03 17:57:51.302698 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 17:58:01.302699 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9991 ms
+2026.01.03 17:58:11.302699 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 17:58:21.301863 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 17:58:31.301835 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9992 ms
+2026.01.03 17:58:41.301846 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9992 ms
+2026.01.03 17:58:51.300950 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 17:59:01.300949 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9992 ms
+2026.01.03 17:59:11.300994 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9992 ms
+2026.01.03 17:59:21.300158 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9992 ms
+2026.01.03 17:59:31.300126 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9994 ms
+2026.01.03 17:59:41.300109 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 17:59:51.299230 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9996 ms
+2026.01.03 18:00:01.299271 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9989 ms
+2026.01.03 18:00:11.299237 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9992 ms
+2026.01.03 18:00:21.298354 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:00:31.298388 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9994 ms
+2026.01.03 18:00:41.298465 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:00:51.297584 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9994 ms
+2026.01.03 18:01:01.297606 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:01:11.297600 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9992 ms
+2026.01.03 18:01:21.296860 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9994 ms
+2026.01.03 18:01:31.296959 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:01:41.296904 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9992 ms
+2026.01.03 18:01:51.296044 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9994 ms
+2026.01.03 18:02:01.296026 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9994 ms
+2026.01.03 18:02:11.296109 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9990 ms
+2026.01.03 18:02:21.295286 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9989 ms
+2026.01.03 18:02:31.295324 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:02:41.295269 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9992 ms
+2026.01.03 18:02:51.294376 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9994 ms
+2026.01.03 18:03:01.294380 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:03:11.294390 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9990 ms
+2026.01.03 18:03:21.293615 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9995 ms
+2026.01.03 18:03:31.293612 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9994 ms
+2026.01.03 18:03:41.293612 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9990 ms
+2026.01.03 18:03:51.292789 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9994 ms
+2026.01.03 18:04:01.292781 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:04:11.292806 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9994 ms
+2026.01.03 18:04:21.291920 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:04:31.291935 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:04:41.291916 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:04:51.291060 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9994 ms
+2026.01.03 18:05:01.291053 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9992 ms
+2026.01.03 18:05:11.291073 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9989 ms
+2026.01.03 18:05:21.290156 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:05:31.290282 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:05:41.290175 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:05:51.289318 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9995 ms
+2026.01.03 18:06:01.289297 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:06:11.289303 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9994 ms
+2026.01.03 18:06:21.288425 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9990 ms
+2026.01.03 18:06:31.288465 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:06:41.288513 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:06:51.287658 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9992 ms
+2026.01.03 18:07:01.287693 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:07:11.287652 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9991 ms
+2026.01.03 18:07:21.286829 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:07:31.286806 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9992 ms
+2026.01.03 18:07:41.286813 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9989 ms
+2026.01.03 18:07:51.286156 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9994 ms
+2026.01.03 18:08:01.286117 [ 33 ] {} <Information> KeeperTCPHandler: Receiving request for session 4 took 9993 ms
+2026.01.03 18:08:08.285594 [ 31 ] {} <Information> Application: Received termination signal (Terminated)
+2026.01.03 18:08:08.285752 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Stopped cgroup current memory usage observer thread
+2026.01.03 18:08:08.285767 [ 1 ] {} <Information> Application: Shutting down.
+2026.01.03 18:08:08.286021 [ 1 ] {} <Information> Application: Closed all listening sockets.
+2026.01.03 18:08:08.286022 [ 1 ] {} <Information> Application: Closed connections to Keeper.
+2026.01.03 18:08:08.413174 [ 1 ] {} <Information> RaftInstance: shutting down raft core
+2026.01.03 18:08:08.413203 [ 1 ] {} <Information> RaftInstance: sent stop signal to the commit thread.
+2026.01.03 18:08:08.413337 [ 1 ] {} <Information> RaftInstance: cancelled all schedulers.
+2026.01.03 18:08:08.413372 [ 1 ] {} <Information> RaftInstance: commit thread stopped.
+2026.01.03 18:08:08.413373 [ 1 ] {} <Information> RaftInstance: all pending commit elements dropped.
+2026.01.03 18:08:08.413381 [ 1 ] {} <Information> RaftInstance: reset all pointers.
+2026.01.03 18:08:08.413382 [ 1 ] {} <Information> RaftInstance: joined terminated commit thread.
+2026.01.03 18:08:08.413409 [ 78 ] {} <Information> RaftInstance: bg append_entries thread terminated
+2026.01.03 18:08:08.413410 [ 1 ] {} <Information> RaftInstance: sent stop signal to background append thread.
+2026.01.03 18:08:08.413439 [ 1 ] {} <Information> RaftInstance: clean up auto-forwarding queue: 0 elems
+2026.01.03 18:08:08.413446 [ 1 ] {} <Information> RaftInstance: clean up auto-forwarding clients
+2026.01.03 18:08:08.413455 [ 1 ] {} <Information> RaftInstance: srv 2, in-use 0, idle 1
+2026.01.03 18:08:08.413529 [ 1 ] {} <Information> RaftInstance: raft_server shutdown completed.
+2026.01.03 18:08:08.413530 [ 1 ] {} <Information> RaftInstance: manually create a snapshot on 337
+2026.01.03 18:08:08.413532 [ 1 ] {} <Information> RaftInstance: creating a snapshot for index 337
+2026.01.03 18:08:08.413541 [ 1 ] {} <Information> RaftInstance: create snapshot idx 337 log_term 1
+2026.01.03 18:08:08.413553 [ 1 ] {} <Information> KeeperStateMachine: Creating a snapshot during shutdown because 'create_snapshot_on_exit' is enabled.
+2026.01.03 18:08:08.420746 [ 1 ] {} <Information> RaftInstance: snapshot idx 337 log_term 1 created, compact the log store if needed
+2026.01.03 18:08:08.420752 [ 1 ] {} <Information> RaftInstance: create snapshot idx 337 log_term 1 done: 7210 us elapsed
+2026.01.03 18:08:08.421219 [ 68 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_25, remaining threads: 31
+2026.01.03 18:08:08.421220 [ 72 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_27, remaining threads: 30
+2026.01.03 18:08:08.421234 [ 47 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_2, remaining threads: 29
+2026.01.03 18:08:08.421251 [ 45 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_1, remaining threads: 28
+2026.01.03 18:08:08.421263 [ 73 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_28, remaining threads: 27
+2026.01.03 18:08:08.421278 [ 57 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_10, remaining threads: 26
+2026.01.03 18:08:08.421294 [ 66 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_20, remaining threads: 25
+2026.01.03 18:08:08.421307 [ 75 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_30, remaining threads: 24
+2026.01.03 18:08:08.421328 [ 60 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_15, remaining threads: 23
+2026.01.03 18:08:08.421340 [ 58 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_11, remaining threads: 22
+2026.01.03 18:08:08.421355 [ 52 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_6, remaining threads: 21
+2026.01.03 18:08:08.421369 [ 74 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_29, remaining threads: 20
+2026.01.03 18:08:08.421384 [ 67 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_21, remaining threads: 19
+2026.01.03 18:08:08.421401 [ 71 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_26, remaining threads: 18
+2026.01.03 18:08:08.421412 [ 46 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_0, remaining threads: 17
+2026.01.03 18:08:08.421426 [ 64 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_19, remaining threads: 16
+2026.01.03 18:08:08.421440 [ 48 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_5, remaining threads: 15
+2026.01.03 18:08:08.421456 [ 59 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_12, remaining threads: 14
+2026.01.03 18:08:08.421468 [ 56 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_14, remaining threads: 13
+2026.01.03 18:08:08.421488 [ 51 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_9, remaining threads: 12
+2026.01.03 18:08:08.421500 [ 61 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_17, remaining threads: 11
+2026.01.03 18:08:08.421512 [ 54 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_13, remaining threads: 10
+2026.01.03 18:08:08.421526 [ 50 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_8, remaining threads: 9
+2026.01.03 18:08:08.421540 [ 55 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_7, remaining threads: 8
+2026.01.03 18:08:08.421553 [ 70 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_24, remaining threads: 7
+2026.01.03 18:08:08.421567 [ 63 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_18, remaining threads: 6
+2026.01.03 18:08:08.421580 [ 62 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_16, remaining threads: 5
+2026.01.03 18:08:08.421593 [ 69 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_23, remaining threads: 4
+2026.01.03 18:08:08.421608 [ 49 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_4, remaining threads: 3
+2026.01.03 18:08:08.421622 [ 76 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_31, remaining threads: 2
+2026.01.03 18:08:08.421637 [ 65 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_22, remaining threads: 1
+2026.01.03 18:08:08.421642 [ 44 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_3, remaining threads: 0
+2026.01.03 18:08:08.427254 [ 1 ] {} <Information> KeeperSnapshotManagerS3: KeeperSnapshotManagerS3 shut down
+2026.01.03 18:08:08.427659 [ 1 ] {} <Information> KeeperLogStore: Changelog is shut down
+2026.01.03 18:08:08.428102 [ 1 ] {} <Information> Application: Waiting for background threads
+2026.01.03 18:08:08.428972 [ 1 ] {} <Information> Application: Background threads finished in 0 ms
+2026.01.03 18:08:08.428975 [ 1 ] {} <Information> Application: shutting down
+2026.01.03 18:08:08.429022 [ 31 ] {} <Information> BaseDaemon: Stop SignalListener thread
+2026.01.03 18:08:33.789725 [ 1 ] {} <Information> Application: Starting ClickHouse Keeper 25.12.1.649 (revision: 54505, git hash: bf4280aa19d3bade619578a749919e25ce490861, build id: 850543EC7BBD2A9A1CC4C04C027F5A030A3C0566), PID 1
+2026.01.03 18:08:33.789758 [ 1 ] {} <Information> Application: starting up
+2026.01.03 18:08:33.789764 [ 1 ] {} <Information> Application: OS Name = Linux, OS Version = 6.6.87.2-microsoft-standard-WSL2, OS Architecture = x86_64
+2026.01.03 18:08:33.790066 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 18:08:33.796495 [ 1 ] {} <Information> CgroupsReader: Will create cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 18:08:33.796521 [ 1 ] {} <Information> MemoryWorker: Starting background memory thread with period of 50ms, using Cgroups as source
+2026.01.03 18:08:33.797655 [ 1 ] {} <Information> AsynchronousMetrics: Will use cgroup reader from '/sys/fs/cgroup/' (cgroups version: v2)
+2026.01.03 18:08:33.798027 [ 1 ] {} <Information> Context: Cannot connect to ZooKeeper (or Keeper) before internal Keeper start, will wait for Keeper synchronously
+2026.01.03 18:08:33.798099 [ 1 ] {} <Information> KeeperContext: Keeper feature flag FILTERED_LIST: enabled
+2026.01.03 18:08:33.798100 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_READ: enabled
+2026.01.03 18:08:33.798101 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_NOT_EXISTS: enabled
+2026.01.03 18:08:33.798101 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_IF_NOT_EXISTS: enabled
+2026.01.03 18:08:33.798102 [ 1 ] {} <Information> KeeperContext: Keeper feature flag REMOVE_RECURSIVE: enabled
+2026.01.03 18:08:33.798102 [ 1 ] {} <Information> KeeperContext: Keeper feature flag MULTI_WATCHES: enabled
+2026.01.03 18:08:33.798103 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CHECK_STAT: disabled
+2026.01.03 18:08:33.798104 [ 1 ] {} <Information> KeeperContext: Keeper feature flag PERSISTENT_WATCHES: enabled
+2026.01.03 18:08:33.798105 [ 1 ] {} <Information> KeeperContext: Keeper feature flag CREATE_WITH_STATS: disabled
+2026.01.03 18:08:33.799755 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2026.01.03 18:08:33.799955 [ 1 ] {} <Information> KeeperLogStore: force_sync enabled
+2026.01.03 18:08:33.799976 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2026.01.03 18:08:33.800011 [ 1 ] {} <Information> KeeperServer: No config in log store and snapshot, probably it's initial run. Will use config from .xml on disk
+2026.01.03 18:08:33.802902 [ 44 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_0, current threads: 0
+2026.01.03 18:08:33.802917 [ 45 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_1, current threads: 0
+2026.01.03 18:08:33.802950 [ 46 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_2, current threads: 2
+2026.01.03 18:08:33.803048 [ 48 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_3, current threads: 3
+2026.01.03 18:08:33.803098 [ 49 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_5, current threads: 4
+2026.01.03 18:08:33.803113 [ 47 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_4, current threads: 3
+2026.01.03 18:08:33.803158 [ 50 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_6, current threads: 6
+2026.01.03 18:08:33.803196 [ 51 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_7, current threads: 7
+2026.01.03 18:08:33.803258 [ 52 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_8, current threads: 8
+2026.01.03 18:08:33.803307 [ 53 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_9, current threads: 9
+2026.01.03 18:08:33.803374 [ 54 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_10, current threads: 10
+2026.01.03 18:08:33.803411 [ 55 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_11, current threads: 11
+2026.01.03 18:08:33.803529 [ 57 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_12, current threads: 12
+2026.01.03 18:08:33.803611 [ 58 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_13, current threads: 13
+2026.01.03 18:08:33.803648 [ 56 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_14, current threads: 13
+2026.01.03 18:08:33.803673 [ 59 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_15, current threads: 14
+2026.01.03 18:08:33.803729 [ 60 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_16, current threads: 16
+2026.01.03 18:08:33.803837 [ 62 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_17, current threads: 17
+2026.01.03 18:08:33.803908 [ 61 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_18, current threads: 18
+2026.01.03 18:08:33.803943 [ 63 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_19, current threads: 18
+2026.01.03 18:08:33.803962 [ 64 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_20, current threads: 19
+2026.01.03 18:08:33.804031 [ 65 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_21, current threads: 21
+2026.01.03 18:08:33.804101 [ 66 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_22, current threads: 22
+2026.01.03 18:08:33.804161 [ 67 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_23, current threads: 23
+2026.01.03 18:08:33.804222 [ 68 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_24, current threads: 24
+2026.01.03 18:08:33.804284 [ 69 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_25, current threads: 25
+2026.01.03 18:08:33.804327 [ 70 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_26, current threads: 26
+2026.01.03 18:08:33.804407 [ 71 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_27, current threads: 27
+2026.01.03 18:08:33.804528 [ 73 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_28, current threads: 28
+2026.01.03 18:08:33.804543 [ 74 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_29, current threads: 28
+2026.01.03 18:08:33.804543 [ 1 ] {} <Information> RaftInstance: Raft ASIO listener initiated on :::9234, unsecured
+2026.01.03 18:08:33.804583 [ 1 ] {} <Information> RaftInstance: parameters: election timeout range 1000 - 2000, heartbeat 500, leadership expiry 10000, max batch 100, backoff 50, snapshot distance 100000, enable randomized snapshot creation NO, log sync stop gap 99999, use new joiner type NO, reserved logs 100000, client timeout 10000, auto forwarding on, API call type async, custom commit quorum size 0, custom election quorum size 0, snapshot receiver included, leadership transfer wait time 0, grace period of lagging state machine 0, snapshot IO: blocking, parallel log appending: on, streaming mode max log gap 0, max bytes 0
+2026.01.03 18:08:33.804585 [ 75 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_30, current threads: 30
+2026.01.03 18:08:33.804585 [ 1 ] {} <Information> RaftInstance: new election timeout range: 1000 - 2000
+2026.01.03 18:08:33.804597 [ 1 ] {} <Information> RaftInstance:    === INIT RAFT SERVER ===
+commit index 0
+term 0
+election timer allowed
+catching-up no
+log store start 1, end 0
+config log idx 0, prev log idx 0
+ -- ASYNC REPLICATION --
+2026.01.03 18:08:33.804718 [ 1 ] {} <Information> RaftInstance: peer 1: DC ID 0, clickhouse-keeper-01:9234, voting member, 1
+peer 2: DC ID 0, clickhouse-keeper-02:9234, voting member, 1
+peer 3: DC ID 0, clickhouse-keeper-03:9234, voting member, 1
+my id: 1, voting_member
+num peers: 2
+2026.01.03 18:08:33.804728 [ 1 ] {} <Information> RaftInstance: global manager does not exist. will use local thread for commit and append
+2026.01.03 18:08:33.804826 [ 1 ] {} <Information> RaftInstance: wait for HB, for 50 + [1000, 2000] ms
+2026.01.03 18:08:33.804881 [ 72 ] {} <Information> RaftInstance: spawned asio worker thread nuraft_w_31, current threads: 31
+2026.01.03 18:08:33.804937 [ 77 ] {} <Information> RaftInstance: bg append_entries thread initiated
+2026.01.03 18:08:33.847815 [ 31 ] {} <Information> MemoryTracker: Correcting the value of global memory tracker from 8.42 MiB to 47.60 MiB
+2026.01.03 18:08:35.384542 [ 44 ] {} <Information> RaftInstance: receive a incoming rpc connection
+2026.01.03 18:08:35.384570 [ 44 ] {} <Information> RaftInstance: session 1 got connection from ::ffff:172.19.0.7:57706 (as a server)
+2026.01.03 18:08:35.384656 [ 46 ] {} <Information> RaftInstance: [PRE-VOTE REQ] my role follower, from peer 2, log term: req 0 / mine 0
+last idx: req 0 / mine 0, term: req 0 / mine 0
+HB dead
+2026.01.03 18:08:35.384660 [ 46 ] {} <Information> RaftInstance: pre-vote decision: O (grant)
+2026.01.03 18:08:35.400865 [ 50 ] {} <Information> RaftInstance: [BECOME FOLLOWER] term 1
+2026.01.03 18:08:35.400891 [ 50 ] {} <Information> RaftInstance: [PRIORITY] decay, target 1 -> 1, mine 1
+2026.01.03 18:08:35.400894 [ 50 ] {} <Information> RaftInstance: [VOTE REQ] my role follower, from peer 2, log term: req 0 / mine 0
+last idx: req 0 / mine 0, term: req 1 / mine 1
+priority: target 1 / mine 1, voted_for -1
+2026.01.03 18:08:35.400895 [ 50 ] {} <Information> RaftInstance: decision: O (grant), voted_for 2, term 1
+2026.01.03 18:08:35.425816 [ 52 ] {} <Information> RaftInstance: receive a config change from leader at 1
+2026.01.03 18:08:35.426182 [ 76 ] {} <Information> RaftInstance: config at index 1 is committed, prev config log idx 0
+2026.01.03 18:08:35.426190 [ 76 ] {} <Information> RaftInstance: new config log idx 1, prev log idx 0, cur config log idx 0, prev log idx 0
+2026.01.03 18:08:35.426214 [ 76 ] {} <Information> RaftInstance: new configuration: log idx 1, prev log idx 0
+peer 1, DC ID 0, clickhouse-keeper-01:9234, voting member, regular member, 1
+peer 2, DC ID 0, clickhouse-keeper-02:9234, voting member, regular member, 1
+peer 3, DC ID 0, clickhouse-keeper-03:9234, voting member, regular member, 1
+my id: 1, leader: 2, term: 1
+2026.01.03 18:08:35.426688 [ 1 ] {} <Information> Application: Listening for Keeper (tcp): 0.0.0.0:9181
+2026.01.03 18:08:35.433920 [ 1 ] {} <Information> Application: keeper_server.max_memory_usage_soft_limit is set to 13.92 GiB
+2026.01.03 18:08:35.434536 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 18:08:35.434559 [ 1 ] {} <Information> CertificateReloader: One of paths is empty. Cannot apply new configuration for certificates. Fill all paths and try again.
+2026.01.03 18:08:35.435070 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Started cgroup current memory usage observer thread
+2026.01.03 18:08:35.435072 [ 1 ] {} <Information> Application: Ready for connections.
+2026.01.03 18:08:35.435285 [ 83 ] {} <Information> CgroupsMemoryUsageObserver: Memory amount initially available to the process is 15.47 GiB
+2026.01.03 18:52:13.554224 [ 30 ] {} <Information> Application: Received termination signal (Terminated)
+2026.01.03 18:52:13.554534 [ 1 ] {} <Information> CgroupsMemoryUsageObserver: Stopped cgroup current memory usage observer thread
+2026.01.03 18:52:13.554621 [ 1 ] {} <Information> Application: Shutting down.
+2026.01.03 18:52:13.563228 [ 1 ] {} <Information> Application: Closed all listening sockets.
+2026.01.03 18:52:13.563265 [ 1 ] {} <Information> Application: Closed connections to Keeper.
+2026.01.03 18:52:13.825396 [ 1 ] {} <Information> RaftInstance: shutting down raft core
+2026.01.03 18:52:13.826872 [ 1 ] {} <Information> RaftInstance: sent stop signal to the commit thread.
+2026.01.03 18:52:13.828518 [ 1 ] {} <Information> RaftInstance: cancelled all schedulers.
+2026.01.03 18:52:13.828791 [ 1 ] {} <Information> RaftInstance: commit thread stopped.
+2026.01.03 18:52:13.829111 [ 1 ] {} <Information> RaftInstance: all pending commit elements dropped.
+2026.01.03 18:52:13.829151 [ 1 ] {} <Information> RaftInstance: reset all pointers.
+2026.01.03 18:52:13.829395 [ 1 ] {} <Information> RaftInstance: joined terminated commit thread.
+2026.01.03 18:52:13.829480 [ 1 ] {} <Information> RaftInstance: sent stop signal to background append thread.
+2026.01.03 18:52:13.829615 [ 77 ] {} <Information> RaftInstance: bg append_entries thread terminated
+2026.01.03 18:52:13.829725 [ 1 ] {} <Information> RaftInstance: clean up auto-forwarding queue: 0 elems
+2026.01.03 18:52:13.829728 [ 1 ] {} <Information> RaftInstance: clean up auto-forwarding clients
+2026.01.03 18:52:13.829730 [ 1 ] {} <Information> RaftInstance: raft_server shutdown completed.
+2026.01.03 18:52:13.829731 [ 1 ] {} <Information> RaftInstance: manually create a snapshot on 1094
+2026.01.03 18:52:13.829745 [ 1 ] {} <Information> RaftInstance: creating a snapshot for index 1094
+2026.01.03 18:52:13.829761 [ 1 ] {} <Information> RaftInstance: create snapshot idx 1094 log_term 1
+2026.01.03 18:52:13.830430 [ 1 ] {} <Information> KeeperStateMachine: Creating a snapshot during shutdown because 'create_snapshot_on_exit' is enabled.
+2026.01.03 18:52:13.841609 [ 1 ] {} <Information> RaftInstance: snapshot idx 1094 log_term 1 created, compact the log store if needed
+2026.01.03 18:52:13.841626 [ 1 ] {} <Information> RaftInstance: create snapshot idx 1094 log_term 1 done: 11864 us elapsed
+2026.01.03 18:52:13.841744 [ 75 ] {} <Error> RaftInstance: failed to accept a rpc connection due to error 125, Operation canceled
+2026.01.03 18:52:13.842208 [ 58 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_13, remaining threads: 31
+2026.01.03 18:52:13.842270 [ 63 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_19, remaining threads: 30
+2026.01.03 18:52:13.842310 [ 64 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_20, remaining threads: 26
+2026.01.03 18:52:13.842314 [ 59 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_15, remaining threads: 27
+2026.01.03 18:52:13.842330 [ 71 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_27, remaining threads: 29
+2026.01.03 18:52:13.842404 [ 47 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_4, remaining threads: 19
+2026.01.03 18:52:13.842434 [ 75 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_30, remaining threads: 12
+2026.01.03 18:52:13.842450 [ 61 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_18, remaining threads: 16
+2026.01.03 18:52:13.842460 [ 50 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_6, remaining threads: 15
+2026.01.03 18:52:13.842460 [ 68 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_24, remaining threads: 18
+2026.01.03 18:52:13.842317 [ 57 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_12, remaining threads: 25
+2026.01.03 18:52:13.842496 [ 49 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_5, remaining threads: 13
+2026.01.03 18:52:13.842495 [ 56 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_14, remaining threads: 21
+2026.01.03 18:52:13.842507 [ 60 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_16, remaining threads: 22
+2026.01.03 18:52:13.842531 [ 52 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_8, remaining threads: 17
+2026.01.03 18:52:13.842542 [ 46 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_2, remaining threads: 23
+2026.01.03 18:52:13.842561 [ 54 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_10, remaining threads: 9
+2026.01.03 18:52:13.842569 [ 51 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_7, remaining threads: 11
+2026.01.03 18:52:13.842615 [ 66 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_22, remaining threads: 5
+2026.01.03 18:52:13.842603 [ 67 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_23, remaining threads: 14
+2026.01.03 18:52:13.842611 [ 72 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_31, remaining threads: 28
+2026.01.03 18:52:13.842646 [ 65 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_21, remaining threads: 2
+2026.01.03 18:52:13.842626 [ 62 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_17, remaining threads: 10
+2026.01.03 18:52:13.842665 [ 69 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_25, remaining threads: 3
+2026.01.03 18:52:13.842693 [ 44 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_0, remaining threads: 7
+2026.01.03 18:52:13.842691 [ 53 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_9, remaining threads: 7
+2026.01.03 18:52:13.842739 [ 48 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_3, remaining threads: 4
+2026.01.03 18:52:13.842763 [ 73 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_28, remaining threads: 24
+2026.01.03 18:52:13.842775 [ 55 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_11, remaining threads: 20
+2026.01.03 18:52:13.842814 [ 45 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_1, remaining threads: 6
+2026.01.03 18:52:13.842969 [ 74 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_29, remaining threads: 1
+2026.01.03 18:52:13.842981 [ 70 ] {} <Information> RaftInstance: end of asio worker thread nuraft_w_26, remaining threads: 0
+2026.01.03 18:52:13.851585 [ 1 ] {} <Information> KeeperSnapshotManagerS3: KeeperSnapshotManagerS3 shut down
+2026.01.03 18:52:13.853432 [ 1 ] {} <Information> KeeperLogStore: Changelog is shut down
+2026.01.03 18:52:13.854820 [ 1 ] {} <Information> Application: Waiting for background threads
+2026.01.03 18:52:13.856367 [ 1 ] {} <Information> Application: Background threads finished in 1 ms
+2026.01.03 18:52:13.856391 [ 1 ] {} <Information> Application: shutting down
+2026.01.03 18:52:13.856430 [ 30 ] {} <Information> BaseDaemon: Stop SignalListener thread

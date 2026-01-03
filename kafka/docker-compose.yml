@@ -22,8 +22,6 @@ services:
       KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: kafka-node-1:9092
       KAFKA_CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
       KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
-    volumes:
-      - ./data/kafka-node-1:/var/lib/kafka/data-node-1
     healthcheck:
       test: ["CMD", "kafka-topics", "--bootstrap-server=kafka-node-1:9092", "--list"]
       interval: 30s
@@ -126,6 +124,3 @@ services:
 networks:
   data-pipeline:
     external: true
-
-volumes:
-  postgres_data:

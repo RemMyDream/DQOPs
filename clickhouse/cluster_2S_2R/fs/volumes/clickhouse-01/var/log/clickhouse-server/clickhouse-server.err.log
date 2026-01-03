@@ -5141,3 +5141,1192 @@
 17. __libc_start_main @ 0x0000000000029e40
 18. _start @ 0x0000000008eb1d6e
  (version 25.12.1.649 (official build))
+2026.01.03 17:14:25.393006 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-01), error 0: DNS error.
+2026.01.03 17:14:25.393504 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-01. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:14:25.393696 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-03), error 0: DNS error.
+2026.01.03 17:14:25.393812 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-03. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:14:25.393932 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-02), error 0: DNS error.
+2026.01.03 17:14:25.393999 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-02. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:14:25.394083 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-04), error 0: DNS error.
+2026.01.03 17:14:25.394178 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-04. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:14:25.405337 [ 1 ] {} <Warning> Application: Listen [0.0.0.0]:9009 failed: Poco::Exception. Code: 1000, e.code() = 98, Net Exception: Address already in use: 0.0.0.0:9009 (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 17:14:25.416827 [ 1 ] {} <Warning> Access(local_directory): File /var/lib/clickhouse/access/users.list doesn't exist
+2026.01.03 17:14:25.416858 [ 1 ] {} <Warning> Access(local_directory): Recovering lists in directory /var/lib/clickhouse/access/
+2026.01.03 17:14:25.427671 [ 1 ] {} <Warning> Context: Delay accounting is not enabled, OSIOWaitMicroseconds will not be gathered. You can enable it using `sudo sh -c 'echo 1 > /proc/sys/kernel/task_delayacct'` or by using sysctl.
+2026.01.03 17:14:25.432579 [ 728 ] {} <Warning> DNSResolver: Cannot resolve host (minio), error 0: DNS error.
+2026.01.03 17:14:25.436767 [ 728 ] {} <Error> WriteBufferFromS3: S3Exception name , Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key div/whufhfxtstjmtlfzdgjyaialeugze, object size 4
+2026.01.03 17:14:25.437095 [ 1 ] {} <Error> virtual void DB::IDisk::checkAccessImpl(const String &): Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key div/whufhfxtstjmtlfzdgjyaialeugze, object size 4. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 17:14:25.437583 [ 1 ] {} <Error> Application: Caught exception while loading metadata: Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key div/whufhfxtstjmtlfzdgjyaialeugze, object size 4: While checking access for disk s3. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 17:14:25.464768 [ 1 ] {} <Error> Application: Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key div/whufhfxtstjmtlfzdgjyaialeugze, object size 4: While checking access for disk s3. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 17:29:05.775922 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-01), error 0: DNS error.
+2026.01.03 17:29:05.776200 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-01. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:29:05.776351 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-03), error 0: DNS error.
+2026.01.03 17:29:05.776399 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-03. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:29:05.776495 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-02), error 0: DNS error.
+2026.01.03 17:29:05.776537 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-02. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:29:05.776596 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-04), error 0: DNS error.
+2026.01.03 17:29:05.776637 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-04. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:29:05.781771 [ 1 ] {} <Warning> Application: Listen [0.0.0.0]:9009 failed: Poco::Exception. Code: 1000, e.code() = 98, Net Exception: Address already in use: 0.0.0.0:9009 (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 17:29:05.792655 [ 1 ] {} <Warning> Access(local_directory): File /var/lib/clickhouse/access/users.list doesn't exist
+2026.01.03 17:29:05.792680 [ 1 ] {} <Warning> Access(local_directory): Recovering lists in directory /var/lib/clickhouse/access/
+2026.01.03 17:29:05.799933 [ 1 ] {} <Warning> Context: Delay accounting is not enabled, OSIOWaitMicroseconds will not be gathered. You can enable it using `sudo sh -c 'echo 1 > /proc/sys/kernel/task_delayacct'` or by using sysctl.
+2026.01.03 17:29:05.804245 [ 728 ] {} <Warning> DNSResolver: Cannot resolve host (minio), error 0: DNS error.
+2026.01.03 17:29:05.804791 [ 728 ] {} <Error> WriteBufferFromS3: S3Exception name , Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key jha/hpvjygogpnxamcbyrbvtfunyymaux, object size 4
+2026.01.03 17:29:05.805121 [ 1 ] {} <Error> virtual void DB::IDisk::checkAccessImpl(const String &): Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key jha/hpvjygogpnxamcbyrbvtfunyymaux, object size 4. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 17:29:05.805541 [ 1 ] {} <Error> Application: Caught exception while loading metadata: Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key jha/hpvjygogpnxamcbyrbvtfunyymaux, object size 4: While checking access for disk s3. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 17:29:05.826657 [ 1 ] {} <Error> Application: Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key jha/hpvjygogpnxamcbyrbvtfunyymaux, object size 4: While checking access for disk s3. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 17:29:43.892119 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-01), error 0: DNS error.
+2026.01.03 17:29:43.892396 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-01. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:29:43.892499 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-03), error 0: DNS error.
+2026.01.03 17:29:43.892556 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-03. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:29:43.892782 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-02), error 0: DNS error.
+2026.01.03 17:29:43.892821 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-02. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:29:43.892922 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-04), error 0: DNS error.
+2026.01.03 17:29:43.892955 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-04. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:29:43.896862 [ 1 ] {} <Warning> Application: Listen [0.0.0.0]:9009 failed: Poco::Exception. Code: 1000, e.code() = 98, Net Exception: Address already in use: 0.0.0.0:9009 (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 17:29:43.913788 [ 1 ] {} <Warning> Context: Delay accounting is not enabled, OSIOWaitMicroseconds will not be gathered. You can enable it using `sudo sh -c 'echo 1 > /proc/sys/kernel/task_delayacct'` or by using sysctl.
+2026.01.03 17:29:43.918089 [ 728 ] {} <Warning> DNSResolver: Cannot resolve host (minio), error 0: DNS error.
+2026.01.03 17:29:43.918547 [ 728 ] {} <Error> WriteBufferFromS3: S3Exception name , Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key xwr/ivuooaifzisbgeqxbnasvummaimwn, object size 4
+2026.01.03 17:29:43.918857 [ 1 ] {} <Error> virtual void DB::IDisk::checkAccessImpl(const String &): Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key xwr/ivuooaifzisbgeqxbnasvummaimwn, object size 4. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 17:29:43.919269 [ 1 ] {} <Error> Application: Caught exception while loading metadata: Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key xwr/ivuooaifzisbgeqxbnasvummaimwn, object size 4: While checking access for disk s3. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 17:29:43.943362 [ 1 ] {} <Error> Application: Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key xwr/ivuooaifzisbgeqxbnasvummaimwn, object size 4: While checking access for disk s3. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 17:44:53.823742 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-01), error 0: DNS error.
+2026.01.03 17:44:53.826059 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-01. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:44:53.826322 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-03), error 0: DNS error.
+2026.01.03 17:44:53.826394 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-03. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:44:53.826572 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-02), error 0: DNS error.
+2026.01.03 17:44:53.826636 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-02. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:44:53.826745 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-04), error 0: DNS error.
+2026.01.03 17:44:53.826828 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-04. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:44:53.831851 [ 1 ] {} <Warning> Application: Listen [0.0.0.0]:9009 failed: Poco::Exception. Code: 1000, e.code() = 98, Net Exception: Address already in use: 0.0.0.0:9009 (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 17:44:53.849200 [ 1 ] {} <Warning> Context: Delay accounting is not enabled, OSIOWaitMicroseconds will not be gathered. You can enable it using `sudo sh -c 'echo 1 > /proc/sys/kernel/task_delayacct'` or by using sysctl.
+2026.01.03 17:44:53.857009 [ 727 ] {} <Warning> DNSResolver: Cannot resolve host (minio), error 0: DNS error.
+2026.01.03 17:44:53.861511 [ 727 ] {} <Error> WriteBufferFromS3: S3Exception name , Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key pfz/cnxzalhnhuqqfawfrnvuonaxqxzhp, object size 4
+2026.01.03 17:44:53.863915 [ 1 ] {} <Error> virtual void DB::IDisk::checkAccessImpl(const String &): Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key pfz/cnxzalhnhuqqfawfrnvuonaxqxzhp, object size 4. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 17:44:53.865114 [ 1 ] {} <Error> Application: Caught exception while loading metadata: Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key pfz/cnxzalhnhuqqfawfrnvuonaxqxzhp, object size 4: While checking access for disk s3. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 17:44:53.890114 [ 1 ] {} <Error> Application: Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket bkhcn, key pfz/cnxzalhnhuqqfawfrnvuonaxqxzhp, object size 4: While checking access for disk s3. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 17:55:37.732115 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-01), error 0: DNS error.
+2026.01.03 17:55:37.739290 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-01. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:55:37.739490 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-03), error 0: DNS error.
+2026.01.03 17:55:37.739552 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-03. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:55:37.739668 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-02), error 0: DNS error.
+2026.01.03 17:55:37.739721 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-02. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:55:37.739807 [ 1 ] {} <Warning> DNSResolver: Cannot resolve host (clickhouse-04), error 0: DNS error.
+2026.01.03 17:55:37.739864 [ 1 ] {} <Error> Cluster: Code: 198. DB::NetException: Not found address of host: clickhouse-04. (DNS_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::NetException::NetException<String const&>(int, FormatStringHelperImpl<std::type_identity<String const&>::type>, String const&) @ 0x0000000016372241
+3. DB::(anonymous namespace)::hostByName(String const&) @ 0x0000000016373ef8
+4. DB::DNSResolver::getResolvedIPAdressessWithFiltering(String const&) @ 0x0000000016371b5f
+5. DB::DNSResolver::resolveIPAddressWithCache(String const&) @ 0x0000000016372616
+6. DB::DNSResolver::resolveAddress(String const&, unsigned short) @ 0x0000000016373426
+7. DB::Cluster::Address::getResolvedAddress() const @ 0x000000001afdda6d
+8. DB::Cluster::Address::Address(Poco::Util::AbstractConfiguration const&, String const&, String const&, String const&, unsigned int, unsigned int) @ 0x000000001afdeacd
+9. DB::Cluster::Cluster(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, String const&) @ 0x000000001afe6f45
+10. DB::Clusters::updateClusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, String const&, Poco::Util::AbstractConfiguration*) @ 0x000000001afe3422
+11. DB::Clusters::Clusters(Poco::Util::AbstractConfiguration const&, DB::Settings const&, std::shared_ptr<DB::Macros const>, String const&) @ 0x000000001afe296f
+12. DB::Context::setClustersConfig(Poco::AutoPtr<Poco::Util::AbstractConfiguration> const&, bool, String const&) @ 0x000000001b056dfd
+13. DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5::operator()(Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool) const @ 0x000000001677ab5a
+14. void std::__function::__policy_func<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>::__call_func[abi:ne210105]<DB::Server::main(std::vector<String, std::allocator<String>> const&)::$_5>(std::__function::__policy_storage const*, Poco::AutoPtr<Poco::Util::AbstractConfiguration>&&, bool) @ 0x00000000167791a7
+15. DB::ConfigReloader::reloadIfNewer(bool, bool, bool, bool) @ 0x000000001da676c9
+16. DB::ConfigReloader::ConfigReloader(std::basic_string_view<char, std::char_traits<char>>, std::vector<String, std::allocator<String>> const&, String const&, std::unique_ptr<zkutil::ZooKeeperNodeCache, std::default_delete<zkutil::ZooKeeperNodeCache>>&&, std::shared_ptr<Poco::Event> const&, std::function<void (Poco::AutoPtr<Poco::Util::AbstractConfiguration>, bool)>&&) @ 0x000000001da65d6d
+17. DB::Server::main(std::vector<String, std::allocator<String>> const&) @ 0x0000000016754980
+18. Poco::Util::Application::run() @ 0x00000000223dc871
+19. DB::Server::run() @ 0x000000001673cb02
+20. mainEntryClickHouseServer(int, char**) @ 0x000000001673941b
+21. main @ 0x000000000ddf7ede
+22. __pow_finite @ 0x0000000000029d90
+23. __libc_start_main @ 0x0000000000029e40
+24. _start @ 0x0000000008eb1d6e
+ (version 25.12.1.649 (official build))
+2026.01.03 17:55:37.745872 [ 1 ] {} <Warning> Application: Listen [0.0.0.0]:9009 failed: Poco::Exception. Code: 1000, e.code() = 98, Net Exception: Address already in use: 0.0.0.0:9009 (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 17:55:37.757604 [ 1 ] {} <Warning> Access(local_directory): File /var/lib/clickhouse/access/users.list doesn't exist
+2026.01.03 17:55:37.757622 [ 1 ] {} <Warning> Access(local_directory): Recovering lists in directory /var/lib/clickhouse/access/
+2026.01.03 17:55:37.764583 [ 1 ] {} <Warning> Context: Delay accounting is not enabled, OSIOWaitMicroseconds will not be gathered. You can enable it using `sudo sh -c 'echo 1 > /proc/sys/kernel/task_delayacct'` or by using sysctl.
+2026.01.03 17:55:37.773168 [ 724 ] {} <Warning> DNSResolver: Cannot resolve host (minio), error 0: DNS error.
+2026.01.03 17:55:37.778636 [ 724 ] {} <Error> WriteBufferFromS3: S3Exception name , Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket gold, key opj/cxlgiwdvwkkqvdrqpwihnvcwryzew, object size 4
+2026.01.03 17:55:37.781164 [ 1 ] {} <Error> virtual void DB::IDisk::checkAccessImpl(const String &): Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket gold, key opj/cxlgiwdvwkkqvdrqpwihnvcwryzew, object size 4. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 17:55:37.782717 [ 1 ] {} <Error> Application: Caught exception while loading metadata: Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket gold, key opj/cxlgiwdvwkkqvdrqpwihnvcwryzew, object size 4: While checking access for disk s3. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 17:55:37.810854 [ 1 ] {} <Error> Application: Code: 499. DB::Exception: Message: Code: 198. DB::NetException: Not found address of host: minio. (DNS_ERROR) (version 25.12.1.649 (official build)), bucket gold, key opj/cxlgiwdvwkkqvdrqpwihnvcwryzew, object size 4: While checking access for disk s3. (S3_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::S3Exception::S3Exception<String const&, String const&, String const&, unsigned long&>(Aws::S3::S3Errors, FormatStringHelperImpl<std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<String const&>::type, std::type_identity<unsigned long&>::type>, String const&, String const&, String const&, unsigned long&) @ 0x00000000199f1e3d
+4. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::WriteBufferFromS3::makeSinglepartUpload(DB::WriteBufferFromS3::PartData&&)::$_0>(std::__function::__policy_storage const*) @ 0x0000000019a0a8f1
+5. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<DB::TaskTracker::add(std::function<void ()>&&)::$_0>(std::__function::__policy_storage const*) @ 0x00000000197139d7
+6. std::__packaged_task_func<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'(), std::allocator<std::function<std::future<void> (std::function<void ()>&&, Priority)> DB::threadPoolCallbackRunnerUnsafe<void, std::function<void ()>>(ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>&, DB::ThreadName)::'lambda'(std::function<void ()>&&, Priority)::operator()(std::function<void ()>&&, Priority)::'lambda'()>, void ()>::operator()() @ 0x0000000017f642b5
+7. std::packaged_task<void ()>::operator()() @ 0x0000000017f6446c
+8. ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::worker() @ 0x00000000164f944b
+9. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<false, true>::ThreadFromGlobalPoolImpl<void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*>(void (ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool::*&&)(), ThreadPoolImpl<ThreadFromGlobalPoolImpl<false, true>>::ThreadFromThreadPool*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x0000000016500266
+10. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+11. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 17:56:06.261759 [ 1 ] {} <Warning> Application: Listen [::]:9009 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 17:56:06.271366 [ 1 ] {} <Warning> Access(local_directory): File /var/lib/clickhouse/access/users.list doesn't exist
+2026.01.03 17:56:06.271392 [ 1 ] {} <Warning> Access(local_directory): Recovering lists in directory /var/lib/clickhouse/access/
+2026.01.03 17:56:06.277463 [ 1 ] {} <Warning> Context: Delay accounting is not enabled, OSIOWaitMicroseconds will not be gathered. You can enable it using `sudo sh -c 'echo 1 > /proc/sys/kernel/task_delayacct'` or by using sysctl.
+2026.01.03 17:56:06.359478 [ 1 ] {} <Warning> Application: Listen [::]:8123 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 17:56:06.359604 [ 1 ] {} <Warning> Application: Listen [::]:9000 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 17:56:06.359694 [ 1 ] {} <Warning> Application: Listen [::]:9004 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 17:56:06.359752 [ 1 ] {} <Warning> Application: Listen [::]:9005 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 18:08:34.736765 [ 1 ] {} <Warning> Application: Listen [::]:9009 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 18:08:34.745452 [ 1 ] {} <Warning> Access(local_directory): File /var/lib/clickhouse/access/users.list doesn't exist
+2026.01.03 18:08:34.745479 [ 1 ] {} <Warning> Access(local_directory): Recovering lists in directory /var/lib/clickhouse/access/
+2026.01.03 18:08:34.750826 [ 1 ] {} <Warning> Context: Delay accounting is not enabled, OSIOWaitMicroseconds will not be gathered. You can enable it using `sudo sh -c 'echo 1 > /proc/sys/kernel/task_delayacct'` or by using sysctl.
+2026.01.03 18:08:34.830922 [ 1 ] {} <Warning> Application: Listen [::]:8123 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 18:08:34.831009 [ 1 ] {} <Warning> Application: Listen [::]:9000 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 18:08:34.831091 [ 1 ] {} <Warning> Application: Listen [::]:9004 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 18:08:34.831137 [ 1 ] {} <Warning> Application: Listen [::]:9005 failed: Poco::Exception. Code: 1000, e.code() = 0, DNS error: EAI: Address family for hostname not supported (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 18:08:34.873197 [ 769 ] {} <Error> virtual bool DB::DDLWorker::initializeMainThread(): Code: 999. Coordination::Exception: All connection tries failed while connecting to ZooKeeper. nodes: 172.19.0.8:9181, 172.19.0.6:9181, 172.19.0.7:9181
+Poco::Exception. Code: 1000, e.code() = 111, Connection refused (version 25.12.1.649 (official build)), 172.19.0.8:9181
+Poco::Exception. Code: 1000, e.code() = 111, Connection refused (version 25.12.1.649 (official build)), 172.19.0.6:9181
+Poco::Exception. Code: 1000, e.code() = 111, Connection refused (version 25.12.1.649 (official build)), 172.19.0.7:9181
+Poco::Exception. Code: 1000, e.code() = 111, Connection refused (version 25.12.1.649 (official build)), 172.19.0.8:9181
+Poco::Exception. Code: 1000, e.code() = 111, Connection refused (version 25.12.1.649 (official build)), 172.19.0.6:9181
+Poco::Exception. Code: 1000, e.code() = 111, Connection refused (version 25.12.1.649 (official build)), 172.19.0.7:9181
+Poco::Exception. Code: 1000, e.code() = 111, Connection refused (version 25.12.1.649 (official build)), 172.19.0.8:9181
+Poco::Exception. Code: 1000, e.code() = 111, Connection refused (version 25.12.1.649 (official build)), 172.19.0.6:9181
+Poco::Exception. Code: 1000, e.code() = 111, Connection refused (version 25.12.1.649 (official build)), 172.19.0.7:9181
+. (KEEPER_EXCEPTION), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::Exception::Exception<String&>(int, FormatStringHelperImpl<std::type_identity<String&>::type>, String&) @ 0x000000000de2aab6
+4. Coordination::Exception::Exception<String&>(Coordination::Error, FormatStringHelperImpl<std::type_identity<String&>::type>, String&) @ 0x000000001bf37cea
+5. Coordination::ZooKeeper::connect(std::vector<zkutil::ShuffleHost, std::allocator<zkutil::ShuffleHost>> const&, Poco::Timespan) @ 0x000000001db175cc
+6. Coordination::ZooKeeper::ZooKeeper(std::vector<zkutil::ShuffleHost, std::allocator<zkutil::ShuffleHost>> const&, zkutil::ZooKeeperArgs const&, std::shared_ptr<DB::ZooKeeperLog>, std::shared_ptr<DB::AggregatedZooKeeperLog>) @ 0x000000001db0f954
+7. zkutil::ZooKeeper::init(zkutil::ZooKeeperArgs, std::unique_ptr<Coordination::IKeeper, std::default_delete<Coordination::IKeeper>>) @ 0x000000001da97c4e
+8. zkutil::ZooKeeper::ZooKeeper(zkutil::ZooKeeperArgs, std::shared_ptr<DB::ZooKeeperLog>, std::shared_ptr<DB::AggregatedZooKeeperLog>) @ 0x000000001da9c0c1
+9. zkutil::ZooKeeper::create(zkutil::ZooKeeperArgs, std::shared_ptr<DB::ZooKeeperLog>, std::shared_ptr<DB::AggregatedZooKeeperLog>) @ 0x000000001daac526
+10. DB::Context::getZooKeeper() const @ 0x000000001b04b2f4
+11. DB::DDLWorker::getAndSetZooKeeper() @ 0x000000001b13c27c
+12. DB::DDLWorker::initializeMainThread() @ 0x000000001b1566aa
+13. DB::DDLWorker::runMainThread() @ 0x000000001b136fa0
+14. void std::__function::__policy_func<void ()>::__call_func[abi:ne210105]<ThreadFromGlobalPoolImpl<true, true>::ThreadFromGlobalPoolImpl<void (DB::DDLWorker::*)(), DB::DDLWorker*>(void (DB::DDLWorker::*&&)(), DB::DDLWorker*&&)::'lambda'()>(std::__function::__policy_storage const*) @ 0x000000001b15e366
+15. ThreadPoolImpl<std::thread>::ThreadFromThreadPool::worker() @ 0x00000000164f67cf
+16. void* std::__thread_proxy[abi:ne210105]<std::tuple<std::unique_ptr<std::__thread_struct, std::default_delete<std::__thread_struct>>, void (ThreadPoolImpl<std::thread>::ThreadFromThreadPool::*)(), ThreadPoolImpl<std::thread>::ThreadFromThreadPool*>>(void*) @ 0x00000000164fdb1a
+17. ? @ 0x0000000000094ac3
+18. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 18:09:24.359450 [ 92 ] {31bca1a5-b313-40a4-a586-b0e33a9c7c8e} <Error> executeQuery: Code: 62. DB::Exception: Empty query. (SYNTAX_ERROR) (version 25.12.1.649 (official build)) (from 172.19.0.3:36322) (in query: ), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String const&, int, String, bool) @ 0x0000000014f29ace
+2. DB::Exception::createDeprecated(String const&, int, bool) @ 0x000000001665819f
+3. DB::parseQueryAndMovePosition(DB::IParser&, char const*&, char const*, String const&, bool, unsigned long, unsigned long, unsigned long) @ 0x000000001dd0f1f2
+4. DB::executeQueryImpl(char const*, char const*, std::shared_ptr<DB::Context>, DB::QueryFlags, DB::QueryProcessingStage::Enum, std::unique_ptr<DB::ReadBuffer, std::default_delete<DB::ReadBuffer>>&, std::shared_ptr<DB::IAST>&, std::shared_ptr<DB::ImplicitTransactionControlExecutor>, std::function<void ()>, DB::QueryResultDetails&) @ 0x000000001b74d418
+5. DB::executeQuery(String const&, std::shared_ptr<DB::Context>, DB::QueryFlags, DB::QueryProcessingStage::Enum) @ 0x000000001b74c490
+6. DB::TCPHandler::runImpl() @ 0x000000001cf83be8
+7. DB::TCPHandler::run() @ 0x000000001cfa5f24
+8. Poco::Net::TCPServerConnection::start() @ 0x00000000223ba5c7
+9. Poco::Net::TCPServerDispatcher::run() @ 0x00000000223baab1
+10. Poco::PooledThread::run() @ 0x000000002237a71c
+11. Poco::ThreadImpl::runnableEntry(void*) @ 0x0000000022378bcf
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+
+2026.01.03 18:09:24.360158 [ 92 ] {} <Error> TCPHandler: Code: 62. DB::Exception: Empty query. (SYNTAX_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String const&, int, String, bool) @ 0x0000000014f29ace
+2. DB::Exception::createDeprecated(String const&, int, bool) @ 0x000000001665819f
+3. DB::parseQueryAndMovePosition(DB::IParser&, char const*&, char const*, String const&, bool, unsigned long, unsigned long, unsigned long) @ 0x000000001dd0f1f2
+4. DB::executeQueryImpl(char const*, char const*, std::shared_ptr<DB::Context>, DB::QueryFlags, DB::QueryProcessingStage::Enum, std::unique_ptr<DB::ReadBuffer, std::default_delete<DB::ReadBuffer>>&, std::shared_ptr<DB::IAST>&, std::shared_ptr<DB::ImplicitTransactionControlExecutor>, std::function<void ()>, DB::QueryResultDetails&) @ 0x000000001b74d418
+5. DB::executeQuery(String const&, std::shared_ptr<DB::Context>, DB::QueryFlags, DB::QueryProcessingStage::Enum) @ 0x000000001b74c490
+6. DB::TCPHandler::runImpl() @ 0x000000001cf83be8
+7. DB::TCPHandler::run() @ 0x000000001cfa5f24
+8. Poco::Net::TCPServerConnection::start() @ 0x00000000223ba5c7
+9. Poco::Net::TCPServerDispatcher::run() @ 0x00000000223baab1
+10. Poco::PooledThread::run() @ 0x000000002237a71c
+11. Poco::ThreadImpl::runnableEntry(void*) @ 0x0000000022378bcf
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+
+2026.01.03 18:12:16.831938 [ 92 ] {f19e0f4c-69f8-4505-8361-6270664ba430} <Error> executeQuery: Code: 81. DB::Exception: Database warehouse does not exist. (UNKNOWN_DATABASE) (version 25.12.1.649 (official build)) (from 172.19.0.3:36322) (in query: SELECT DISTINCT symbol FROM warehouse.stock_realtime ORDER BY symbol ASC), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::Exception::Exception<String>(int, FormatStringHelperImpl<std::type_identity<String>::type>, String&&) @ 0x000000000ddff9b6
+4. DB::DatabaseCatalog::getDatabase(std::basic_string_view<char, std::char_traits<char>>) const @ 0x000000001b16badb
+5. DB::Context::resolveStorageID(DB::StorageID, DB::Context::StorageNamespace) const @ 0x000000001b0698c1
+6. DB::IdentifierResolver::tryResolveTableIdentifier(DB::Identifier const&, std::shared_ptr<DB::Context const> const&) @ 0x000000001aa198cc
+7. DB::QueryAnalyzer::tryResolveIdentifier(DB::IdentifierLookup const&, DB::IdentifierResolveScope&, DB::IdentifierResolveContext) @ 0x000000001a79f1ba
+8. DB::QueryAnalyzer::resolveQuery(std::shared_ptr<DB::IQueryTreeNode> const&, DB::IdentifierResolveScope&) @ 0x000000001a782885
+9. DB::QueryAnalyzer::resolve(std::shared_ptr<DB::IQueryTreeNode>&, std::shared_ptr<DB::IQueryTreeNode> const&, std::shared_ptr<DB::Context const>) @ 0x000000001a781256
+10. DB::QueryAnalysisPass::run(std::shared_ptr<DB::IQueryTreeNode>&, std::shared_ptr<DB::Context const>) @ 0x000000001a78081c
+11. DB::QueryTreePassManager::run(std::shared_ptr<DB::IQueryTreeNode>&) @ 0x000000001a7db46c
+12. DB::buildQueryTreeAndRunPasses(std::shared_ptr<DB::IAST> const&, DB::SelectQueryOptions const&, std::shared_ptr<DB::Context const> const&, std::shared_ptr<DB::IStorage> const&) @ 0x000000001b35d8d4
+13. DB::InterpreterSelectQueryAnalyzer::InterpreterSelectQueryAnalyzer(std::shared_ptr<DB::IAST> const&, std::shared_ptr<DB::Context const> const&, DB::SelectQueryOptions const&, std::vector<String, std::allocator<String>> const&) @ 0x000000001b35b589
+14. std::unique_ptr<DB::IInterpreter, std::default_delete<DB::IInterpreter>> std::__function::__policy_func<std::unique_ptr<DB::IInterpreter, std::default_delete<DB::IInterpreter>> (DB::InterpreterFactory::Arguments const&)>::__call_func[abi:ne210105]<DB::registerInterpreterSelectQueryAnalyzer(DB::InterpreterFactory&)::$_0>(std::__function::__policy_storage const*, DB::InterpreterFactory::Arguments const&) (.llvm.11664358000224113621) @ 0x000000001b3633a2
+15. DB::InterpreterFactory::get(std::shared_ptr<DB::IAST>&, std::shared_ptr<DB::Context>, DB::SelectQueryOptions const&) @ 0x000000001b2cb7ad
+16. DB::executeQueryImpl(char const*, char const*, std::shared_ptr<DB::Context>, DB::QueryFlags, DB::QueryProcessingStage::Enum, std::unique_ptr<DB::ReadBuffer, std::default_delete<DB::ReadBuffer>>&, std::shared_ptr<DB::IAST>&, std::shared_ptr<DB::ImplicitTransactionControlExecutor>, std::function<void ()>, DB::QueryResultDetails&) @ 0x000000001b751983
+17. DB::executeQuery(String const&, std::shared_ptr<DB::Context>, DB::QueryFlags, DB::QueryProcessingStage::Enum) @ 0x000000001b74c490
+18. DB::TCPHandler::runImpl() @ 0x000000001cf83be8
+19. DB::TCPHandler::run() @ 0x000000001cfa5f24
+20. Poco::Net::TCPServerConnection::start() @ 0x00000000223ba5c7
+21. Poco::Net::TCPServerDispatcher::run() @ 0x00000000223baab1
+22. Poco::PooledThread::run() @ 0x000000002237a71c
+23. Poco::ThreadImpl::runnableEntry(void*) @ 0x0000000022378bcf
+24. ? @ 0x0000000000094ac3
+25. clone @ 0x0000000000125a74
+
+2026.01.03 18:12:16.832259 [ 92 ] {} <Error> TCPHandler: Code: 81. DB::Exception: Database warehouse does not exist. (UNKNOWN_DATABASE), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::Exception::Exception<String>(int, FormatStringHelperImpl<std::type_identity<String>::type>, String&&) @ 0x000000000ddff9b6
+4. DB::DatabaseCatalog::getDatabase(std::basic_string_view<char, std::char_traits<char>>) const @ 0x000000001b16badb
+5. DB::Context::resolveStorageID(DB::StorageID, DB::Context::StorageNamespace) const @ 0x000000001b0698c1
+6. DB::IdentifierResolver::tryResolveTableIdentifier(DB::Identifier const&, std::shared_ptr<DB::Context const> const&) @ 0x000000001aa198cc
+7. DB::QueryAnalyzer::tryResolveIdentifier(DB::IdentifierLookup const&, DB::IdentifierResolveScope&, DB::IdentifierResolveContext) @ 0x000000001a79f1ba
+8. DB::QueryAnalyzer::resolveQuery(std::shared_ptr<DB::IQueryTreeNode> const&, DB::IdentifierResolveScope&) @ 0x000000001a782885
+9. DB::QueryAnalyzer::resolve(std::shared_ptr<DB::IQueryTreeNode>&, std::shared_ptr<DB::IQueryTreeNode> const&, std::shared_ptr<DB::Context const>) @ 0x000000001a781256
+10. DB::QueryAnalysisPass::run(std::shared_ptr<DB::IQueryTreeNode>&, std::shared_ptr<DB::Context const>) @ 0x000000001a78081c
+11. DB::QueryTreePassManager::run(std::shared_ptr<DB::IQueryTreeNode>&) @ 0x000000001a7db46c
+12. DB::buildQueryTreeAndRunPasses(std::shared_ptr<DB::IAST> const&, DB::SelectQueryOptions const&, std::shared_ptr<DB::Context const> const&, std::shared_ptr<DB::IStorage> const&) @ 0x000000001b35d8d4
+13. DB::InterpreterSelectQueryAnalyzer::InterpreterSelectQueryAnalyzer(std::shared_ptr<DB::IAST> const&, std::shared_ptr<DB::Context const> const&, DB::SelectQueryOptions const&, std::vector<String, std::allocator<String>> const&) @ 0x000000001b35b589
+14. std::unique_ptr<DB::IInterpreter, std::default_delete<DB::IInterpreter>> std::__function::__policy_func<std::unique_ptr<DB::IInterpreter, std::default_delete<DB::IInterpreter>> (DB::InterpreterFactory::Arguments const&)>::__call_func[abi:ne210105]<DB::registerInterpreterSelectQueryAnalyzer(DB::InterpreterFactory&)::$_0>(std::__function::__policy_storage const*, DB::InterpreterFactory::Arguments const&) (.llvm.11664358000224113621) @ 0x000000001b3633a2
+15. DB::InterpreterFactory::get(std::shared_ptr<DB::IAST>&, std::shared_ptr<DB::Context>, DB::SelectQueryOptions const&) @ 0x000000001b2cb7ad
+16. DB::executeQueryImpl(char const*, char const*, std::shared_ptr<DB::Context>, DB::QueryFlags, DB::QueryProcessingStage::Enum, std::unique_ptr<DB::ReadBuffer, std::default_delete<DB::ReadBuffer>>&, std::shared_ptr<DB::IAST>&, std::shared_ptr<DB::ImplicitTransactionControlExecutor>, std::function<void ()>, DB::QueryResultDetails&) @ 0x000000001b751983
+17. DB::executeQuery(String const&, std::shared_ptr<DB::Context>, DB::QueryFlags, DB::QueryProcessingStage::Enum) @ 0x000000001b74c490
+18. DB::TCPHandler::runImpl() @ 0x000000001cf83be8
+19. DB::TCPHandler::run() @ 0x000000001cfa5f24
+20. Poco::Net::TCPServerConnection::start() @ 0x00000000223ba5c7
+21. Poco::Net::TCPServerDispatcher::run() @ 0x00000000223baab1
+22. Poco::PooledThread::run() @ 0x000000002237a71c
+23. Poco::ThreadImpl::runnableEntry(void*) @ 0x0000000022378bcf
+24. ? @ 0x0000000000094ac3
+25. clone @ 0x0000000000125a74
+
+2026.01.03 18:12:16.847018 [ 92 ] {b07493d6-77a5-46e2-bbd9-9663192f1e23} <Error> executeQuery: Code: 81. DB::Exception: Database warehouse does not exist. (UNKNOWN_DATABASE) (version 25.12.1.649 (official build)) (from 172.19.0.3:36322) (in query: SELECT toStartOfInterval(timestamp, INTERVAL 1 minute) as time, argMin(price, timestamp) as open, max(price) as high, min(price) as low, argMax(price, timestamp) as close, sum(volume) as volume FROM warehouse.stock_realtime WHERE symbol = '' AND timestamp >= toDateTime(intDiv(toInt64(1767462136730), 1000)) AND timestamp <= toDateTime(intDiv(toInt64(1767463936730), 1000)) GROUP BY time ORDER BY time ASC), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::Exception::Exception<String>(int, FormatStringHelperImpl<std::type_identity<String>::type>, String&&) @ 0x000000000ddff9b6
+4. DB::DatabaseCatalog::getDatabase(std::basic_string_view<char, std::char_traits<char>>) const @ 0x000000001b16badb
+5. DB::Context::resolveStorageID(DB::StorageID, DB::Context::StorageNamespace) const @ 0x000000001b0698c1
+6. DB::IdentifierResolver::tryResolveTableIdentifier(DB::Identifier const&, std::shared_ptr<DB::Context const> const&) @ 0x000000001aa198cc
+7. DB::QueryAnalyzer::tryResolveIdentifier(DB::IdentifierLookup const&, DB::IdentifierResolveScope&, DB::IdentifierResolveContext) @ 0x000000001a79f1ba
+8. DB::QueryAnalyzer::resolveQuery(std::shared_ptr<DB::IQueryTreeNode> const&, DB::IdentifierResolveScope&) @ 0x000000001a782885
+9. DB::QueryAnalyzer::resolve(std::shared_ptr<DB::IQueryTreeNode>&, std::shared_ptr<DB::IQueryTreeNode> const&, std::shared_ptr<DB::Context const>) @ 0x000000001a781256
+10. DB::QueryAnalysisPass::run(std::shared_ptr<DB::IQueryTreeNode>&, std::shared_ptr<DB::Context const>) @ 0x000000001a78081c
+11. DB::QueryTreePassManager::run(std::shared_ptr<DB::IQueryTreeNode>&) @ 0x000000001a7db46c
+12. DB::buildQueryTreeAndRunPasses(std::shared_ptr<DB::IAST> const&, DB::SelectQueryOptions const&, std::shared_ptr<DB::Context const> const&, std::shared_ptr<DB::IStorage> const&) @ 0x000000001b35d8d4
+13. DB::InterpreterSelectQueryAnalyzer::InterpreterSelectQueryAnalyzer(std::shared_ptr<DB::IAST> const&, std::shared_ptr<DB::Context const> const&, DB::SelectQueryOptions const&, std::vector<String, std::allocator<String>> const&) @ 0x000000001b35b589
+14. std::unique_ptr<DB::IInterpreter, std::default_delete<DB::IInterpreter>> std::__function::__policy_func<std::unique_ptr<DB::IInterpreter, std::default_delete<DB::IInterpreter>> (DB::InterpreterFactory::Arguments const&)>::__call_func[abi:ne210105]<DB::registerInterpreterSelectQueryAnalyzer(DB::InterpreterFactory&)::$_0>(std::__function::__policy_storage const*, DB::InterpreterFactory::Arguments const&) (.llvm.11664358000224113621) @ 0x000000001b3633a2
+15. DB::InterpreterFactory::get(std::shared_ptr<DB::IAST>&, std::shared_ptr<DB::Context>, DB::SelectQueryOptions const&) @ 0x000000001b2cb7ad
+16. DB::executeQueryImpl(char const*, char const*, std::shared_ptr<DB::Context>, DB::QueryFlags, DB::QueryProcessingStage::Enum, std::unique_ptr<DB::ReadBuffer, std::default_delete<DB::ReadBuffer>>&, std::shared_ptr<DB::IAST>&, std::shared_ptr<DB::ImplicitTransactionControlExecutor>, std::function<void ()>, DB::QueryResultDetails&) @ 0x000000001b751983
+17. DB::executeQuery(String const&, std::shared_ptr<DB::Context>, DB::QueryFlags, DB::QueryProcessingStage::Enum) @ 0x000000001b74c490
+18. DB::TCPHandler::runImpl() @ 0x000000001cf83be8
+19. DB::TCPHandler::run() @ 0x000000001cfa5f24
+20. Poco::Net::TCPServerConnection::start() @ 0x00000000223ba5c7
+21. Poco::Net::TCPServerDispatcher::run() @ 0x00000000223baab1
+22. Poco::PooledThread::run() @ 0x000000002237a71c
+23. Poco::ThreadImpl::runnableEntry(void*) @ 0x0000000022378bcf
+24. ? @ 0x0000000000094ac3
+25. clone @ 0x0000000000125a74
+
+2026.01.03 18:12:16.847271 [ 92 ] {} <Error> TCPHandler: Code: 81. DB::Exception: Database warehouse does not exist. (UNKNOWN_DATABASE), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::Exception::Exception<String>(int, FormatStringHelperImpl<std::type_identity<String>::type>, String&&) @ 0x000000000ddff9b6
+4. DB::DatabaseCatalog::getDatabase(std::basic_string_view<char, std::char_traits<char>>) const @ 0x000000001b16badb
+5. DB::Context::resolveStorageID(DB::StorageID, DB::Context::StorageNamespace) const @ 0x000000001b0698c1
+6. DB::IdentifierResolver::tryResolveTableIdentifier(DB::Identifier const&, std::shared_ptr<DB::Context const> const&) @ 0x000000001aa198cc
+7. DB::QueryAnalyzer::tryResolveIdentifier(DB::IdentifierLookup const&, DB::IdentifierResolveScope&, DB::IdentifierResolveContext) @ 0x000000001a79f1ba
+8. DB::QueryAnalyzer::resolveQuery(std::shared_ptr<DB::IQueryTreeNode> const&, DB::IdentifierResolveScope&) @ 0x000000001a782885
+9. DB::QueryAnalyzer::resolve(std::shared_ptr<DB::IQueryTreeNode>&, std::shared_ptr<DB::IQueryTreeNode> const&, std::shared_ptr<DB::Context const>) @ 0x000000001a781256
+10. DB::QueryAnalysisPass::run(std::shared_ptr<DB::IQueryTreeNode>&, std::shared_ptr<DB::Context const>) @ 0x000000001a78081c
+11. DB::QueryTreePassManager::run(std::shared_ptr<DB::IQueryTreeNode>&) @ 0x000000001a7db46c
+12. DB::buildQueryTreeAndRunPasses(std::shared_ptr<DB::IAST> const&, DB::SelectQueryOptions const&, std::shared_ptr<DB::Context const> const&, std::shared_ptr<DB::IStorage> const&) @ 0x000000001b35d8d4
+13. DB::InterpreterSelectQueryAnalyzer::InterpreterSelectQueryAnalyzer(std::shared_ptr<DB::IAST> const&, std::shared_ptr<DB::Context const> const&, DB::SelectQueryOptions const&, std::vector<String, std::allocator<String>> const&) @ 0x000000001b35b589
+14. std::unique_ptr<DB::IInterpreter, std::default_delete<DB::IInterpreter>> std::__function::__policy_func<std::unique_ptr<DB::IInterpreter, std::default_delete<DB::IInterpreter>> (DB::InterpreterFactory::Arguments const&)>::__call_func[abi:ne210105]<DB::registerInterpreterSelectQueryAnalyzer(DB::InterpreterFactory&)::$_0>(std::__function::__policy_storage const*, DB::InterpreterFactory::Arguments const&) (.llvm.11664358000224113621) @ 0x000000001b3633a2
+15. DB::InterpreterFactory::get(std::shared_ptr<DB::IAST>&, std::shared_ptr<DB::Context>, DB::SelectQueryOptions const&) @ 0x000000001b2cb7ad
+16. DB::executeQueryImpl(char const*, char const*, std::shared_ptr<DB::Context>, DB::QueryFlags, DB::QueryProcessingStage::Enum, std::unique_ptr<DB::ReadBuffer, std::default_delete<DB::ReadBuffer>>&, std::shared_ptr<DB::IAST>&, std::shared_ptr<DB::ImplicitTransactionControlExecutor>, std::function<void ()>, DB::QueryResultDetails&) @ 0x000000001b751983
+17. DB::executeQuery(String const&, std::shared_ptr<DB::Context>, DB::QueryFlags, DB::QueryProcessingStage::Enum) @ 0x000000001b74c490
+18. DB::TCPHandler::runImpl() @ 0x000000001cf83be8
+19. DB::TCPHandler::run() @ 0x000000001cfa5f24
+20. Poco::Net::TCPServerConnection::start() @ 0x00000000223ba5c7
+21. Poco::Net::TCPServerDispatcher::run() @ 0x00000000223baab1
+22. Poco::PooledThread::run() @ 0x000000002237a71c
+23. Poco::ThreadImpl::runnableEntry(void*) @ 0x0000000022378bcf
+24. ? @ 0x0000000000094ac3
+25. clone @ 0x0000000000125a74
+
+2026.01.03 18:13:50.775388 [ 92 ] {2ad6b4f5-95a8-4e9c-abcb-cea1185ecb43} <Error> executeQuery: Code: 62. DB::Exception: Empty query. (SYNTAX_ERROR) (version 25.12.1.649 (official build)) (from 172.19.0.3:36322) (in query: ), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String const&, int, String, bool) @ 0x0000000014f29ace
+2. DB::Exception::createDeprecated(String const&, int, bool) @ 0x000000001665819f
+3. DB::parseQueryAndMovePosition(DB::IParser&, char const*&, char const*, String const&, bool, unsigned long, unsigned long, unsigned long) @ 0x000000001dd0f1f2
+4. DB::executeQueryImpl(char const*, char const*, std::shared_ptr<DB::Context>, DB::QueryFlags, DB::QueryProcessingStage::Enum, std::unique_ptr<DB::ReadBuffer, std::default_delete<DB::ReadBuffer>>&, std::shared_ptr<DB::IAST>&, std::shared_ptr<DB::ImplicitTransactionControlExecutor>, std::function<void ()>, DB::QueryResultDetails&) @ 0x000000001b74d418
+5. DB::executeQuery(String const&, std::shared_ptr<DB::Context>, DB::QueryFlags, DB::QueryProcessingStage::Enum) @ 0x000000001b74c490
+6. DB::TCPHandler::runImpl() @ 0x000000001cf83be8
+7. DB::TCPHandler::run() @ 0x000000001cfa5f24
+8. Poco::Net::TCPServerConnection::start() @ 0x00000000223ba5c7
+9. Poco::Net::TCPServerDispatcher::run() @ 0x00000000223baab1
+10. Poco::PooledThread::run() @ 0x000000002237a71c
+11. Poco::ThreadImpl::runnableEntry(void*) @ 0x0000000022378bcf
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+
+2026.01.03 18:13:50.775616 [ 92 ] {} <Error> TCPHandler: Code: 62. DB::Exception: Empty query. (SYNTAX_ERROR), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String const&, int, String, bool) @ 0x0000000014f29ace
+2. DB::Exception::createDeprecated(String const&, int, bool) @ 0x000000001665819f
+3. DB::parseQueryAndMovePosition(DB::IParser&, char const*&, char const*, String const&, bool, unsigned long, unsigned long, unsigned long) @ 0x000000001dd0f1f2
+4. DB::executeQueryImpl(char const*, char const*, std::shared_ptr<DB::Context>, DB::QueryFlags, DB::QueryProcessingStage::Enum, std::unique_ptr<DB::ReadBuffer, std::default_delete<DB::ReadBuffer>>&, std::shared_ptr<DB::IAST>&, std::shared_ptr<DB::ImplicitTransactionControlExecutor>, std::function<void ()>, DB::QueryResultDetails&) @ 0x000000001b74d418
+5. DB::executeQuery(String const&, std::shared_ptr<DB::Context>, DB::QueryFlags, DB::QueryProcessingStage::Enum) @ 0x000000001b74c490
+6. DB::TCPHandler::runImpl() @ 0x000000001cf83be8
+7. DB::TCPHandler::run() @ 0x000000001cfa5f24
+8. Poco::Net::TCPServerConnection::start() @ 0x00000000223ba5c7
+9. Poco::Net::TCPServerDispatcher::run() @ 0x00000000223baab1
+10. Poco::PooledThread::run() @ 0x000000002237a71c
+11. Poco::ThreadImpl::runnableEntry(void*) @ 0x0000000022378bcf
+12. ? @ 0x0000000000094ac3
+13. clone @ 0x0000000000125a74
+
+2026.01.03 18:36:26.461357 [ 93 ] {} <Error> DynamicQueryHandler: Code: 194. DB::Exception: default: Authentication failed: password is incorrect, or there is no user with such name.
+
+If you use ClickHouse Cloud, the password can be reset at https://clickhouse.cloud/
+on the settings page for the corresponding service.
+
+If you have installed ClickHouse and forgot password you can reset it in the configuration file.
+The password for default user is typically located at /etc/clickhouse-server/users.d/default-password.xml
+and deleting this file will reset the password.
+See also /etc/clickhouse-server/users.xml on the server where ClickHouse is installed.
+
+. (REQUIRED_PASSWORD), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::AccessControl::authenticate(DB::Credentials const&, Poco::Net::IPAddress const&, DB::ClientInfo const&) const @ 0x0000000019b001d6
+4. DB::Session::authenticate(DB::Credentials const&, Poco::Net::SocketAddress const&, std::vector<String, std::allocator<String>> const&) @ 0x000000001b418c22
+5. DB::authenticateUserByHTTP(DB::HTTPServerRequest const&, DB::HTMLForm const&, DB::HTTPServerResponse&, DB::Session&, std::unique_ptr<DB::Credentials, std::default_delete<DB::Credentials>>&, DB::HTTPHandlerConnectionConfig const&, std::shared_ptr<DB::Context const>, std::shared_ptr<Poco::Logger>) @ 0x000000001cfc5181
+6. DB::HTTPHandler::authenticateUser(DB::HTTPServerRequest&, DB::HTMLForm&, DB::HTTPServerResponse&) @ 0x000000001cec4d90
+7. DB::HTTPHandler::processQuery(DB::HTTPServerRequest&, DB::HTMLForm&, DB::HTTPServerResponse&, DB::HTTPHandler::Output&, std::optional<DB::CurrentThread::QueryScope>&, StrongTypedef<unsigned long, ProfileEvents::EventTag> const&) @ 0x000000001cec525a
+8. DB::HTTPHandler::handleRequest(DB::HTTPServerRequest&, DB::HTTPServerResponse&, StrongTypedef<unsigned long, ProfileEvents::EventTag> const&) @ 0x000000001cecf064
+9. DB::HTTPServerConnection::run() @ 0x000000001cfb5bca
+10. Poco::Net::TCPServerConnection::start() @ 0x00000000223ba5c7
+11. Poco::Net::TCPServerDispatcher::run() @ 0x00000000223baab1
+12. Poco::PooledThread::run() @ 0x000000002237a71c
+13. Poco::ThreadImpl::runnableEntry(void*) @ 0x0000000022378bcf
+14. ? @ 0x0000000000094ac3
+15. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 18:36:29.498604 [ 93 ] {} <Error> DynamicQueryHandler: Code: 194. DB::Exception: default: Authentication failed: password is incorrect, or there is no user with such name.
+
+If you use ClickHouse Cloud, the password can be reset at https://clickhouse.cloud/
+on the settings page for the corresponding service.
+
+If you have installed ClickHouse and forgot password you can reset it in the configuration file.
+The password for default user is typically located at /etc/clickhouse-server/users.d/default-password.xml
+and deleting this file will reset the password.
+See also /etc/clickhouse-server/users.xml on the server where ClickHouse is installed.
+
+. (REQUIRED_PASSWORD), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::AccessControl::authenticate(DB::Credentials const&, Poco::Net::IPAddress const&, DB::ClientInfo const&) const @ 0x0000000019b001d6
+4. DB::Session::authenticate(DB::Credentials const&, Poco::Net::SocketAddress const&, std::vector<String, std::allocator<String>> const&) @ 0x000000001b418c22
+5. DB::authenticateUserByHTTP(DB::HTTPServerRequest const&, DB::HTMLForm const&, DB::HTTPServerResponse&, DB::Session&, std::unique_ptr<DB::Credentials, std::default_delete<DB::Credentials>>&, DB::HTTPHandlerConnectionConfig const&, std::shared_ptr<DB::Context const>, std::shared_ptr<Poco::Logger>) @ 0x000000001cfc5181
+6. DB::HTTPHandler::authenticateUser(DB::HTTPServerRequest&, DB::HTMLForm&, DB::HTTPServerResponse&) @ 0x000000001cec4d90
+7. DB::HTTPHandler::processQuery(DB::HTTPServerRequest&, DB::HTMLForm&, DB::HTTPServerResponse&, DB::HTTPHandler::Output&, std::optional<DB::CurrentThread::QueryScope>&, StrongTypedef<unsigned long, ProfileEvents::EventTag> const&) @ 0x000000001cec525a
+8. DB::HTTPHandler::handleRequest(DB::HTTPServerRequest&, DB::HTTPServerResponse&, StrongTypedef<unsigned long, ProfileEvents::EventTag> const&) @ 0x000000001cecf064
+9. DB::HTTPServerConnection::run() @ 0x000000001cfb5bca
+10. Poco::Net::TCPServerConnection::start() @ 0x00000000223ba5c7
+11. Poco::Net::TCPServerDispatcher::run() @ 0x00000000223baab1
+12. Poco::PooledThread::run() @ 0x000000002237a71c
+13. Poco::ThreadImpl::runnableEntry(void*) @ 0x0000000022378bcf
+14. ? @ 0x0000000000094ac3
+15. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 18:37:23.781805 [ 93 ] {} <Error> DynamicQueryHandler: Code: 194. DB::Exception: default: Authentication failed: password is incorrect, or there is no user with such name.
+
+If you use ClickHouse Cloud, the password can be reset at https://clickhouse.cloud/
+on the settings page for the corresponding service.
+
+If you have installed ClickHouse and forgot password you can reset it in the configuration file.
+The password for default user is typically located at /etc/clickhouse-server/users.d/default-password.xml
+and deleting this file will reset the password.
+See also /etc/clickhouse-server/users.xml on the server where ClickHouse is installed.
+
+. (REQUIRED_PASSWORD), Stack trace (when copying this message, always include the lines below):
+
+0. DB::Exception::Exception(DB::Exception::MessageMasked&&, int, bool) @ 0x00000000163a0f6a
+1. DB::Exception::Exception(String&&, int, String, bool) @ 0x000000000de0034e
+2. DB::Exception::Exception(PreformattedMessage&&, int) @ 0x000000000ddffd40
+3. DB::AccessControl::authenticate(DB::Credentials const&, Poco::Net::IPAddress const&, DB::ClientInfo const&) const @ 0x0000000019b001d6
+4. DB::Session::authenticate(DB::Credentials const&, Poco::Net::SocketAddress const&, std::vector<String, std::allocator<String>> const&) @ 0x000000001b418c22
+5. DB::authenticateUserByHTTP(DB::HTTPServerRequest const&, DB::HTMLForm const&, DB::HTTPServerResponse&, DB::Session&, std::unique_ptr<DB::Credentials, std::default_delete<DB::Credentials>>&, DB::HTTPHandlerConnectionConfig const&, std::shared_ptr<DB::Context const>, std::shared_ptr<Poco::Logger>) @ 0x000000001cfc5181
+6. DB::HTTPHandler::authenticateUser(DB::HTTPServerRequest&, DB::HTMLForm&, DB::HTTPServerResponse&) @ 0x000000001cec4d90
+7. DB::HTTPHandler::processQuery(DB::HTTPServerRequest&, DB::HTMLForm&, DB::HTTPServerResponse&, DB::HTTPHandler::Output&, std::optional<DB::CurrentThread::QueryScope>&, StrongTypedef<unsigned long, ProfileEvents::EventTag> const&) @ 0x000000001cec525a
+8. DB::HTTPHandler::handleRequest(DB::HTTPServerRequest&, DB::HTTPServerResponse&, StrongTypedef<unsigned long, ProfileEvents::EventTag> const&) @ 0x000000001cecf064
+9. DB::HTTPServerConnection::run() @ 0x000000001cfb5bca
+10. Poco::Net::TCPServerConnection::start() @ 0x00000000223ba5c7
+11. Poco::Net::TCPServerDispatcher::run() @ 0x00000000223baab1
+12. Poco::PooledThread::run() @ 0x000000002237a71c
+13. Poco::ThreadImpl::runnableEntry(void*) @ 0x0000000022378bcf
+14. ? @ 0x0000000000094ac3
+15. clone @ 0x0000000000125a74
+ (version 25.12.1.649 (official build))
+2026.01.03 18:52:10.863669 [ 1 ] {} <Warning> Application: Closed all listening sockets. Waiting for 1 outstanding connections.
+2026.01.03 18:52:22.331450 [ 88 ] {} <Warning> Application: Listen [0.0.0.0]:9009 failed: Poco::Exception. Code: 1000, e.code() = 98, Net Exception: Address already in use: 0.0.0.0:9009 (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 18:52:22.362291 [ 88 ] {} <Warning> Access(local_directory): File /var/lib/clickhouse/access/users.list doesn't exist
+2026.01.03 18:52:22.362344 [ 88 ] {} <Warning> Access(local_directory): Recovering lists in directory /var/lib/clickhouse/access/
+2026.01.03 18:52:22.369767 [ 88 ] {} <Warning> Context: Delay accounting is not enabled, OSIOWaitMicroseconds will not be gathered. You can enable it using `sudo sh -c 'echo 1 > /proc/sys/kernel/task_delayacct'` or by using sysctl.
+2026.01.03 18:52:22.605024 [ 88 ] {} <Warning> Application: Listen [0.0.0.0]:8123 failed: Poco::Exception. Code: 1000, e.code() = 98, Net Exception: Address already in use: 0.0.0.0:8123 (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 18:52:22.605113 [ 88 ] {} <Warning> Application: Listen [0.0.0.0]:9000 failed: Poco::Exception. Code: 1000, e.code() = 98, Net Exception: Address already in use: 0.0.0.0:9000 (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 18:52:22.605179 [ 88 ] {} <Warning> Application: Listen [0.0.0.0]:9004 failed: Poco::Exception. Code: 1000, e.code() = 98, Net Exception: Address already in use: 0.0.0.0:9004 (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>
+2026.01.03 18:52:22.605232 [ 88 ] {} <Warning> Application: Listen [0.0.0.0]:9005 failed: Poco::Exception. Code: 1000, e.code() = 98, Net Exception: Address already in use: 0.0.0.0:9005 (version 25.12.1.649 (official build)). If it is an IPv6 or IPv4 address and your host has disabled IPv6 or IPv4, then consider to specify not disabled IPv4 or IPv6 address to listen in <listen_host> element of configuration file. Example for disabled IPv6: <listen_host>0.0.0.0</listen_host> . Example for disabled IPv4: <listen_host>::</listen_host>

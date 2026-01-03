@@ -7,6 +7,7 @@ services:
       - ${PWD}/fs/volumes/clickhouse-01/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
       - ${PWD}/fs/volumes/clickhouse-01/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
       - ${PWD}/fs/volumes/clickhouse-01/var/log/clickhouse-server:/var/log/clickhouse-server
+      - ${PWD}/fs/volumes/clickhouse-01/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     ports:
       - "127.0.0.1:8123:8123"
       - "127.0.0.1:9000:9000"
@@ -15,7 +16,7 @@ services:
       - clickhouse-keeper-02
       - clickhouse-keeper-03
     networks:
-      - default
+      - data-pipeline
   clickhouse-02:
     image: "clickhouse/clickhouse-server:latest"
     container_name: clickhouse-02
@@ -32,8 +33,7 @@ services:
       - clickhouse-keeper-02
       - clickhouse-keeper-03
     networks:
-      - default
-
+      - data-pipeline
   clickhouse-03:
     image: "clickhouse/clickhouse-server:latest"
     container_name: clickhouse-03
@@ -50,7 +50,7 @@ services:
       - clickhouse-keeper-02
       - clickhouse-keeper-03
     networks:
-      - default
+      - data-pipeline
 
   clickhouse-04:
     image: "clickhouse/clickhouse-server:latest"
@@ -68,7 +68,7 @@ services:
       - clickhouse-keeper-02
       - clickhouse-keeper-03
     networks:
-      - default
+      - data-pipeline
 
   clickhouse-keeper-01:
     image: "clickhouse/clickhouse-keeper:latest-alpine"
@@ -81,7 +81,7 @@ services:
       - "127.0.0.1:9181:9181"
       - "127.0.0.1:9234:9234"  
     networks:
-      - default
+      - data-pipeline
 
   clickhouse-keeper-02:
     image: "clickhouse/clickhouse-keeper:latest-alpine"
@@ -94,7 +94,7 @@ services:
       - "127.0.0.1:9182:9181"
       - "127.0.0.1:9235:9234"
     networks:
-      - default
+      - data-pipeline
 
   clickhouse-keeper-03:
     image: "clickhouse/clickhouse-keeper:latest-alpine"
@@ -107,9 +107,23 @@ services:
       - "127.0.0.1:9183:9181"
       - "127.0.0.1:9236:9234" 
     networks:
-      - default
+      - data-pipeline
       
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=grafana-clickhouse-datasource
+    volumes:
+      - ${PWD}/fs/volumes/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - data-pipeline
+
 networks:
-  default:
-    name: bigdata-net
+  data-pipeline:
+    name: data-pipeline
     external: true

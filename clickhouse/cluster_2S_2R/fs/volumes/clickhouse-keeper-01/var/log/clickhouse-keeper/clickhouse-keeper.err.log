@@ -28,3 +28,36 @@
 2025.12.26 17:52:13.370727 [ 65 ] {} <Warning> RaftInstance: failed to send prevote request: peer 3 (clickhouse-keeper-03:9234) is busy, count 1
 2025.12.26 17:52:13.370746 [ 65 ] {} <Warning> RaftInstance: failed to send prevote request: peer 2 (clickhouse-keeper-02:9234) is busy, count 2
 2025.12.26 17:52:13.370749 [ 65 ] {} <Warning> RaftInstance: too many busy connections: 2, num voting members: 3, quorum size: 2, no hope to get quorum, count: 1
+2026.01.03 17:13:23.551965 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2026.01.03 17:13:23.552288 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2026.01.03 17:13:24.953163 [ 45 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2026.01.03 17:14:38.013220 [ 59 ] {} <Error> RaftInstance: failed to accept a rpc connection due to error 125, Operation canceled
+2026.01.03 17:14:43.424419 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2026.01.03 17:14:43.424980 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2026.01.03 17:14:44.575237 [ 44 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2026.01.03 17:27:51.079454 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2026.01.03 17:27:51.079891 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2026.01.03 17:27:52.747242 [ 46 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2026.01.03 17:48:01.541199 [ 48 ] {} <Error> RaftInstance: failed to accept a rpc connection due to error 125, Operation canceled
+2026.01.03 17:49:43.892926 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2026.01.03 17:49:43.893680 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2026.01.03 17:49:45.068850 [ 45 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2026.01.03 17:50:11.112421 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2026.01.03 17:50:11.112697 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2026.01.03 17:50:12.557377 [ 46 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2026.01.03 17:52:29.127809 [ 52 ] {} <Error> RaftInstance: failed to accept a rpc connection due to error 125, Operation canceled
+2026.01.03 17:52:35.250429 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2026.01.03 17:52:35.250900 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2026.01.03 17:52:36.343309 [ 73 ] {} <Warning> RaftInstance: Election timeout, initiate leader election
+2026.01.03 17:54:44.410236 [ 57 ] {} <Warning> RaftInstance: peer (3) response error: failed to read response to peer 3, clickhouse-keeper-03:9234, error 2, End of file
+2026.01.03 17:54:44.524558 [ 62 ] {} <Warning> RaftInstance: peer (3) response error: failed to connect to peer 3, clickhouse-keeper-03:9234, error 111, Connection refused
+2026.01.03 17:54:44.534438 [ 44 ] {} <Warning> RaftInstance: peer (3) response error: failed to connect to peer 3, clickhouse-keeper-03:9234, error 111, Connection refused
+2026.01.03 17:54:44.561613 [ 53 ] {} <Warning> RaftInstance: peer (3) response error: failed to connect to peer 3, clickhouse-keeper-03:9234, error 111, Connection refused
+2026.01.03 17:54:44.571809 [ 64 ] {} <Warning> RaftInstance: peer (3) response error: failed to connect to peer 3, clickhouse-keeper-03:9234, error 111, Connection refused
+2026.01.03 17:55:50.094503 [ 66 ] {} <Error> RaftInstance: session 1 failed to read rpc header from socket ::ffff:172.19.0.5:60862 due to error 2, End of file, ref count 1
+2026.01.03 17:55:50.099957 [ 67 ] {} <Error> RaftInstance: failed to accept a rpc connection due to error 125, Operation canceled
+2026.01.03 17:56:05.103457 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2026.01.03 17:56:05.103841 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2026.01.03 18:08:33.799755 [ 1 ] {} <Warning> KeeperLogStore: No logs exists in /var/lib/clickhouse-keeper/coordination/log. It's Ok if it's the first run of clickhouse-keeper.
+2026.01.03 18:08:33.799976 [ 1 ] {} <Warning> KeeperLogStore: Removing all changelogs
+2026.01.03 18:52:13.841744 [ 75 ] {} <Error> RaftInstance: failed to accept a rpc connection due to error 125, Operation canceled
