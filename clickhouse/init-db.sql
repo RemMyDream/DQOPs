@@ -2,44 +2,32 @@
 CREATE DATABASE IF NOT EXISTS warehouse;
 
 --------------------------------------------------------------------------------
--- 1. BATCH LAYER (Iceberg - Zero Copy)
+-- 1. GOLD LAYER (Iceberg Connection)
 --------------------------------------------------------------------------------
--- Kết nối trực tiếp vào MinIO Gold Layer. 
--- Tự động có dữ liệu sau khi Spark job 'gold' chạy xong.
-CREATE TABLE IF NOT EXISTS warehouse.gold_ml_features
-ENGINE = Iceberg('http://minio:9000/gold/ml_features', 'minio_access_key', 'minio_secret_key')
+-- Kết nối trực tiếp vào bảng Iceberg có sẵn trong MinIO.
+-- Bảng này chứa đầy đủ dữ liệu Price + Sentiment theo format bạn cần.
+CREATE TABLE IF NOT EXISTS warehouse.gold_sentiment_features
+ENGINE = Iceberg('http://minio:9000/gold/sentiment_features', 'minio_access_key', 'minio_secret_key')
 SETTINGS allow_experimental_iceberg_engine = 1;
 
 
 --------------------------------------------------------------------------------
--- 2. SERVING LAYER (MergeTree - High Performance)
+-- 2. SERVING LAYER (Views & Compatibility)
 --------------------------------------------------------------------------------
--- Dùng cho các dashboard cần truy vấn nhanh, nạp tin từ CSV hoặc dự liệu đã aggregate.
--- Thay thế cho bảng 'csv_data' cũ.
-CREATE TABLE IF NOT EXISTS warehouse.gold_stock_analytics (
-    date Date, 
-    ticker String, 
-    close Float64, 
-    open Float64, 
-    high Float64, 
-    low Float64, 
-    volume Float64, 
-    sentiment_avg Float64 DEFAULT 0, 
-    sentiment_sum Float64 DEFAULT 0, 
-    polarity_ratio Float64 DEFAULT 0.5, 
-    news_volume Float64 DEFAULT 0, 
-    return_t Float64 DEFAULT 0, 
-    ma_7 Float64 DEFAULT 0, 
-    volatility_7 Float64 DEFAULT 0, 
-    target_next_return Float64 DEFAULT 0
-) 
-ENGINE = MergeTree() 
-ORDER BY (ticker, date);
+-- Tạo các "bí danh" (Views) để Dashboard cũ (tên 'csv_data' hoặc 'gold_stock_analytics') 
+-- có thể lấy dữ liệu trực tiếp từ nguồn Iceberg ở trên.
 
--- D. COMPATIBILITY VIEWS (Hỗ trợ các Dashboard cũ)
--- Nếu bạn có Dashboard cũ trỏ vào 'csv_data', các View này sẽ chuyển hướng query sang tên mới.
-CREATE VIEW IF NOT EXISTS warehouse.csv_data AS SELECT * FROM warehouse.gold_stock_analytics;
-CREATE VIEW IF NOT EXISTS warehouse.gold_analytics_summary AS SELECT * FROM warehouse.gold_ml_features;
+-- Cầu nối cho Dashboard dùng tên mới gold_stock_analytics
+CREATE VIEW IF NOT EXISTS warehouse.gold_stock_analytics AS 
+SELECT * FROM warehouse.gold_sentiment_features;
+
+-- Cầu nối cho Dashboard cũ dùng tên csv_data
+CREATE VIEW IF NOT EXISTS warehouse.csv_data AS 
+SELECT * FROM warehouse.gold_sentiment_features;
+
+-- Cầu nối cho Dashboard dùng tên gold_analytics_summary
+CREATE VIEW IF NOT EXISTS warehouse.gold_analytics_summary AS 
+SELECT * FROM warehouse.gold_sentiment_features;
 
 
 --------------------------------------------------------------------------------
@@ -57,8 +45,7 @@ CREATE TABLE IF NOT EXISTS warehouse.stock_realtime
 ENGINE = MergeTree()
 ORDER BY (symbol, timestamp);
 
--- B. Kafka Consumer (Đầu hút dữ liệu - nhận từ CDC Postgres qua Debezium)
--- Lưu ý: Engine Kafka không lưu data, nó chỉ là interface để lấy tin từ topic.
+-- B. Kafka Consumer (Đầu hút dữ liệu)
 CREATE TABLE IF NOT EXISTS warehouse.kafka_stock_stream
 (
     before Tuple(id Int32, symbol String, price Float64, volume Int64, timestamp Int64),
@@ -69,8 +56,7 @@ ENGINE = Kafka
 SETTINGS kafka_broker_list = 'kafka:9092',
          kafka_topic_list = 'sourcedb.public.finnhub_stock_prices',
          kafka_group_name = 'clickhouse_consumer_group',
-         kafka_format = 'JSONEachRow'; 
-         -- Sử dụng JSONEachRow để dễ debug, có thể đổi sang AvroConfluent nếu dùng Schema Registry
+         kafka_format = 'JSONEachRow';
 
 -- C. Materialized View (Cầu nối tự động bơm data)
 CREATE MATERIALIZED VIEW IF NOT EXISTS warehouse.mv_kafka_to_stock
@@ -81,4 +67,4 @@ AS SELECT
     after.volume AS volume,
     toDateTime(after.timestamp / 1000) AS timestamp
 FROM warehouse.kafka_stock_stream
-WHERE op IN ('c', 'r'); -- 'c' = Create, 'r' = Read (snapshot)
+WHERE op IN ('c', 'r');
