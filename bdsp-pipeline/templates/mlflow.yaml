@@ -25,7 +25,7 @@ metadata:
     {{- include "bdsp-pipeline.labels" . | nindent 4 }}
     app: mlflow-postgres
 spec:
-  replicas: 1
+  replicas: {{ .Values.mlflow.postgres.replicas }}
   selector:
     matchLabels:
       app: mlflow-postgres
