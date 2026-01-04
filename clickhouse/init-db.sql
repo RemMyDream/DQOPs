@@ -36,6 +36,11 @@ CREATE TABLE IF NOT EXISTS warehouse.gold_stock_analytics (
 ENGINE = MergeTree() 
 ORDER BY (ticker, date);
 
+-- D. COMPATIBILITY VIEWS (Hỗ trợ các Dashboard cũ)
+-- Nếu bạn có Dashboard cũ trỏ vào 'csv_data', các View này sẽ chuyển hướng query sang tên mới.
+CREATE VIEW IF NOT EXISTS warehouse.csv_data AS SELECT * FROM warehouse.gold_stock_analytics;
+CREATE VIEW IF NOT EXISTS warehouse.gold_analytics_summary AS SELECT * FROM warehouse.gold_ml_features;
+
 
 --------------------------------------------------------------------------------
 -- 3. SPEED LAYER (Real-time Ingestion từ Kafka)
