@@ -1,0 +1,206 @@
+{{- if .Values.superset.enabled }}
+{{- if .Values.superset.redis.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: superset-config
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: superset
+data:
+  ADMIN_USERNAME: {{ .Values.superset.config.adminUsername | quote }}
+  ADMIN_EMAIL: {{ .Values.superset.config.adminEmail | quote }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: superset-secret
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: superset
+type: Opaque
+stringData:
+  ADMIN_PASSWORD: {{ .Values.superset.config.adminPassword | quote }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: superset-redis
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: superset-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: superset-redis
+  template:
+    metadata:
+      labels:
+        app: superset-redis
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: redis
+        image: "{{ .Values.superset.redis.image.repository }}:{{ .Values.superset.redis.image.tag }}"
+        imagePullPolicy: {{ .Values.superset.redis.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.superset.redis.service.port }}
+          name: redis
+          protocol: TCP
+        {{- if .Values.superset.redis.resources }}
+        resources:
+          {{- toYaml .Values.superset.redis.resources | nindent 10 }}
+        {{- end }}
+        {{- if .Values.superset.redis.livenessProbe.enabled }}
+        livenessProbe:
+          exec:
+            command: ["redis-cli", "ping"]
+          initialDelaySeconds: {{ .Values.superset.redis.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.superset.redis.livenessProbe.periodSeconds }}
+        {{- end }}
+        {{- if .Values.superset.redis.readinessProbe.enabled }}
+        readinessProbe:
+          exec:
+            command: ["redis-cli", "ping"]
+          initialDelaySeconds: {{ .Values.superset.redis.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.superset.redis.readinessProbe.periodSeconds }}
+        {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: superset-redis
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: superset-redis
+spec:
+  selector:
+    app: superset-redis
+  ports:
+  - name: redis
+    port: {{ .Values.superset.redis.service.port }}
+    targetPort: redis
+    protocol: TCP
+  type: {{ .Values.superset.redis.service.type }}
+---
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: superset-python-config
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: superset
+data:
+  config.py: |
+{{ .Values.superset.config.pythonConfig | indent 4 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: superset
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: superset
+spec:
+  replicas: {{ .Values.superset.replicas }}
+  selector:
+    matchLabels:
+      app: superset
+  template:
+    metadata:
+      labels:
+        app: superset
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: superset
+        image: "{{ .Values.superset.image.repository }}:{{ .Values.superset.image.tag }}"
+        imagePullPolicy: {{ .Values.superset.image.pullPolicy }}
+        env:
+        - name: ADMIN_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: superset-config
+              key: ADMIN_USERNAME
+        - name: ADMIN_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              name: superset-config
+              key: ADMIN_EMAIL
+        - name: ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: superset-secret
+              key: ADMIN_PASSWORD
+        - name: SUPERSET_CONFIG_PATH
+          value: /app/config.py
+        - name: SUPERSET_PORT
+          value: "{{ .Values.superset.service.port }}"
+        ports:
+        - containerPort: {{ .Values.superset.service.port }}
+          name: http
+          protocol: TCP
+        volumeMounts:
+        - name: superset-config-volume
+          mountPath: /app/config.py
+          subPath: config.py
+        {{- if .Values.superset.resources }}
+        resources:
+          {{- toYaml .Values.superset.resources | nindent 10 }}
+        {{- end }}
+        {{- if .Values.superset.livenessProbe.enabled }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.superset.service.port }}
+            scheme: HTTP
+          initialDelaySeconds: {{ .Values.superset.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.superset.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.superset.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.superset.livenessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.superset.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.superset.service.port }}
+            scheme: HTTP
+          initialDelaySeconds: {{ .Values.superset.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.superset.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.superset.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.superset.readinessProbe.failureThreshold }}
+        {{- end }}
+      volumes:
+      - name: superset-config-volume
+        configMap:
+          name: superset-python-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: superset
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: superset
+spec:
+  selector:
+    app: superset
+  ports:
+  - name: http
+    port: {{ .Values.superset.service.port }}
+    targetPort: http
+    protocol: TCP
+    {{- if and (eq .Values.superset.service.type "NodePort") .Values.superset.service.nodePort }}
+    nodePort: {{ .Values.superset.service.nodePort }}
+    {{- end }}
+  type: {{ .Values.superset.service.type }}
+{{- end }}
