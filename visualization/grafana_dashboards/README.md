@@ -1,3 +1,73 @@
+### Grafana: Kết nối Real-time từ Kafka
+
+Trong file `kafka/connector_configs/demo_configs.json`, bạn đang dùng Debezium để bắt thay đổi từ bảng Postgres `finnhub_stock_prices` và bắn vào Kafka topic `sourcedb.public.finnhub_stock_prices`.
+
+Để ClickHouse tự động hút dữ liệu này (thay thế script `mock_stream.py`), bạn cần tạo một "đường ống" trong ClickHouse:
+
+#### Bước 1: Tạo bảng Kafka Consumer (Đầu hút)
+
+Bảng này chỉ làm nhiệm vụ nhận tin từ Kafka, không lưu trữ lâu dài.
+
+SQL
+
+```
+CREATE TABLE warehouse.kafka_stock_stream
+(
+    before Tuple(id Int32, price Float64, ...), -- Cấu trúc Debezium
+    after Tuple(id Int32, symbol String, price Float64, volume Int64, timestamp Int64),
+    op String -- Loại thao tác (c=create, u=update...)
+)
+ENGINE = Kafka
+SETTINGS kafka_broker_list = 'kafka:9092',
+         kafka_topic_list = 'sourcedb.public.finnhub_stock_prices',
+         kafka_group_name = 'clickhouse_consumer_group',
+         kafka_format = 'AvroConfluent', -- Vì config Debezium dùng Avro
+         kafka_schema_registry_url = 'http://schema-registry.dqops.svc.cluster.local:8081';
+```
+
+*Lưu ý: Nếu gặp lỗi Avro phức tạp, hãy chỉnh config Debezium về JSON (`value.converter`: `JsonConverter`) và đổi `kafka_format` thành `JSONEachRow`.*
+
+#### Bước 2: Tạo bảng đích (Kho chứa)
+
+Đây là bảng `stock_realtime` mà Grafana đang query. Chúng ta tái sử dụng nó nhưng sửa lại cấu trúc cho khớp dữ liệu thật.
+
+SQL
+
+```
+CREATE TABLE warehouse.stock_realtime_final
+(
+    symbol String,
+    price Float64,
+    volume Float64,
+    timestamp DateTime
+)
+ENGINE = MergeTree()
+ORDER BY (symbol, timestamp);
+```
+
+#### Bước 3: Tạo Materialized View (Bơm tự động)
+
+MV sẽ tự động chuyển dữ liệu từ Kafka Stream sang bảng đích.
+
+SQL
+
+```
+CREATE MATERIALIZED VIEW warehouse.mv_kafka_to_stock
+TO warehouse.stock_realtime_final
+AS SELECT
+    after.symbol AS symbol,
+    after.price AS price,
+    after.volume AS volume,
+    toDateTime(after.timestamp / 1000) AS timestamp -- Chuyển ms sang giây
+FROM warehouse.kafka_stock_stream
+WHERE op IN ('c', 'r'); -- Chỉ lấy thao tác Create hoặc Read (snapshot)
+```
+
+### T
+
+
+
+# REFERENCE FOR DEMO (BỎ QUA)
 ### 1\. Kiến trúc tổng quan
 
 - **Hiện tại (Simulation/Mock):** `Python Script (Loop)` -> `ClickHouse (MergeTree Table)` -> `Grafana` *(Mô phỏng dòng chảy dữ liệu bằng cách insert liên tục mỗi giây).*
