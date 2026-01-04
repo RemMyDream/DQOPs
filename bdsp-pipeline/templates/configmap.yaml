@@ -50,7 +50,8 @@ data:
   MINIO_ROOT_PASSWORD: {{ .Values.minio.config.rootPassword | quote }}
 {{- end }}
 ---
-{{- if .Values.elasticsearch.enabled }}
+{{- if .Values.openmetadata.enabled }}
+{{- if .Values.openmetadata.elasticsearch.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -60,9 +61,10 @@ metadata:
     {{- include "bdsp-pipeline.labels" . | nindent 4 }}
     app: elasticsearch
 data:
-  discovery.type: {{ .Values.elasticsearch.config.discoveryType | quote }}
-  ES_JAVA_OPTS: {{ .Values.elasticsearch.config.javaOpts | quote }}
-  xpack.security.enabled: {{ .Values.elasticsearch.config.xpackSecurityEnabled | quote }}
+  discovery.type: {{ .Values.openmetadata.elasticsearch.config.discoveryType | quote }}
+  ES_JAVA_OPTS: {{ .Values.openmetadata.elasticsearch.config.javaOpts | quote }}
+  xpack.security.enabled: {{ .Values.openmetadata.elasticsearch.config.xpackSecurityEnabled | quote }}
+{{- end }}
 {{- end }}
 ---
 {{- if .Values.openmetadata.enabled }}
@@ -95,32 +97,89 @@ data:
   SERVER_PORT: {{ .Values.openmetadata.server.service.httpPort | quote }}
   SERVER_ADMIN_PORT: {{ .Values.openmetadata.server.service.adminPort | quote }}
   LOG_LEVEL: {{ .Values.openmetadata.server.config.logLevel | quote }}
+  MIGRATION_LIMIT_PARAM: {{ .Values.openmetadata.server.config.migrationLimitParam | quote }}
+  DATABASE_MIGRATION_VALIDATE_ONLY: "false"
+  
+  # Database Configuration
   DB_DRIVER_CLASS: "org.postgresql.Driver"
   DB_SCHEME: "postgresql"
   DB_USER: {{ .Values.openmetadata.postgresMetadata.config.user | quote }}
+  DB_USER_PASSWORD: {{ .Values.openmetadata.postgresMetadata.config.password | quote }}
   DB_PASSWORD: {{ .Values.openmetadata.postgresMetadata.config.password | quote }}
   DB_HOST: "postgres-metadata"
   DB_PORT: {{ .Values.openmetadata.postgresMetadata.service.port | quote }}
   OM_DATABASE: {{ .Values.openmetadata.postgresMetadata.config.database | quote }}
+  DB_PARAMS: "allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
+  
+  # Airflow Database Configuration
+  AIRFLOW_DB: {{ .Values.openmetadata.postgresMetadata.config.airflowDatabase | quote }}
+  AIRFLOW_DB_USER: {{ .Values.openmetadata.postgresMetadata.config.airflowUser | quote }}
+  AIRFLOW_DB_PASSWORD: {{ .Values.openmetadata.postgresMetadata.config.airflowPassword | quote }}
+  
+  # Elasticsearch Configuration
   SEARCH_TYPE: "elasticsearch"
   ELASTICSEARCH_HOST: "elasticsearch"
-  ELASTICSEARCH_PORT: {{ .Values.elasticsearch.service.httpPort | quote }}
+  ELASTICSEARCH_PORT: {{ .Values.openmetadata.elasticsearch.service.httpPort | quote }}
   ELASTICSEARCH_SCHEME: "http"
+  ELASTICSEARCH_USER: ""
+  ELASTICSEARCH_PASSWORD: ""
+  ELASTICSEARCH_CONNECTION_TIMEOUT_SECS: "5"
+  ELASTICSEARCH_SOCKET_TIMEOUT_SECS: "60"
+  ELASTICSEARCH_BATCH_SIZE: "100"
+  ELASTICSEARCH_INDEX_MAPPING_LANG: "EN"
+  
+  # Authentication & Authorization
   AUTHENTICATION_PROVIDER: {{ .Values.openmetadata.server.config.authenticationProvider | quote }}
+  AUTHENTICATION_PUBLIC_KEYS: "[http://localhost:8585/api/v1/system/config/jwks]"
+  AUTHENTICATION_AUTHORITY: "http://localhost:8585"
+  AUTHENTICATION_CALLBACK_URL: "http://localhost:8585/callback"
+  AUTHENTICATION_JWT_PRINCIPAL_CLAIMS: "[email,preferred_username,sub]"
+  AUTHENTICATION_ENABLE_SELF_SIGNUP: "true"
   AUTHORIZER_CLASS_NAME: {{ .Values.openmetadata.server.config.authorizerClassName | quote }}
   AUTHORIZER_REQUEST_FILTER: {{ .Values.openmetadata.server.config.authorizerRequestFilter | quote }}
   AUTHORIZER_ADMIN_PRINCIPALS: {{ .Values.openmetadata.server.config.authorizerAdminPrincipals | quote }}
   AUTHORIZER_PRINCIPAL_DOMAIN: {{ .Values.openmetadata.server.config.authorizerPrincipalDomain | quote }}
-  MIGRATION_LIMIT_PARAM: {{ .Values.openmetadata.server.config.migrationLimitParam | quote }}
-  DATABASE_MIGRATION_VALIDATE_ONLY: "false"
+  AUTHORIZER_INGESTION_PRINCIPALS: "[ingestion-bot]"
+  
+  # JWT Configuration
+  RSA_PUBLIC_KEY_FILE_PATH: "./conf/public_key.der"
+  RSA_PRIVATE_KEY_FILE_PATH: "./conf/private_key.der"
+  JWT_ISSUER: "open-metadata.org"
+  JWT_KEY_ID: "Gb389a-9f76-gdjs-a92j-0242bk94356"
+  
+  # Pipeline Service Configuration
   PIPELINE_SERVICE_CLIENT_ENABLED: {{ .Values.openmetadata.server.config.pipelineServiceClientEnabled | quote }}
   PIPELINE_SERVICE_CLIENT_ENDPOINT: "http://ingestion:{{ .Values.openmetadata.ingestion.service.port }}"
+  PIPELINE_SERVICE_CLIENT_HEALTH_CHECK_INTERVAL: "300"
+  PIPELINE_SERVICE_CLIENT_VERIFY_SSL: "no-ssl"
+  PIPELINE_SERVICE_CLIENT_CLASS_NAME: "org.openmetadata.service.clients.pipeline.airflow.AirflowRESTClient"
+  PIPELINE_SERVICE_CLIENT_SECRETS_MANAGER_LOADER: "noop"
   SERVER_HOST_API_URL: "http://openmetadata-server:{{ .Values.openmetadata.server.service.httpPort }}/api"
+  
+  # Airflow Configuration
   AIRFLOW_USERNAME: {{ .Values.openmetadata.server.config.airflowUsername | quote }}
   AIRFLOW_PASSWORD: {{ .Values.openmetadata.server.config.airflowPassword | quote }}
+  AIRFLOW_TIMEOUT: "10"
+  
+  # Security & Other Configuration
+  FERNET_KEY: "jJ/9sz0g0OHxsfxOoSfdFdmk3ysNmPRnH3TUAbz3IHA="
   SECRET_MANAGER: {{ .Values.openmetadata.server.config.secretManager | quote }}
   EVENT_MONITOR: {{ .Values.openmetadata.server.config.eventMonitor | quote }}
+  EVENT_MONITOR_BATCH_SIZE: "10"
+  AUTHORIZER_ENABLE_SMTP: "false"
+  OM_EMAIL_ENTITY: "OpenMetadata"
+  OM_SUPPORT_URL: "https://slack.open-metadata.org"
   OPENMETADATA_HEAP_OPTS: {{ .Values.openmetadata.server.config.heapOpts | quote }}
+  MASK_PASSWORDS_API: "false"
+  WEB_CONF_URI_PATH: "/api"
+  
+  # Custom Entrypoint Configuration
+  MAX_RETRIES: "30"
+  RETRY_INTERVAL: "5"
+  SKIP_DB_INIT: "false"
+  SKIP_AIRFLOW_INIT: "false"
+  SKIP_MIGRATION: "false"
+  SKIP_ES_WAIT: "false"
 {{- end }}
 ---
 {{- if .Values.openmetadata.ingestion.enabled }}
@@ -142,6 +201,7 @@ data:
   DB_USER: {{ .Values.openmetadata.ingestion.config.airflowUser | quote }}
   DB_SCHEME: {{ .Values.openmetadata.ingestion.config.dbScheme | quote }}
   DB_PASSWORD: {{ .Values.openmetadata.ingestion.config.airflowPassword | quote }}
+  DB_PROPERTIES: ""
   OPENMETADATA_SERVER_URL: "http://openmetadata-server:{{ .Values.openmetadata.server.service.httpPort }}/api"
 {{- end }}
 ---
@@ -184,4 +244,135 @@ data:
     
     echo "Airflow user setup completed successfully!"
 {{- end }}
+{{- end }}
+---
+{{- if .Values.airflow.enabled }}
+{{- if .Values.airflow.postgres.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: airflow-postgres-config
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: airflow-postgres
+data:
+  POSTGRES_USER: {{ .Values.airflow.postgres.config.user | quote }}
+  POSTGRES_PASSWORD: {{ .Values.airflow.postgres.config.password | quote }}
+  POSTGRES_DB: {{ .Values.airflow.postgres.config.database | quote }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: airflow-config
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: airflow
+data:
+  AIRFLOW__CORE__EXECUTOR: {{ .Values.airflow.webserver.config.executor | quote }}
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://{{ .Values.airflow.postgres.config.user }}:{{ .Values.airflow.postgres.config.password }}@airflow-postgres:{{ .Values.airflow.postgres.service.port }}/{{ .Values.airflow.postgres.config.database }}"
+  AIRFLOW__WEBSERVER__SECRET_KEY: {{ .Values.airflow.webserver.config.secretKey | quote }}
+  AIRFLOW_CONN_SPARK_DEFAULT: {{ .Values.airflow.webserver.config.sparkConnection | quote }}
+  AIRFLOW__API__AUTH_BACKEND: {{ .Values.airflow.webserver.config.authBackend | quote }}
+  AIRFLOW_HOME: "/opt/airflow"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: airflow-init-script
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: airflow
+data:
+  entrypoint.sh: |
+    #!/bin/bash
+    set -e
+    
+    export PATH="/home/airflow/.local/bin:$PATH"
+    
+    # Initialize database
+    airflow db init
+    
+    # Create admin user if it doesn't exist
+    airflow users create \
+        --username {{ .Values.airflow.init.adminUser.username }} \
+        --password {{ .Values.airflow.init.adminUser.password }} \
+        --firstname {{ .Values.airflow.init.adminUser.firstname }} \
+        --lastname {{ .Values.airflow.init.adminUser.lastname }} \
+        --role Admin \
+        --email {{ .Values.airflow.init.adminUser.email }} 2>/dev/null || true
+    
+    exec "$@"
+{{- end }}
+---
+{{- if .Values.backend.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: backend
+data:
+  # Backend PostgreSQL Config
+  POSTGRES_USER: {{ .Values.backend.postgres.config.user | quote }}
+  POSTGRES_PASSWORD: {{ .Values.backend.postgres.config.password | quote }}
+  POSTGRES_DB: {{ .Values.backend.postgres.config.database | quote }}
+  
+  # Backend config.yaml file
+  config.yaml: |
+    # Airflow Configuration
+    airflow:
+      url: {{ .Values.backend.config.airflow.url | quote }}
+      username: {{ .Values.backend.config.airflow.username | quote }}
+      password: {{ .Values.backend.config.airflow.password | quote }}
+    
+    # Internal Database Configuration (for backend's own data)
+    internal_database:
+      host: {{ .Values.backend.config.internalDatabase.host | quote }}
+      port: {{ .Values.backend.config.internalDatabase.port }}
+      database: {{ .Values.backend.config.internalDatabase.database | quote }}
+      username: {{ .Values.backend.config.internalDatabase.username | quote }}
+      password: {{ .Values.backend.config.internalDatabase.password | quote }}
+  
+  # Backend helpers.py file
+  helpers.py: |
+    import logging
+    import yaml
+    from pathlib import Path
+    
+    def create_logger(name: str, level: int = logging.INFO) -> logging.Logger:
+        """Create and configure a logger"""
+        logger = logging.getLogger(name)
+        logger.setLevel(level)
+        
+        # Only add handler if logger doesn't have one yet
+        if not logger.handlers:
+            handler = logging.StreamHandler()
+            handler.setLevel(level)
+            
+            formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                datefmt='%Y-%m-%d %H:%M:%S'
+            )
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
+        
+        return logger
+    
+    def load_cfg(file_path: str) -> dict:
+        """Load configuration from YAML file"""
+        config_path = Path(file_path)
+        
+        if not config_path.exists():
+            raise FileNotFoundError(f"Config file not found: {file_path}")
+        
+        with open(config_path, 'r') as f:
+            config = yaml.safe_load(f)
+        
+        return config
 {{- end }}

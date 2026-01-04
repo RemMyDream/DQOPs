@@ -21,8 +21,10 @@ Installed Components:
   - Master UI: spark-master.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.spark.master.service.webuiPort }}
   - Master: spark://spark-master.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.spark.master.service.sparkPort }}
 {{- end }}
-{{- if .Values.elasticsearch.enabled }}
-- Elasticsearch: elasticsearch.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.elasticsearch.service.httpPort }}
+{{- if .Values.openmetadata.enabled }}
+{{- if .Values.openmetadata.elasticsearch.enabled }}
+- Elasticsearch (OpenMetadata): elasticsearch.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.openmetadata.elasticsearch.service.httpPort }}
+{{- end }}
 {{- end }}
 {{- if .Values.kafka.enabled }}
 - Kafka:
@@ -49,9 +51,9 @@ To access services locally:
 {{- if .Values.spark.enabled }}
   kubectl port-forward -n {{ include "bdsp-pipeline.namespace" . }} svc/spark-master {{ .Values.spark.master.service.webuiPort }}:{{ .Values.spark.master.service.webuiPort }}
 {{- end }}
-{{- if .Values.elasticsearch.enabled }}
-  kubectl port-forward -n {{ include "bdsp-pipeline.namespace" . }} svc/elasticsearch {{ .Values.elasticsearch.service.httpPort }}:{{ .Values.elasticsearch.service.httpPort }}
-{{- end }}
 {{- if .Values.openmetadata.enabled }}
+{{- if .Values.openmetadata.elasticsearch.enabled }}
+  kubectl port-forward -n {{ include "bdsp-pipeline.namespace" . }} svc/elasticsearch {{ .Values.openmetadata.elasticsearch.service.httpPort }}:{{ .Values.openmetadata.elasticsearch.service.httpPort }}
+{{- end }}
   kubectl port-forward -n {{ include "bdsp-pipeline.namespace" . }} svc/openmetadata-server {{ .Values.openmetadata.server.service.httpPort }}:{{ .Values.openmetadata.server.service.httpPort }}
 {{- end }}

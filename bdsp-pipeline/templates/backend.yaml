@@ -1,0 +1,232 @@
+{{- if .Values.backend.enabled }}
+# Backend Internal PostgreSQL Database
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backend-postgres-pvc
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: backend-postgres
+spec:
+  accessModes:
+    - {{ .Values.backend.postgres.persistence.accessMode }}
+  {{- if .Values.backend.postgres.persistence.storageClass }}
+  storageClassName: {{ .Values.backend.postgres.persistence.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.backend.postgres.persistence.size }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-postgres
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: backend-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-postgres
+  template:
+    metadata:
+      labels:
+        app: backend-postgres
+    spec:
+      containers:
+      - name: postgres
+        image: "{{ .Values.backend.postgres.image.repository }}:{{ .Values.backend.postgres.image.tag }}"
+        imagePullPolicy: {{ .Values.backend.postgres.image.pullPolicy }}
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: POSTGRES_DB
+        ports:
+        - name: postgres
+          containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+          subPath: postgres
+        {{- if .Values.backend.postgres.livenessProbe.enabled }}
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - {{ .Values.backend.postgres.config.user }}
+          initialDelaySeconds: {{ .Values.backend.postgres.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.backend.postgres.livenessProbe.periodSeconds }}
+        {{- end }}
+        {{- if .Values.backend.postgres.readinessProbe.enabled }}
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - {{ .Values.backend.postgres.config.user }}
+          initialDelaySeconds: {{ .Values.backend.postgres.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.backend.postgres.readinessProbe.periodSeconds }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.backend.postgres.resources | nindent 10 }}
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: backend-postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-postgres
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: backend-postgres
+spec:
+  type: {{ .Values.backend.postgres.service.type }}
+  selector:
+    app: backend-postgres
+  ports:
+  - name: postgres
+    port: {{ .Values.backend.postgres.service.port }}
+    targetPort: 5432
+---
+# Backend FastAPI Application
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: backend
+spec:
+  replicas: {{ .Values.backend.api.replicas }}
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      initContainers:
+      # Wait for backend postgres to be ready
+      - name: wait-for-postgres
+        image: "{{ .Values.backend.postgres.image.repository }}:{{ .Values.backend.postgres.image.tag }}"
+        imagePullPolicy: {{ .Values.backend.postgres.image.pullPolicy }}
+        command:
+        - sh
+        - -c
+        - |
+          until pg_isready -h backend-postgres -p {{ .Values.backend.postgres.service.port }} -U {{ .Values.backend.postgres.config.user }}; do
+            echo "Waiting for backend postgres..."
+            sleep 2
+          done
+          echo "Backend postgres is ready!"
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: POSTGRES_PASSWORD
+      {{- if .Values.backend.api.waitForAirflow }}
+      # Wait for Airflow to be ready (optional)
+      - name: wait-for-airflow
+        image: curlimages/curl:latest
+        imagePullPolicy: IfNotPresent
+        command:
+        - sh
+        - -c
+        - |
+          until curl -s -u {{ .Values.backend.config.airflow.username }}:{{ .Values.backend.config.airflow.password }} {{ .Values.backend.config.airflow.url }}/api/v1/health | grep -q 'healthy'; do
+            echo "Waiting for Airflow..."
+            sleep 5
+          done
+          echo "Airflow is ready!"
+      {{- end }}
+      containers:
+      - name: fastapi
+        image: "{{ .Values.backend.api.image.repository }}:{{ .Values.backend.api.image.tag }}"
+        imagePullPolicy: {{ .Values.backend.api.image.pullPolicy }}
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        ports:
+        - name: http
+          containerPort: 8000
+        volumeMounts:
+        # Mount utils folder with config
+        - name: backend-utils
+          mountPath: /app/utils
+          readOnly: true
+        {{- if .Values.backend.api.livenessProbe.enabled }}
+        livenessProbe:
+          httpGet:
+            path: /docs
+            port: 8000
+          initialDelaySeconds: {{ .Values.backend.api.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.backend.api.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.backend.api.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.backend.api.livenessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.backend.api.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: /docs
+            port: 8000
+          initialDelaySeconds: {{ .Values.backend.api.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.backend.api.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.backend.api.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.backend.api.readinessProbe.failureThreshold }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.backend.api.resources | nindent 10 }}
+      volumes:
+      # ConfigMap for utils/config.yaml
+      - name: backend-utils
+        configMap:
+          name: backend-config
+          items:
+          - key: config.yaml
+            path: config.yaml
+          - key: helpers.py
+            path: helpers.py
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: backend
+spec:
+  type: {{ .Values.backend.api.service.type }}
+  selector:
+    app: backend
+  ports:
+  - name: http
+    port: {{ .Values.backend.api.service.port }}
+    targetPort: 8000
+    {{- if and (eq .Values.backend.api.service.type "NodePort") .Values.backend.api.service.nodePort }}
+    nodePort: {{ .Values.backend.api.service.nodePort }}
+    {{- end }}
+{{- end }}

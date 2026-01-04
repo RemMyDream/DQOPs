@@ -107,37 +107,4 @@ spec:
     port: {{ .Values.minio.service.consolePort }}
     targetPort: {{ .Values.minio.service.consolePort }}
   type: {{ .Values.minio.service.type }}
----
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: minio-init
-  namespace: {{ include "bdsp-pipeline.namespace" . }}
-  labels:
-    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
-    app: minio-init
-spec:
-  template:
-    spec:
-      containers:
-      - name: minio-init
-        image: "{{ .Values.minio.mcImage.repository }}:{{ .Values.minio.mcImage.tag }}"
-        command:
-        - /bin/sh
-        - -c
-        - |
-          set -e
-          echo "Waiting for MinIO to be ready..."
-          until mc alias set myminio http://minio:{{ .Values.minio.service.apiPort }} {{ .Values.minio.config.rootUser }} {{ .Values.minio.config.rootPassword }}; do
-            echo "MinIO not ready yet, waiting 5 seconds..."
-            sleep 5
-          done
-          echo "MinIO is ready, creating buckets..."
-          {{- range .Values.minio.buckets }}
-          mc mb myminio/{{ . }} --ignore-existing || true
-          echo "Bucket created successfully \`myminio/{{ . }}\`."
-          {{- end }}
-          echo "All buckets created successfully"
-      restartPolicy: OnFailure
-  backoffLimit: 3
 {{- end }}

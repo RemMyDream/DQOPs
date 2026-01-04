@@ -10,6 +10,5 @@ keywords:
   - postgres
   - minio
   - elasticsearch
-  - mlflow
 maintainers:
   - name: BDSP Team
