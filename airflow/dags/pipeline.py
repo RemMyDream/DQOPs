@@ -24,9 +24,9 @@ with DAG(
     tags=['full'],
     params={
         'stooq_tickers': Param(default='NVDA,MSFT', type='string'),
-        'stooq_start': Param(default='2020-01-02', type='string'),
+        'stooq_start': Param(default='2025-12-10', type='string'),
         'stooq_end': Param(default='2025-12-22', type='string'),
-        'gdelt_start': Param(default='2019-12-31', type='string'),
+        'gdelt_start': Param(default='2025-12-10', type='string'),
         'gdelt_end': Param(default='2025-12-23', type='string')
     },
     render_template_as_native_obj=True,
@@ -34,7 +34,7 @@ with DAG(
 
     full_pipeline = SparkSubmitOperator(
         task_id='run_full_pipeline',
-        application=f'{SPARK_APPS_PATH}/pipeline.py',
+        application=f'{SPARK_APPS_PATH}/pipeline_v2.py',
         conn_id='spark_default',
         application_args=[
             '--pipeline', 'full',
@@ -59,9 +59,9 @@ with DAG(
     tags=['bronze'],
     params={
         'stooq_tickers': Param(default='NVDA,MSFT', type='string'),
-        'stooq_start': Param(default='2020-01-02', type='string'),
+        'stooq_start': Param(default='2025-12-10', type='string'),
         'stooq_end': Param(default='2025-12-22', type='string'),
-        'gdelt_start': Param(default='2019-12-31', type='string'),
+        'gdelt_start': Param(default='2025-12-10', type='string'),
         'gdelt_end': Param(default='2025-12-23', type='string'),
         'skip_stooq': Param(default='false', type='string', enum=['true', 'false']),
         'skip_gdelt': Param(default='false', type='string', enum=['true', 'false'])
@@ -105,7 +105,7 @@ with DAG(
     
     silver_processing = SparkSubmitOperator(
         task_id='process_silver',
-        application=f'{SPARK_APPS_PATH}/pipeline.py',
+        application=f'{SPARK_APPS_PATH}/pipeline_v2.py',
         conn_id='spark_default',
         application_args=[
             '--pipeline', 'silver',

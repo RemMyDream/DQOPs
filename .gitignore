@@ -24,3 +24,4 @@ clickhouse/cluster_2S_2R/fs/volumes/clickhouse-keeper-01/var
 clickhouse/cluster_2S_2R/fs/volumes/clickhouse-keeper-02/var
 clickhouse/cluster_2S_2R/fs/volumes/clickhouse-keeper-03/var
 spark/data/*
+build-and-push.sh
