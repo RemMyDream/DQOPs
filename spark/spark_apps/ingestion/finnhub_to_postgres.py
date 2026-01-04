@@ -1,5 +1,7 @@
 import sys
 import os
+import time
+import argparse
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
@@ -196,21 +198,42 @@ class AppConfig:
 
 def create_ingestion_service(config_path: str = "utils/config.yaml") -> StockIngestionService:
     app_config = AppConfig(config_path)
-
     db_client = DatabaseClient(app_config.database_config)
     provider = FinnhubProvider(app_config.finnhub_api_key)
-
     return StockIngestionService(provider, db_client)
 
 
 def main():
+    parser = argparse.ArgumentParser(description='Finnhub Stock Data Ingestion')
+    parser.add_argument('--interval', type=int, default=60)
+    parser.add_argument('--symbols', nargs='+', default=['MSFT', 'NVDA'])
+    parser.add_argument('--config', type=str, default='utils/config.yaml')
+    args = parser.parse_args()
+    
     logger = create_logger(name="Finnhub2Postgres")
-    logger.info("Starting stock data ingestion pipeline")
-
+    logger.info(f"Starting streaming mode (interval: {args.interval}s, symbols: {args.symbols})")
+    logger.info("Press Ctrl+C to stop")
+    
     try:
-        service = create_ingestion_service()
-        count = service.ingest(symbols=['MSFT', 'NVDA'])
-        logger.info(f"Pipeline completed: {count} records ingested")
+        service = create_ingestion_service(args.config)
+        iteration = 0
+        
+        while True:
+            iteration += 1
+            logger.info(f"=== Iteration {iteration} at {datetime.now()} ===")
+            
+            try:
+                count = service.ingest(symbols=args.symbols)
+                logger.info(f"Iteration {iteration} completed: {count} records")
+            except Exception as e:
+                logger.error(f"Error in iteration {iteration}: {e}")
+            
+            logger.info(f"Sleeping for {args.interval} seconds...")
+            time.sleep(args.interval)
+                    
+    except KeyboardInterrupt:
+        logger.info("\nStreaming stopped by user")
+        logger.info(f"Total iterations completed: {iteration}")
     except Exception as e:
         logger.error(f"Pipeline failed: {e}")
         sys.exit(1)
