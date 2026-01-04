@@ -50,35 +50,68 @@ def load_data_from_minio(
     stock: str,
     bucket: str = "gold",
     prefix: str = "ml_features/data",
+    minio_endpoint: str = None,
 ) -> pd.DataFrame:
-    """Load Parquet data from MinIO."""
+    """
+    Load Parquet data from MinIO.
+    This is for loading TRAINING DATA, not MLflow artifacts.
+    MLflow artifact storage is handled by the MLflow server in K8s.
+    """
+    
+    # Check if running with MinIO credentials
+    if not os.environ.get("AWS_ACCESS_KEY_ID"):
+        logger.warning("AWS credentials not found. Returning mock data for demonstration.")
+        dates = pd.date_range(start="2020-01-01", periods=1000)
+        df = pd.DataFrame(np.random.randn(1000, len(FEATURE_COLUMNS)), columns=FEATURE_COLUMNS)
+        df[TARGET_COLUMN] = np.random.randn(1000)
+        df['ticker'] = stock
+        df['date'] = dates
+        return df
+    
+    # Get MinIO endpoint - different depending on where we run
+    if minio_endpoint is None:
+        # Default to localhost for local runs with port-forward
+        # Will be overridden to 'minio:9000' when running inside K8s
+        minio_endpoint = os.environ.get("MINIO_ENDPOINT_URL", "http://localhost:9000")
+    
+    # Create S3 filesystem for data loading
     fs = s3fs.S3FileSystem(
         key=os.environ.get("AWS_ACCESS_KEY_ID"),
         secret=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-        client_kwargs={
-            "endpoint_url": os.environ.get("MLFLOW_S3_ENDPOINT_URL")
-        }
+        client_kwargs={"endpoint_url": minio_endpoint}
     )
 
+    # Construct path - s3fs expects bucket/path format
     full_path = f"{bucket}/{prefix}"
-    logger.info(f"Loading data from {full_path} for {stock}")
+    logger.info(f"Loading training data from s3://{full_path} for {stock}")
     
     try:
-        # Check if running locally without MinIO for testing
-        if not os.environ.get("AWS_ACCESS_KEY_ID"):
-            logger.warning("AWS credentials not found. Returning mock data for demonstration.")
-            dates = pd.date_range(start="2020-01-01", periods=1000)
-            df = pd.DataFrame(np.random.randn(1000, len(FEATURE_COLUMNS)), columns=FEATURE_COLUMNS)
-            df[TARGET_COLUMN] = np.random.randn(1000)
-            df['ticker'] = stock
-            df['date'] = dates
-        else:
-            df = pd.read_parquet(full_path, filesystem=fs)
+        # List files in the directory
+        files = fs.ls(full_path)
+        if not files:
+            raise FileNotFoundError(f"No files found in {full_path}")
+        
+        # Find parquet files
+        parquet_files = [f for f in files if f.endswith('.parquet')]
+        if not parquet_files:
+            raise FileNotFoundError(f"No parquet files found in {full_path}")
+        
+        logger.info(f"Found {len(parquet_files)} parquet file(s)")
+        
+        # Read the first parquet file (or combine multiple if needed)
+        df = pd.read_parquet(f"s3://{parquet_files[0]}", filesystem=fs)
+        
     except Exception as e:
-        logger.error(f"Failed to load data: {e}")
+        logger.error(f"Failed to load data from MinIO: {e}")
+        logger.error(f"Attempted path: s3://{full_path}")
+        logger.error(f"Endpoint: {minio_endpoint}")
         raise
 
+    # Filter for the specific stock
     df = df[df['ticker'] == stock].copy()
+    
+    if len(df) == 0:
+        raise ValueError(f"No data found for ticker {stock}")
     
     if 'date' in df.columns:
         df['date'] = pd.to_datetime(df['date'])
@@ -331,19 +364,18 @@ class GRUHyperModel(kt.HyperModel):
 
 class MLflowCallback(Callback):
     """
-    Standard MLflow callback.
-    Because we will use Nested Runs, we don't need to prefix the metrics 
-    with 'fold_x'. We can just log 'loss', 'val_loss', etc. to the child run.
+    MLflow callback for logging metrics during training.
+    Logs to the currently active MLflow run (child run in nested structure).
     """
     def on_epoch_end(self, epoch, logs=None):
         if logs:
-            # Log metrics to the currently active run (which will be the Child Run)
             for key, value in logs.items():
                 mlflow.log_metric(key, value, step=epoch)
 
 class StockModel:
     """
     Stock prediction model with MLflow Nested Runs integration.
+    MLflow artifact storage is handled by the MLflow server (configured in K8s).
     """
     
     def __init__(
@@ -359,7 +391,7 @@ class StockModel:
         self.run_name = run_name or f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         
         self.best_hps = None
-        self.latest_model = None # Changed from best_model to latest_model
+        self.latest_model = None
         
         # Get input shape from first fold
         fold = folds[0]
@@ -389,7 +421,6 @@ class StockModel:
         Tune hyperparameters using Bayesian Optimization.
         Uses the LAST fold (most recent data) to ensure relevance.
         """
-        # USE LATEST FOLD for tuning
         fold = self.folds[-1] 
         logger.info(f"Tuning hyperparameters on fold {fold['fold']} (most recent data)")
         
@@ -476,8 +507,6 @@ class StockModel:
         metrics['pearson'] = float(pearson)
         
         # Sharpe Ratio (annualized)
-        # Strategy: Buy if pred > current, Sell if pred < current
-        # Return is roughly diff * direction match
         strategy_returns = np.where(
             pred_dir == y_dir,
             np.abs(np.diff(actuals)),
@@ -503,6 +532,9 @@ class StockModel:
     ) -> Dict:
         """
         Full training pipeline with MLflow Nested Runs.
+        
+        Note: MLflow artifact storage (models, scalers) is automatically handled
+        by the MLflow server which is configured to use MinIO in K8s.
         """
         mlflow.set_experiment(self.experiment_name)
         
@@ -510,7 +542,7 @@ class StockModel:
         with mlflow.start_run(run_name=self.run_name) as parent_run:
             logger.info(f"Parent Run ID: {parent_run.info.run_id}")
             
-            # 1. Log Global Parameters (Data + Training Config)
+            # 1. Log Global Parameters
             data_info = self.stock_data.get_info()
             mlflow.log_params({
                 **data_info,
@@ -524,11 +556,11 @@ class StockModel:
             logger.info("Phase 1: Hyperparameter Tuning")
             best_params = self.tune_hyperparameters(
                 max_trials=max_trials, 
-                epochs=50, # Reduced epochs for tuning speed
+                epochs=50,
                 patience=10
             )
             
-            # Log best HPs to Parent Run
+            # Log best hyperparameters to Parent Run
             mlflow.log_params({f"hp_{k}": v for k, v in best_params.items()})
 
             # 3. Walk-Forward Validation (Nested Runs)
@@ -545,7 +577,7 @@ class StockModel:
                 with mlflow.start_run(run_name=f"Fold_{fold_num}", nested=True) as child_run:
                     logger.info(f"  Starting Child Run for Fold {fold_num}")
                     
-                    # Tag the child run so we can query it easily later
+                    # Tag the child run
                     mlflow.set_tag("fold_index", fold_num)
                     mlflow.set_tag("parent_run_id", parent_run.info.run_id)
                     
@@ -553,7 +585,6 @@ class StockModel:
                     X_train, y_train = self.stock_data.create_sequences_from_raw(
                         fold['train'][0], fold['train'][1], fit_scaler=True
                     )
-                    # For testing, we do NOT refit the scaler
                     X_test, y_test = self.stock_data.create_sequences_from_raw(
                         fold['test'][0], fold['test'][1], fit_scaler=False
                     )
@@ -573,7 +604,7 @@ class StockModel:
                         batch_size=batch_size,
                         callbacks=[
                             EarlyStopping(monitor='val_loss', patience=patience, restore_best_weights=True),
-                            MLflowCallback() # Logs 'loss', 'val_loss' to Child Run
+                            MLflowCallback()
                         ],
                         verbose=0
                     )
@@ -586,7 +617,7 @@ class StockModel:
                     # Calculate Fold Metrics
                     mse = mean_squared_error(y_test_inv, predictions_inv)
                     
-                    # Log Specific Fold Metrics to Child Run
+                    # Log metrics to Child Run
                     mlflow.log_metric("mse", mse)
                     mlflow.log_metric("epochs_trained", len(history.history['loss']))
                     
@@ -615,7 +646,8 @@ class StockModel:
                     if v is not None:
                         mlflow.log_metric(f"avg_{k}", v)
 
-            # 5. Log Artifacts & Model (Parent Run)
+            # 5. Log Artifacts & Model to Parent Run
+            # MLflow server will automatically store these in MinIO
             
             # Save Scalers locally then log as artifacts
             os.makedirs('tmp_artifacts', exist_ok=True)
@@ -624,10 +656,9 @@ class StockModel:
             mlflow.log_artifact('tmp_artifacts/x_scaler.pkl')
             mlflow.log_artifact('tmp_artifacts/y_scaler.pkl')
 
-            # Log Model (Latest/Production Model)
+            # Log Model (MLflow server stores this in MinIO automatically)
             if self.latest_model:
                 sample_input = self.folds[0]['train'][0][:self.look_back]
-                # Re-create sequence just for signature inference
                 X_sample, _ = self.stock_data.create_sequences_from_raw(
                     sample_input.reshape(1, -1).repeat(self.look_back + 1, axis=0),
                     np.zeros((self.look_back + 1, 1)),
@@ -645,7 +676,7 @@ class StockModel:
                     signature=signature,
                     registered_model_name=model_name if register_model else None
                 )
-                logger.info("Model logged to MLflow")
+                logger.info("Model logged to MLflow (artifacts stored in MinIO by MLflow server)")
 
             return {
                 'run_id': parent_run.info.run_id,
@@ -658,8 +689,10 @@ def main():
     
     # Data arguments
     parser.add_argument('--stock', type=str, default='NVDA', help='Stock ticker')
-    parser.add_argument('--bucket', type=str, default='gold', help='MinIO bucket')
-    parser.add_argument('--prefix', type=str, default='ml_features/data', help='Path prefix')
+    parser.add_argument('--bucket', type=str, default='gold', help='MinIO bucket for training data')
+    parser.add_argument('--prefix', type=str, default='ml_features/data', help='Path prefix in bucket')
+    parser.add_argument('--minio-endpoint', type=str, default=None, 
+                       help='MinIO endpoint (default: localhost:9000 for local, minio:9000 for K8s)')
     
     # Model arguments
     parser.add_argument('--look-back', type=int, default=45, help='Look back window')
@@ -676,7 +709,8 @@ def main():
     parser.add_argument('--patience', type=int, default=10)
     
     # MLflow arguments
-    parser.add_argument('--mlflow-tracking-uri', type=str, default='http://localhost:5000')
+    parser.add_argument('--mlflow-tracking-uri', type=str, default='http://localhost:5000',
+                       help='MLflow tracking server URI')
     parser.add_argument('--mlflow-experiment', type=str, default='stock-prediction')
     parser.add_argument('--register-model', action='store_true', help='Register model to MLflow')
     parser.add_argument('--model-name', type=str, default='stock-gru-model')
@@ -686,13 +720,15 @@ def main():
     # Set MLflow tracking URI
     mlflow.set_tracking_uri(args.mlflow_tracking_uri)
     logger.info(f"MLflow Tracking URI: {args.mlflow_tracking_uri}")
+    logger.info("Note: MLflow artifact storage is handled by the MLflow server")
     
     try:
-        # Load data
+        # Load training data from MinIO
         data = load_data_from_minio(
             stock=args.stock,
             bucket=args.bucket,
-            prefix=args.prefix
+            prefix=args.prefix,
+            minio_endpoint=args.minio_endpoint
         )
         
         # Create StockData
