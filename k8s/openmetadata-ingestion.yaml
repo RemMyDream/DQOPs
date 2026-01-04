@@ -9,6 +9,7 @@ spec:
   resources:
     requests:
       storage: 5Gi
+      storage: 3Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -21,6 +22,7 @@ spec:
   resources:
     requests:
       storage: 5Gi
+      storage: 3Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -56,8 +58,9 @@ spec:
         - configMapRef:
             name: ingestion-config
         # CHANGED: 'entrypoint' becomes 'command', 'command' becomes 'args'
-        command: ["/bin/bash"]
         args:
+        entrypoint: ["/bin/bash"]
+        command:
         - "/opt/airflow/ingestion_dependency.sh"
         ports:
         - containerPort: 8080
@@ -98,4 +101,3 @@ spec:
   - port: 8080
     targetPort: 8080
   type: ClusterIP
-

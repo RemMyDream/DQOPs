@@ -18,4 +18,15 @@ resources:
   - openmetadata-ingestion.yaml
   - airflow.yaml
   - backend.yaml
+  
+configMapGenerator:
+  - name: superset-python-config
+    files:
+      - config.py
+>>>>>>>>> Temporary merge branch 2
 
+configMapGenerator:
+  - name: superset-python-config
+    files:
+>>>>>>> 3e1d4cc
+      - config.py

@@ -1,6 +1,6 @@
-confluent-kafka==2.3.0
-connexion[swagger-ui]==2.14.2  
-pyspark==3.5.1
-apache-airflow-providers-apache-kafka
+pandas_datareader
+
+confluent-kafka==2.3.0 
+connexion[swagger-ui]==2.14.2 
+apache-airflow-providers-apache-kafka 
 apache-airflow-providers-apache-spark
-minio

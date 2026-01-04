@@ -14,3 +14,13 @@ useful_command.txt
 data/
 useful_command.txt
 .env
+utils/bigquery_api.json
+utils/config.yaml
+clickhouse/cluster_2S_2R/fs/volumes/clickhouse-01/var
+clickhouse/cluster_2S_2R/fs/volumes/clickhouse-02/var
+clickhouse/cluster_2S_2R/fs/volumes/clickhouse-03/var
+clickhouse/cluster_2S_2R/fs/volumes/clickhouse-04/var
+clickhouse/cluster_2S_2R/fs/volumes/clickhouse-keeper-01/var
+clickhouse/cluster_2S_2R/fs/volumes/clickhouse-keeper-02/var
+clickhouse/cluster_2S_2R/fs/volumes/clickhouse-keeper-03/var
+spark/data/*

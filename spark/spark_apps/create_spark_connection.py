@@ -7,25 +7,26 @@ from pyspark.sql import SparkSession
 from utils.helpers import create_logger, load_cfg
 
 sys_conf = load_cfg("utils/config.yaml")
-logger = create_logger(name="SparkConnectionCreation")
+logger = create_logger(name="SparkConnection")
 
-def create_spark_connection(
-    app_name = sys_conf['spark']['app'],
-    access_key = sys_conf['lakehouse']['root_user'],
-    secret_key = sys_conf['lakehouse']['root_password'],
+
+def get_or_create_spark(
+    app_name=sys_conf['spark']['app'],
+    access_key=sys_conf['lakehouse']['root_user'],
+    secret_key=sys_conf['lakehouse']['root_password'],
     endpoint=f"http://{sys_conf['lakehouse']['endpoint']}",
     master_url="spark://spark-master:7077"
-):    
+) -> SparkSession:
+    existing = SparkSession.getActiveSession()
+    if existing is not None:
+        logger.info("Reusing existing Spark session")
+        return existing
+    
+    logger.info("Creating new Spark session...")
     try:
-        existing_spark = SparkSession.getActiveSession()
-        if existing_spark is not None:
-            logger.info("Reusing existing Spark session.")
-            return existing_spark
-        
-        spark_conn = (
+        spark = (
             SparkSession.builder
             .appName(app_name)
-            .master(master_url)
             .master(master_url)
             .config("spark.hadoop.fs.s3a.access.key", access_key)
             .config("spark.hadoop.fs.s3a.secret.key", secret_key)
@@ -33,10 +34,18 @@ def create_spark_connection(
             .getOrCreate()
         )
         
-        spark_conn.sparkContext.setLogLevel("ERROR")
-        logger.info("Spark Session initialized successfully!")
-        return spark_conn
+        spark.sparkContext.setLogLevel("ERROR")
+        logger.info("Spark session created successfully!")
+        return spark
 
     except Exception as e:
-        logger.error(f"Error when creating spark connection: {e}")
-        return None
+        logger.error(f"Error creating spark connection: {e}")
+        raise
+
+def stop_spark():
+    existing = SparkSession.getActiveSession()
+    if existing:
+        logger.info("Stopping Spark session...")
+        existing.stop()
+
+create_spark_connection = get_or_create_spark

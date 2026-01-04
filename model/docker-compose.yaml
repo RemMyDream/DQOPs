@@ -1,0 +1,72 @@
+services:
+  mlflow-postgres:
+    image: postgres:15
+    container_name: mlflow-postgres
+    environment:
+      POSTGRES_USER: mlflow
+      POSTGRES_PASSWORD: mlflow
+      POSTGRES_DB: mlflow
+    volumes:
+      - mlflow_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mlflow -d mlflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - data-pipeline
+
+  mlflow:
+    build: .
+    image: mlflow:latest
+    container_name: mlflow-server
+    depends_on:
+      mlflow-postgres:
+        condition: service_healthy
+    environment:
+      # Backend store URI (Postgres)
+      MLFLOW_BACKEND_STORE_URI: postgresql://mlflow:mlflow@postgres:5432/mlflow
+
+      # S3/MinIO settings - Point these to your external MinIO in your .env file
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      MLFLOW_ARTIFACTS_DESTINATION: s3://mlflow-artifacts
+      AWS_ACCESS_KEY_ID: minio_access_key
+      AWS_SECRET_ACCESS_KEY: minio_secret_key
+      AWS_DEFAULT_REGION: ap-southeast-1
+      MLFLOW_S3_IGNORE_TLS: "true"
+
+      # Server host/port
+      MLFLOW_HOST: minio
+      MLFLOW_PORT: 9000
+
+    command: >
+      mlflow server
+      --backend-store-uri postgresql://mlflow:mlflow@mlflow-postgres:5432/mlflow
+      --artifacts-destination s3://mlflow-artifacts
+      --host 0.0.0.0
+      --port 5000
+
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    networks:
+      - data-pipeline
+
+volumes:
+  mlflow_postgres_data:
+networks:
+  data-pipeline:
+    name: data-pipeline
+    external: true
