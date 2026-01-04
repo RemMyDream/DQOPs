@@ -1,17 +1,4 @@
-.venv
 __pycache__/
-spark/
-docs/
-.env
-notebooks/
-docker-compose-postgres (reference).yml
-export_to_csv.py
-data-csv/
-kafka/data/
-useful_command.txt
-data/
-useful_command.txt
-data/
 useful_command.txt
 .env
 utils/bigquery_api.json
