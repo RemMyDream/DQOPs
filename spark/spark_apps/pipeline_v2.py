@@ -17,7 +17,7 @@ PIPELINES = {
 }
 
 def run_bronze_job(spark, **kwargs):
-    from spark.spark_apps.ingestion.gdelt_stooq_to_bronze_v2 import ingest_stooq, ingest_gdelt_gkg
+    from ingestion.gdelt_stooq_to_bronze_v2 import ingest_stooq, ingest_gdelt_gkg
         
     # Stooq ingestion
     if not kwargs.get('skip_stooq', False):
@@ -43,7 +43,7 @@ def run_bronze_job(spark, **kwargs):
         logger.info(f"GDELT: {gdelt_count} rows")
     
 def run_silver_job(spark, **kwargs):
-    from spark.spark_apps.processor.stooq_to_silver_v2 import process_stooq_to_silver
+    from processor.stooq_to_silver_v2 import process_stooq_to_silver
         
     logger.info("--- Stooq: Bronze → Silver ---")
     row_count = process_stooq_to_silver(spark=spark)

@@ -71,7 +71,7 @@ with DAG(
     
     bronze_ingestion = SparkSubmitOperator(
         task_id='ingest_bronze',
-        application=f'{SPARK_APPS_PATH}/pipeline.py',
+        application=f'{SPARK_APPS_PATH}/pipeline_v2.py',
         conn_id='spark_default',
         application_args=[
             '--pipeline', 'bronze',
@@ -83,7 +83,7 @@ with DAG(
             '--skip-stooq', '{{ params.skip_stooq }}',  
             '--skip-gdelt', '{{ params.skip_gdelt }}'
         ],
-        deploy_mode="cluster",
+        deploy_mode="client",
         packages="org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.2",
         verbose=True,
     )
