@@ -7,7 +7,7 @@ CREATE DATABASE IF NOT EXISTS warehouse;
 -- Kết nối trực tiếp vào MinIO Gold Layer. 
 -- Tự động có dữ liệu sau khi Spark job 'gold' chạy xong.
 CREATE TABLE IF NOT EXISTS warehouse.gold_ml_features
-ENGINE = Iceberg('http://minio:9000/gold/ml_features', 'admin', 'password')
+ENGINE = Iceberg('http://minio:9000/gold/ml_features', 'minio_access_key', 'minio_secret_key')
 SETTINGS allow_experimental_iceberg_engine = 1;
 
 

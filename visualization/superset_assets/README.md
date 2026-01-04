@@ -11,7 +11,7 @@ SQL
 ```
 -- Bước 1: Tạo bảng kết nối trực tiếp vào MinIO (Iceberg)
 CREATE TABLE warehouse.gold_ml_features
-ENGINE = Iceberg('http://minio:9000/gold/ml_features', 'admin', 'password')
+ENGINE = Iceberg('http://minio:9000/gold/ml_features', 'minio_access_key', 'minio_secret_key')
 SETTINGS allow_experimental_iceberg_engine = 1;
 ```
 
