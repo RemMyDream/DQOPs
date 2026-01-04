@@ -381,15 +381,6 @@ services:
     image: apache/superset:latest
     container_name: superset
     user: root
-  mlflow:
-  # Kubeflow Pipelines API Server
-  kubeflow-pipelines-api:
-    build:
-      context: .
-      dockerfile: Dockerfile.kubeflow
-    container_name: kubeflow-pipelines-api
-    ports:
-      - "8888:8888"
     environment:
       SUPERSET_SECRET_KEY: "demo_secret_key"
       FEATURE_FLAGS: '{"ALLOW_DATA_UPLOAD": true}'
@@ -431,62 +422,6 @@ services:
       - data-pipeline
     depends_on:
       - clickhouse
-
-  mlflow: # Kubeflow Pipelines API Server
-
-  kubeflow-pipelines-api:
-    build:
-      context: .
-      dockerfile: Dockerfile.kubeflow
-    container_name: kubeflow-pipelines-api
-    ports:
-      - "8888:8888"
-    environment:
-      # Database Configuration for Kubeflow Pipelines Metadata
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: kubeflow_db
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      # MinIO Configuration for Artifacts
-      MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: admin
-      MINIO_SECRET_KEY: password
-      MINIO_BUCKET: kubeflow
-      # Kubeflow Pipelines Configuration
-      KFP_NAMESPACE: kubeflow
-      KFP_DEFAULT_EXPERIMENT_NAME: default
-  mlflow:
-  # Kubeflow Pipelines API Server
-  kubeflow-pipelines-api:
-    build:
-      context: .
-      dockerfile: Dockerfile.kubeflow
-    container_name: kubeflow-pipelines-api
-    ports:
-      - "8888:8888"
-    environment:
-      # Database Configuration for Kubeflow Pipelines Metadata
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: kubeflow_db
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      # MinIO Configuration for Artifacts
-      MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: admin
-      MINIO_SECRET_KEY: password
-      MINIO_BUCKET: kubeflow
-      # Kubeflow Pipelines Configuration
-      KFP_NAMESPACE: kubeflow
-      KFP_DEFAULT_EXPERIMENT_NAME: default
-    networks:
-      - data-pipeline
-    depends_on:
-      postgres:
-        condition: service_started
-      minio:
-        condition: service_started
 
 volumes:
   postgres_data:
