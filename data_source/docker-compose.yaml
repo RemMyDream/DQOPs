@@ -1,0 +1,27 @@
+services:
+  # PostgreSQL - Source Database
+  data_source:
+    image: postgres:15
+    container_name: data_source
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sourcedb
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - data-pipeline
+
+volumes:
+  postgres_data:
+
+networks:
+  data-pipeline:
+    name: data-pipeline
+    external: true

@@ -1,0 +1,6 @@
+<clickhouse>
+    <kafka>
+        <debug>all</debug>
+        <statistics_interval_ms>3000</statistics_interval_ms>
+    </kafka>
+</clickhouse>

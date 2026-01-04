@@ -1,3 +1,4 @@
+### Grafana: Kết nối Real-time từ Kafka
 ## Grafana: Hướng dẫn Kết nối Real-time từ Kafka
 
 Speed: Finnhub -> Postgres -> Debezium -> Kafka -> ClickHouse (Kafka Engine -> MV) -> Grafana
@@ -69,6 +70,7 @@ WHERE op IN ('c', 'r'); -- Chỉ lấy thao tác Create hoặc Read (snapshot)
 
 
 
+# REFERENCE FOR DEMO (BỎ QUA)
 
 
 # Old Demo Reference (bỏ qua)

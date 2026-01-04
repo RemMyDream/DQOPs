@@ -1,0 +1,476 @@
+{{- if .Values.airflow.enabled }}
+---
+# PostgreSQL for Airflow - PersistentVolumeClaim
+{{- if .Values.airflow.postgres.enabled }}
+{{- if .Values.airflow.postgres.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-postgres-data
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: airflow-postgres
+spec:
+  accessModes:
+    - {{ .Values.airflow.postgres.persistence.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.airflow.postgres.persistence.size }}
+  {{- if .Values.airflow.postgres.persistence.storageClass }}
+  storageClassName: {{ .Values.airflow.postgres.persistence.storageClass }}
+  {{- end }}
+{{- end }}
+
+---
+# PostgreSQL for Airflow - Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-postgres
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: airflow-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow-postgres
+  template:
+    metadata:
+      labels:
+        app: airflow-postgres
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: postgres
+        image: {{ .Values.airflow.postgres.image.repository }}:{{ .Values.airflow.postgres.image.tag }}
+        imagePullPolicy: {{ .Values.airflow.postgres.image.pullPolicy }}
+        envFrom:
+        - configMapRef:
+            name: airflow-postgres-config
+        ports:
+        - name: postgres
+          containerPort: 5432
+          protocol: TCP
+        {{- if .Values.airflow.postgres.persistence.enabled }}
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+        {{- end }}
+        {{- if .Values.airflow.postgres.livenessProbe.enabled }}
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - {{ .Values.airflow.postgres.config.user }}
+          initialDelaySeconds: {{ .Values.airflow.postgres.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.airflow.postgres.livenessProbe.periodSeconds }}
+        {{- end }}
+        {{- if .Values.airflow.postgres.readinessProbe.enabled }}
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - {{ .Values.airflow.postgres.config.user }}
+          initialDelaySeconds: {{ .Values.airflow.postgres.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.airflow.postgres.readinessProbe.periodSeconds }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.airflow.postgres.resources | nindent 10 }}
+      {{- if .Values.airflow.postgres.persistence.enabled }}
+      volumes:
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: airflow-postgres-data
+      {{- end }}
+
+---
+# PostgreSQL for Airflow - Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: airflow-postgres
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: airflow-postgres
+spec:
+  type: {{ .Values.airflow.postgres.service.type }}
+  ports:
+  - name: postgres
+    port: {{ .Values.airflow.postgres.service.port }}
+    targetPort: postgres
+    protocol: TCP
+  selector:
+    app: airflow-postgres
+{{- end }}
+
+---
+# PersistentVolumeClaims for Airflow volumes
+{{- if .Values.airflow.webserver.persistence.dags.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-dags
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: airflow
+spec:
+  accessModes:
+    - {{ .Values.airflow.webserver.persistence.dags.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.airflow.webserver.persistence.dags.size }}
+  {{- if .Values.airflow.webserver.persistence.dags.storageClass }}
+  storageClassName: {{ .Values.airflow.webserver.persistence.dags.storageClass }}
+  {{- end }}
+{{- end }}
+
+---
+{{- if .Values.airflow.webserver.persistence.sparkApps.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-spark-apps
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: airflow
+spec:
+  accessModes:
+    - {{ .Values.airflow.webserver.persistence.sparkApps.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.airflow.webserver.persistence.sparkApps.size }}
+  {{- if .Values.airflow.webserver.persistence.sparkApps.storageClass }}
+  storageClassName: {{ .Values.airflow.webserver.persistence.sparkApps.storageClass }}
+  {{- end }}
+{{- end }}
+
+---
+{{- if .Values.airflow.webserver.persistence.scripts.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-scripts
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: airflow
+spec:
+  accessModes:
+    - {{ .Values.airflow.webserver.persistence.scripts.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.airflow.webserver.persistence.scripts.size }}
+  {{- if .Values.airflow.webserver.persistence.scripts.storageClass }}
+  storageClassName: {{ .Values.airflow.webserver.persistence.scripts.storageClass }}
+  {{- end }}
+{{- end }}
+
+---
+{{- if .Values.airflow.webserver.persistence.utils.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-utils
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: airflow
+spec:
+  accessModes:
+    - {{ .Values.airflow.webserver.persistence.utils.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.airflow.webserver.persistence.utils.size }}
+  {{- if .Values.airflow.webserver.persistence.utils.storageClass }}
+  storageClassName: {{ .Values.airflow.webserver.persistence.utils.storageClass }}
+  {{- end }}
+{{- end }}
+
+---
+{{- if .Values.airflow.webserver.persistence.backend.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-backend
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: airflow
+spec:
+  accessModes:
+    - {{ .Values.airflow.webserver.persistence.backend.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.airflow.webserver.persistence.backend.size }}
+  {{- if .Values.airflow.webserver.persistence.backend.storageClass }}
+  storageClassName: {{ .Values.airflow.webserver.persistence.backend.storageClass }}
+  {{- end }}
+{{- end }}
+
+---
+# Airflow Webserver - Deployment
+{{- if .Values.airflow.webserver.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-webserver
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: airflow-webserver
+spec:
+  replicas: {{ .Values.airflow.webserver.replicas }}
+  selector:
+    matchLabels:
+      app: airflow-webserver
+  template:
+    metadata:
+      labels:
+        app: airflow-webserver
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      enableServiceLinks: false
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox:latest
+        command: ['sh', '-c']
+        args:
+        - |
+          until nc -z airflow-postgres {{ .Values.airflow.postgres.service.port }}; do
+            echo "Waiting for PostgreSQL..."
+            sleep 5
+          done
+          echo "PostgreSQL is ready!"
+      - name: airflow-init
+        image: {{ .Values.airflow.image.repository }}:{{ .Values.airflow.image.tag }}
+        imagePullPolicy: {{ .Values.airflow.image.pullPolicy }}
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          cp /config/entrypoint.sh /opt/airflow/entrypoint.sh
+          chmod +x /opt/airflow/entrypoint.sh
+          /opt/airflow/entrypoint.sh airflow version
+        envFrom:
+        - configMapRef:
+            name: airflow-config
+        volumeMounts:
+        - name: init-script
+          mountPath: /config
+        {{- if .Values.airflow.webserver.persistence.dags.enabled }}
+        - name: dags
+          mountPath: /opt/airflow/dags
+        {{- end }}
+      containers:
+      - name: webserver
+        image: {{ .Values.airflow.image.repository }}:{{ .Values.airflow.image.tag }}
+        imagePullPolicy: {{ .Values.airflow.image.pullPolicy }}
+        command: ["/opt/airflow/entrypoint.sh"]
+        args: ["airflow", "webserver"]
+        envFrom:
+        - configMapRef:
+            name: airflow-config
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        volumeMounts:
+        - name: init-script
+          mountPath: /config
+        {{- if .Values.airflow.webserver.persistence.dags.enabled }}
+        - name: dags
+          mountPath: /opt/airflow/dags
+        {{- end }}
+        {{- if .Values.airflow.webserver.persistence.sparkApps.enabled }}
+        - name: spark-apps
+          mountPath: /opt/airflow/spark_apps
+        {{- end }}
+        {{- if .Values.airflow.webserver.persistence.scripts.enabled }}
+        - name: scripts
+          mountPath: /opt/airflow/scripts
+        {{- end }}
+        {{- if .Values.airflow.webserver.persistence.utils.enabled }}
+        - name: utils
+          mountPath: /opt/airflow/utils
+        {{- end }}
+        {{- if .Values.airflow.webserver.persistence.backend.enabled }}
+        - name: backend
+          mountPath: /opt/airflow/backend
+        {{- end }}
+        {{- if .Values.airflow.webserver.livenessProbe.enabled }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: {{ .Values.airflow.webserver.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.airflow.webserver.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.airflow.webserver.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.airflow.webserver.livenessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.airflow.webserver.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: {{ .Values.airflow.webserver.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.airflow.webserver.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.airflow.webserver.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.airflow.webserver.readinessProbe.failureThreshold }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.airflow.webserver.resources | nindent 10 }}
+      volumes:
+      - name: init-script
+        configMap:
+          name: airflow-init-script
+          defaultMode: 0755
+      {{- if .Values.airflow.webserver.persistence.dags.enabled }}
+      - name: dags
+        persistentVolumeClaim:
+          claimName: airflow-dags
+      {{- end }}
+      {{- if .Values.airflow.webserver.persistence.sparkApps.enabled }}
+      - name: spark-apps
+        persistentVolumeClaim:
+          claimName: airflow-spark-apps
+      {{- end }}
+      {{- if .Values.airflow.webserver.persistence.scripts.enabled }}
+      - name: scripts
+        persistentVolumeClaim:
+          claimName: airflow-scripts
+      {{- end }}
+      {{- if .Values.airflow.webserver.persistence.utils.enabled }}
+      - name: utils
+        persistentVolumeClaim:
+          claimName: airflow-utils
+      {{- end }}
+      {{- if .Values.airflow.webserver.persistence.backend.enabled }}
+      - name: backend
+        persistentVolumeClaim:
+          claimName: airflow-backend
+      {{- end }}
+
+---
+# Airflow Webserver - Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: airflow-webserver
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: airflow-webserver
+spec:
+  type: {{ .Values.airflow.webserver.service.type }}
+  ports:
+  - name: http
+    port: {{ .Values.airflow.webserver.service.port }}
+    targetPort: http
+    protocol: TCP
+    {{- if and (eq .Values.airflow.webserver.service.type "NodePort") .Values.airflow.webserver.service.nodePort }}
+    nodePort: {{ .Values.airflow.webserver.service.nodePort }}
+    {{- end }}
+  selector:
+    app: airflow-webserver
+{{- end }}
+
+---
+# Airflow Scheduler - Deployment
+{{- if .Values.airflow.scheduler.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-scheduler
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: airflow-scheduler
+spec:
+  replicas: {{ .Values.airflow.scheduler.replicas }}
+  selector:
+    matchLabels:
+      app: airflow-scheduler
+  template:
+    metadata:
+      labels:
+        app: airflow-scheduler
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      enableServiceLinks: false
+      initContainers:
+      - name: wait-for-webserver
+        image: busybox:latest
+        command: ['sh', '-c']
+        args:
+        - |
+          until nc -z airflow-webserver {{ .Values.airflow.webserver.service.port }}; do
+            echo "Waiting for Airflow Webserver..."
+            sleep 10
+          done
+          echo "Airflow Webserver is ready!"
+      containers:
+      - name: scheduler
+        image: {{ .Values.airflow.image.repository }}:{{ .Values.airflow.image.tag }}
+        imagePullPolicy: {{ .Values.airflow.image.pullPolicy }}
+        command: ["airflow", "scheduler"]
+        envFrom:
+        - configMapRef:
+            name: airflow-config
+        volumeMounts:
+        {{- if .Values.airflow.webserver.persistence.dags.enabled }}
+        - name: dags
+          mountPath: /opt/airflow/dags
+        {{- end }}
+        {{- if .Values.airflow.webserver.persistence.sparkApps.enabled }}
+        - name: spark-apps
+          mountPath: /opt/airflow/spark_apps
+        {{- end }}
+        {{- if .Values.airflow.webserver.persistence.scripts.enabled }}
+        - name: scripts
+          mountPath: /opt/airflow/scripts
+        {{- end }}
+        {{- if .Values.airflow.webserver.persistence.utils.enabled }}
+        - name: utils
+          mountPath: /opt/airflow/utils
+        {{- end }}
+        {{- if .Values.airflow.webserver.persistence.backend.enabled }}
+        - name: backend
+          mountPath: /opt/airflow/backend
+        {{- end }}
+        resources:
+          {{- toYaml .Values.airflow.scheduler.resources | nindent 10 }}
+      volumes:
+      {{- if .Values.airflow.webserver.persistence.dags.enabled }}
+      - name: dags
+        persistentVolumeClaim:
+          claimName: airflow-dags
+      {{- end }}
+      {{- if .Values.airflow.webserver.persistence.sparkApps.enabled }}
+      - name: spark-apps
+        persistentVolumeClaim:
+          claimName: airflow-spark-apps
+      {{- end }}
+      {{- if .Values.airflow.webserver.persistence.scripts.enabled }}
+      - name: scripts
+        persistentVolumeClaim:
+          claimName: airflow-scripts
+      {{- end }}
+      {{- if .Values.airflow.webserver.persistence.utils.enabled }}
+      - name: utils
+        persistentVolumeClaim:
+          claimName: airflow-utils
+      {{- end }}
+      {{- if .Values.airflow.webserver.persistence.backend.enabled }}
+      - name: backend
+        persistentVolumeClaim:
+          claimName: airflow-backend
+      {{- end }}
+{{- end }}
+{{- end }}

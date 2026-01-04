@@ -97,12 +97,17 @@ spec:
       # Init container to wait for Postgres to be ready
       initContainers:
         - name: wait-for-postgres
-          image: busybox
-          # Updated to use /dev/tcp which is more standard than 'nc' in some busybox images
+          image: busybox:1.36
           command: 
             - 'sh'
             - '-c'
-            - 'until (echo > /dev/tcp/mlflow-postgres/5432) >/dev/null 2>&1; do echo "Waiting for postgres..."; sleep 2; done;'
+            - |
+              echo "Waiting for PostgreSQL to be ready..."
+              until nc -z mlflow-postgres.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local 5432; do
+                echo "PostgreSQL not ready yet, retrying in 2 seconds..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready!"
       containers:
         - name: mlflow
           image: "{{ .Values.mlflow.image.repository }}:{{ .Values.mlflow.image.tag }}"
@@ -144,12 +149,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: minio-secret
-                  key: MINIO_ROOT_USER
+                  key: root-user
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: minio-secret
-                  key: MINIO_ROOT_PASSWORD
+                  key: root-password
             - name: AWS_DEFAULT_REGION
               value: {{ .Values.mlflow.s3.region }}
           readinessProbe:

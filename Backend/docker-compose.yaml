@@ -1,0 +1,40 @@
+services:
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app             
+      - ../utils:/app/utils
+      - ../data_quality:/app/data_quality
+    restart: unless-stopped
+    networks:
+      - data-pipeline
+    depends_on:
+      internal_database:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+  
+  internal_database:
+    image: postgres:15
+    ports: 
+      - "5434:5432"
+    container_name: internal_database
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: internal_database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - data-pipeline
+networks:
+  default:
+    name: data-pipeline
+    external: True

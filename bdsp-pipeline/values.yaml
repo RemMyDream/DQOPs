@@ -5,28 +5,30 @@ namespace: dqops
 
 # PostgreSQL configuration
 postgres:
-  enabled: true
+  enabled: false
   image:
     repository: postgres
     tag: "15"
     pullPolicy: IfNotPresent
-
+  
   service:
     type: ClusterIP
     port: 5432
-
+  
   persistence:
     enabled: true
     size: 10Gi
     storageClass: ""
     accessMode: ReadWriteOnce
-
+  
   config:
     user: postgres
     password: postgres
     database: sourcedb
-    additionalDatabases: []
-
+    # Additional databases to create
+    additionalDatabases:
+      - mlflow
+  
   resources:
     requests:
       memory: "256Mi"
@@ -34,12 +36,12 @@ postgres:
     limits:
       memory: "1Gi"
       cpu: "500m"
-
+  
   livenessProbe:
     enabled: true
     initialDelaySeconds: 30
     periodSeconds: 10
-
+  
   readinessProbe:
     enabled: true
     initialDelaySeconds: 5
@@ -52,32 +54,39 @@ minio:
     repository: minio/minio
     tag: latest
     pullPolicy: IfNotPresent
-
+  
+  # MinIO Client (mc) image for bucket initialization
   mcImage:
-    repository: minio/mc
     tag: latest
-
+    pullPolicy: IfNotPresent
+  
   service:
     type: ClusterIP
     apiPort: 9000
     consolePort: 9001
-
+    # Optional NodePort configuration (only used if type is NodePort)
+    apiNodePort: null      # e.g., 30900
+    consoleNodePort: null  # e.g., 30901
+  
   persistence:
     enabled: true
     size: 20Gi
     storageClass: ""
     accessMode: ReadWriteOnce
-
+  
   config:
     rootUser: admin
     rootPassword: password
-
+    region: ""  # Optional: Set MinIO region (e.g., us-east-1)
+    browserRedirectUrl: ""  # Optional: Set browser redirect URL for console
+  
+  # Buckets to create on initialization
   buckets:
     - bronze
     - silver
     - gold
     - mlflow-artifacts
-
+  
   resources:
     requests:
       memory: "256Mi"
@@ -85,170 +94,157 @@ minio:
     limits:
       memory: "1Gi"
       cpu: "500m"
-
+  
   livenessProbe:
     enabled: true
     initialDelaySeconds: 30
     periodSeconds: 20
-
+    timeoutSeconds: 5
+    failureThreshold: 3
+  
   readinessProbe:
     enabled: true
     initialDelaySeconds: 10
     periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
 
 # Spark configuration
 spark:
   enabled: true
-
+  
+  # Custom Spark image with all dependencies pre-installed
+  image:
+    repository: votaquangnhat/spark-custom
+    tag: "latest"
+    pullPolicy: Always
+  
+  # Shared environment variables across all Spark components
+  env:
+    sparkNoDaemonize: "true"
+    sparkMasterHost: "0.0.0.0"
+    sparkDriverHost: spark-master
+    sparkMasterPort: "7077"
+    sparkDriverBindAddress: "0.0.0.0"
+    # Add extra environment variables as needed (e.g., for MinIO/S3 access)
+    extraEnvVars: []
+    # - name: AWS_ACCESS_KEY_ID
+    #   value: "admin"
+    # - name: AWS_SECRET_ACCESS_KEY
+    #   value: "password"
+    # - name: AWS_REGION
+    #   value: "us-east-1"
+  
+  # Persistence for Spark event logs and applications
+  persistence:
+    storageClass: ""  # Use default storage class or specify one
+    logsSize: 5Gi
+    appsSize: 10Gi
+    dataSize: 5Gi      # For /opt/spark/data
+    utilsSize: 1Gi     # For /opt/spark/utils
+  
+  # Spark Master configuration
   master:
-    image:
-      repository: apache/spark
-      tag: "3.5.3"
-      pullPolicy: IfNotPresent
-
     replicas: 1
-
+    
     service:
       type: ClusterIP
-      sparkPort: 7077
-      webuiPort: 8080
-      appUIPort: 4040
-
-    env:
-      sparkMode: master
-      sparkMasterHost: "0.0.0.0"
-      sparkMasterPort: "7077"
-      sparkMasterWebuiPort: "8080"
-
+      webuiNodePort: null  # Set if using NodePort (e.g., 30090)
+      sparkNodePort: null  # Set if using NodePort (e.g., 30077)
+    
     resources:
       requests:
-        memory: "1Gi"
-        cpu: "200m"
+        memory: "512Mi"
+        cpu: "250m"
       limits:
-        memory: "2Gi"
-        cpu: "1000m"
-
+        memory: "1Gi"
+        cpu: "500m"
+    
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+  
+  # Spark Worker configuration
   worker:
-    image:
-      repository: apache/spark
-      tag: "3.5.3"
-      pullPolicy: IfNotPresent
-
-    replicas: 2
-
-    env:
-      sparkMode: worker
-      sparkWorkerCores: "2"
-      sparkWorkerMemory: "2g"
-      sparkWorkerWebuiPort: "8081"
-
+    replicas: 1
+    
+    service:
+      type: ClusterIP
+      webuiNodePort: null  # Set if using NodePort (e.g., 30081)
+    
     resources:
       requests:
         memory: "1Gi"
         cpu: "500m"
       limits:
-        memory: "4Gi"
-        cpu: "2000m"
-
-# Elasticsearch configuration
-elasticsearch:
-  enabled: true
-  image:
-    repository: docker.elastic.co/elasticsearch/elasticsearch
-    tag: "8.11.4"
-    pullPolicy: IfNotPresent
-
-  service:
-    type: ClusterIP
-    httpPort: 9200
-    transportPort: 9300
-
-  persistence:
-    enabled: true
-    size: 10Gi
-    storageClass: ""
-    accessMode: ReadWriteOnce
-
-  config:
-    discoveryType: single-node
-    javaOpts: "-Xms1024m -Xmx1024m"
-    xpackSecurityEnabled: "false"
-
-  securityContext:
-    fsGroup: 1000
-    runAsUser: 1000
-    runAsNonRoot: true
-
-  resources:
-    requests:
-      memory: "1Gi"
-      cpu: "200m"
-    limits:
-      memory: "2Gi"
-      cpu: "1000m"
-
-  livenessProbe:
-    enabled: true
-    initialDelaySeconds: 60
-    periodSeconds: 15
-    timeoutSeconds: 10
-
-  readinessProbe:
-    enabled: true
-    initialDelaySeconds: 30
-    periodSeconds: 15
-    timeoutSeconds: 10
-
-# PostgreSQL Metadata (for OpenMetadata)
-postgresMetadata:
-  enabled: false
-  image:
-    repository: postgres
-    tag: "15"
-    pullPolicy: IfNotPresent
-
-  service:
-    type: ClusterIP
-    port: 5432
-
-  persistence:
-    enabled: true
-    size: 5Gi
-    storageClass: ""
-    accessMode: ReadWriteOnce
-
-  config:
-    user: openmetadata_user
-    password: openmetadata_password
-    database: openmetadata_db
-
-# Global settings
-global:
-  storageClass: ""
+        memory: "2Gi"
+        cpu: "1000m"
+  
+  # Spark History Server configuration
+  historyServer:
+    replicas: 1
+    
+    service:
+      type: ClusterIP
+      webuiNodePort: null  # Set if using NodePort (e.g., 30180)
+    
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+    
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 60
+      periodSeconds: 20
+      timeoutSeconds: 5
+      failureThreshold: 3
+    
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 3
+      failureThreshold: 3
 
 # Kafka & Debezium configuration
 kafka:
-  enabled: true
-
+  enabled: false
+  
   broker:
     image:
       repository: confluentinc/cp-enterprise-kafka
       tag: "7.6.0"
       pullPolicy: IfNotPresent
-
+    
     replicas: 1
     nodeId: 1
     clusterId: "Kltcs-KRS8CJybmyyVtXuA"
-
+    
     service:
       type: ClusterIP
       plaintextPort: 9092
       controllerPort: 9093
+    
     config:
       offsetsTopicReplicationFactor: "1"
       defaultReplicationFactor: "1"
       minInsyncReplicas: "1"
       numPartitions: "1"
+    
     resources:
       requests:
         memory: "512Mi"
@@ -256,17 +252,18 @@ kafka:
       limits:
         memory: "2Gi"
         cpu: "1000m"
+  
   schemaRegistry:
     enabled: true
     image:
       repository: confluentinc/cp-schema-registry
       tag: "7.6.0"
       pullPolicy: IfNotPresent
-
+    
     service:
       type: ClusterIP
       port: 8081
-
+    
     resources:
       requests:
         memory: "256Mi"
@@ -274,21 +271,25 @@ kafka:
       limits:
         memory: "1Gi"
         cpu: "500m"
+  
   debezium:
     enabled: true
     image:
       repository: votaquangnhat/custom-debezium
       tag: "latest"
       pullPolicy: Always
+    
     service:
       type: NodePort
       port: 8083
       nodePort: 30083
+    
     config:
       groupId: "cdc-debezium"
       configStorageTopic: "connect_configs"
       offsetStorageTopic: "connect_offsets"
       statusStorageTopic: "connect_status"
+    
     resources:
       requests:
         memory: "512Mi"
@@ -296,16 +297,19 @@ kafka:
       limits:
         memory: "2Gi"
         cpu: "1000m"
+  
   debeziumUI:
     enabled: true
     image:
       repository: debezium/debezium-ui
       tag: "latest"
       pullPolicy: IfNotPresent
+    
     service:
       type: NodePort
       port: 8080
       nodePort: 30080
+    
     resources:
       requests:
         memory: "128Mi"
@@ -313,16 +317,19 @@ kafka:
       limits:
         memory: "512Mi"
         cpu: "250m"
+  
   controlCenter:
     enabled: true
     image:
       repository: confluentinc/cp-enterprise-control-center
       tag: "7.6.0"
       pullPolicy: IfNotPresent
+    
     service:
       type: NodePort
       port: 9021
       nodePort: 30021
+    
     resources:
       requests:
         memory: "1Gi"
@@ -333,23 +340,73 @@ kafka:
 
 # OpenMetadata configuration
 openmetadata:
-  enabled: true
+  enabled: false
+  
+  elasticsearch:
+    enabled: true
+    image:
+      repository: docker.elastic.co/elasticsearch/elasticsearch
+      tag: "7.17.14"
+      pullPolicy: IfNotPresent
+    
+    service:
+      type: ClusterIP
+      httpPort: 9200
+      transportPort: 9300
+    
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: ""
+      accessMode: ReadWriteOnce
+    
+    config:
+      discoveryType: single-node
+      javaOpts: "-Xms1024m -Xmx1024m"
+      xpackSecurityEnabled: "false"
+    
+    securityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsNonRoot: true
+    
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "200m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+    
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 60
+      periodSeconds: 15
+      timeoutSeconds: 10
+    
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 15
+      timeoutSeconds: 10
+  
   postgresMetadata:
     enabled: true
     image:
       repository: docker.getcollate.io/openmetadata/postgresql
       tag: "1.11.0"
       pullPolicy: IfNotPresent
-
+    
     service:
       type: ClusterIP
       port: 5432
-
+    
     persistence:
       enabled: true
       size: 10Gi
       storageClass: ""
       accessMode: ReadWriteOnce
+    
     config:
       user: openmetadata_user
       password: openmetadata_password
@@ -357,6 +414,7 @@ openmetadata:
       airflowUser: airflow_user
       airflowPassword: airflow_pass
       airflowDatabase: airflow_db
+    
     resources:
       requests:
         memory: "512Mi"
@@ -364,33 +422,38 @@ openmetadata:
       limits:
         memory: "2Gi"
         cpu: "1000m"
+    
     livenessProbe:
       enabled: true
       initialDelaySeconds: 60
       periodSeconds: 15
       timeoutSeconds: 10
       failureThreshold: 10
+    
     readinessProbe:
       enabled: true
       initialDelaySeconds: 15
       periodSeconds: 15
       timeoutSeconds: 10
       failureThreshold: 10
+  
   server:
     enabled: true
     image:
-      repository: docker.getcollate.io/openmetadata/server
-      tag: "1.11.0"
-      pullPolicy: IfNotPresent
-
+      repository: votaquangnhat/openmetadata-server-custom
+      tag: "latest"
+      pullPolicy: Always
+    
     replicas: 1
-
+    
     service:
       type: ClusterIP
       httpPort: 8585
       adminPort: 8586
+    
     config:
       clusterName: "openmetadata"
+      database: "openmetadata_db"
       logLevel: "INFO"
       heapOpts: "-Xmx1G -Xms1G"
       authenticationProvider: "basic"
@@ -404,6 +467,7 @@ openmetadata:
       pipelineServiceClientEnabled: "true"
       airflowUsername: "admin"
       airflowPassword: "admin"
+    
     resources:
       requests:
         memory: "1Gi"
@@ -411,31 +475,34 @@ openmetadata:
       limits:
         memory: "2Gi"
         cpu: "1000m"
+    
     livenessProbe:
       enabled: true
       initialDelaySeconds: 60
       periodSeconds: 30
       timeoutSeconds: 10
       failureThreshold: 5
+    
     readinessProbe:
       enabled: true
       initialDelaySeconds: 30
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
+  
   ingestion:
     enabled: true
     image:
       repository: docker.getcollate.io/openmetadata/ingestion
       tag: "1.11.0"
       pullPolicy: IfNotPresent
-
+    
     replicas: 1
-
+    
     service:
       type: ClusterIP
       port: 8080
-
+    
     persistence:
       dagAirflow:
         enabled: true
@@ -452,6 +519,7 @@ openmetadata:
         size: 2Gi
         storageClass: ""
         accessMode: ReadWriteOnce
+    
     config:
       executor: "LocalExecutor"
       dagGeneratedConfigs: "/opt/airflow/dag_generated_configs"
@@ -459,6 +527,7 @@ openmetadata:
       airflowUser: "airflow_user"
       airflowPassword: "airflow_pass"
       dbScheme: "postgresql+psycopg2"
+    
     resources:
       requests:
         memory: "1Gi"
@@ -466,37 +535,327 @@ openmetadata:
       limits:
         memory: "2Gi"
         cpu: "1000m"
-  migration:
-    enabled: true
-    image:
-      repository: docker.getcollate.io/openmetadata/server
-      tag: "1.11.0"
-      pullPolicy: IfNotPresent
-
-    backoffLimit: 3
-
+  
   # Setup Airflow User Job - Creates airflow_user in PostgreSQL Metadata
   setupAirflowUser:
     enabled: true
-
+    
     image:
       repository: postgres
       tag: "15"
       pullPolicy: IfNotPresent
+    
     # Airflow database user credentials
     airflowUser: "airflow_user"
     airflowPassword: "airflow_pass"
     airflowDatabase: "airflow_db"
-
+    
     backoffLimit: 3
+
+# ClickHouse Configuration
+clickhouse:
+  enabled: false
+  image:
+    repository: clickhouse/clickhouse-server
+    tag: latest
+    pullPolicy: IfNotPresent
+  replica: 1
+  service:
+    type: ClusterIP
+    httpPort: 8123
+    tcpPort: 9000
+  auth:
+    username: admin
+    password: password123
+    database: warehouse
+  persistence:
+    enabled: true
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    size: 10Gi
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 100m
+      memory: 512Mi
+
+# Grafana Configuration
+grafana:
+  enabled: false
+  image:
+    repository: grafana/grafana
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    type: NodePort
+    port: 3000
+    nodePort: 30000
+  admin:
+    user: admin
+    password: admin
+  plugins: "grafana-clickhouse-datasource"
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Airflow configuration
+airflow:
+  enabled: true
+  
+  # Custom Airflow image with Spark, Kafka, etc.
+  image:
+    repository: votaquangnhat/airflow-spark
+    tag: "latest"
+    pullPolicy: Always
+  
+  # PostgreSQL for Airflow metadata
+  postgres:
+    enabled: true
+    image:
+      repository: postgres
+      tag: "15"
+      pullPolicy: IfNotPresent
+    
+    service:
+      type: ClusterIP
+      port: 5432
+    
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: ""
+      accessMode: ReadWriteOnce
+    
+    config:
+      user: airflow
+      password: airflow
+      database: airflow
+    
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+    
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 5
+  
+  # Airflow Webserver
+  webserver:
+    enabled: true
+    replicas: 1
+    
+    service:
+      type: ClusterIP
+      port: 8080
+      # Set nodePort if you want to expose via NodePort
+      nodePort: null
+    
+    config:
+      executor: "LocalExecutor"
+      secretKey: "this_is_a_very_secured_key"
+      authBackend: "airflow.api.auth.backend.basic_auth"
+      # Connection to Spark
+      sparkConnection: "spark://spark-master:7077?deploy_mode=client"
+    
+    # Volume mounts for DAGs and scripts
+    persistence:
+      dags:
+        enabled: false
+        size: 5Gi
+        storageClass: ""
+        accessMode: ReadWriteOnce
+      sparkApps:
+        enabled: false
+        size: 10Gi
+        storageClass: ""
+        accessMode: ReadWriteOnce
+      scripts:
+        enabled: false
+        size: 2Gi
+        storageClass: ""
+        accessMode: ReadWriteOnce
+      utils:
+        enabled: false
+        size: 1Gi
+        storageClass: ""
+        accessMode: ReadWriteOnce
+      backend:
+        enabled: false
+        size: 1Gi
+        storageClass: ""
+        accessMode: ReadWriteOnce
+    
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+    
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 60
+      periodSeconds: 30
+      timeoutSeconds: 30
+      failureThreshold: 3
+    
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 10
+      failureThreshold: 3
+  
+  # Airflow Scheduler
+  scheduler:
+    enabled: true
+    replicas: 1
+    
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+  
+  # Airflow initialization configuration
+  init:
+    enabled: true
+    # Admin user configuration
+    adminUser:
+      username: admin
+      password: admin
+      firstname: Admin
+      lastname: User
+      email: admin@example.com
+
+# Backend configuration (FastAPI + Internal PostgreSQL)
+backend:
+  enabled: true
+  
+  # Backend PostgreSQL (internal database for backend service)
+  postgres:
+    enabled: true
+    image:
+      repository: postgres
+      tag: "15"
+      pullPolicy: IfNotPresent
+    
+    service:
+      type: ClusterIP
+      port: 5432
+    
+    persistence:
+      enabled: true
+      size: 5Gi
+      storageClass: ""
+      accessMode: ReadWriteOnce
+    
+    config:
+      user: backend_user
+      password: backend_pass
+      database: backend_db
+    
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+    
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 5
+  
+  # Backend FastAPI Application
+  api:
+    enabled: true
+    image:
+      repository: votaquangnhat/bdsp-backend
+      tag: "latest"
+      pullPolicy: Always
+    
+    replicas: 1
+    
+    service:
+      type: ClusterIP
+      port: 8000
+      nodePort: null  # Set if using NodePort (e.g., 30800)
+    
+    # Wait for Airflow to be ready before starting
+    waitForAirflow: true
+    
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+    
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 60
+      periodSeconds: 30
+      timeoutSeconds: 30
+      failureThreshold: 3
+    
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 10
+      failureThreshold: 3
+  
+  # Backend Configuration
+  config:
+    # Airflow connection settings
+    airflow:
+      url: "http://airflow-webserver:8080"
+      username: "admin"
+      password: "admin"
+    
+    # Internal database connection (for backend's own data)
+    internalDatabase:
+      host: "backend-postgres"
+      port: 5432
+      database: "backend_db"
+      username: "backend_user"
+      password: "backend_pass"
 
 # MLflow Configuration
 mlflow:
-  enabled: true
+  enabled: false
   image:
-    repository: votaquangnhat/mlflow
+    repository: votaquangnhat/mlflow-service
     tag: "latest"
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   replicas: 1
   service:
     type: ClusterIP
@@ -527,6 +886,90 @@ mlflow:
   s3:
     bucket: mlflow-artifacts
     region: ap-southeast-1
+
+# Superset Configuration
+superset:
+  enabled: false
+  
+  # Custom Superset image with required dependencies
+  image:
+    repository: votaquangnhat/superset-custom
+    tag: "latest"
+    pullPolicy: Always
+  
+  replicas: 1
+  
+  service:
+    type: ClusterIP
+    port: 8088
+    nodePort: null  # Set if using NodePort (e.g., 30088)
+  
+  # Redis cache configuration
+  redis:
+    enabled: true
+    image:
+      repository: redis
+      tag: "7"
+      pullPolicy: IfNotPresent
+    
+    service:
+      type: ClusterIP
+      port: 6379
+    
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "50m"
+      limits:
+        memory: "512Mi"
+        cpu: "250m"
+    
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 5
+  
+  # Admin user configuration
+  config:
+    adminUsername: "admin"
+    adminEmail: "admin@superset.com"
+    adminPassword: "admin"
+    secretKey: "YOUR_OWN_RANDOM_GENERATED_SECRET_KEY"
+    # Python config for Superset (config.py content)
+    pythonConfig: |
+      FEATURE_FLAGS = {
+          "ENABLE_TEMPLATE_PROCESSING": True,
+      }
+      ENABLE_PROXY_FIX = True
+      SECRET_KEY = "YOUR_OWN_RANDOM_GENERATED_SECRET_KEY"
+      RATELIMIT_STORAGE_URI = "redis://superset-redis:6379/0"
+  
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+  
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 120
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+  
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
 
 # Additional labels to add to all resources
 commonLabels: {}

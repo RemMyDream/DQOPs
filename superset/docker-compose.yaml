@@ -1,0 +1,30 @@
+services:
+  superset:
+  # user admin || pass: 123
+    image: apache/superset:latest
+    container_name: superset
+    user: root
+    environment:
+      SUPERSET_SECRET_KEY: "demo_secret_key"
+      FEATURE_FLAGS: '{"ALLOW_DATA_UPLOAD": true}'
+    entrypoint: >
+      /bin/sh -c "
+        pip install clickhouse-connect -t /app/.venv/lib/python3.10/site-packages &&
+        superset db upgrade &&
+        superset init &&
+        /usr/bin/run-server.sh
+        "
+    ports:
+      - "8088:8088"
+    networks:
+      - data-pipeline
+    volumes:
+      - superset_home:/app/superset_home
+
+networks:
+  data-pipeline:
+    name: data-pipeline
+    external: true
+
+volumes:
+  superset_home:

@@ -1,5 +1,6 @@
 import json
 import logging
+from pathlib import Path
 from sqlalchemy import text
 import yaml
 import argparse
@@ -11,14 +12,13 @@ def create_logger(name):
     logger = logging.getLogger(name)
     return logger
 
-def load_cfg(cfg_file):
-    cfg = None
-    with open(cfg_file, "r") as f:
-        try:
-            cfg = yaml.safe_load(f)
-        except yaml.YAMLError as e:
-            print(e)
-    return cfg
+def load_cfg(cfg_file: str):
+    base_dir = Path(__file__).resolve().parent.parent
+    cfg_path = base_dir / cfg_file
+
+    with open(cfg_path, "r") as f:
+        return yaml.safe_load(f)
+
 
 def parse_config_args():
     """Standard config parser for all Spark apps"""

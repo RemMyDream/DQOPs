@@ -1,15 +1,7 @@
-.venv
 __pycache__/
-spark/
-yeucau.txt
-.env
-test-notebook.ipynb
-docker-compose-postgres (reference).yml
-data_pipeline
-.DS_Store
-.venv
-__pycache__/
-spark/
+spark/data/*
+spark/__pycache__/
+spark/spark_apps/__pycache__/
 docs/
 .env
 notebooks/
@@ -22,3 +14,16 @@ data/
 useful_command.txt
 data/
 useful_command.txt
+.env
+utils/bigquery_api.json
+utils/config.yaml
+clickhouse/cluster_2S_2R/fs/volumes/clickhouse-01/var
+clickhouse/cluster_2S_2R/fs/volumes/clickhouse-02/var
+clickhouse/cluster_2S_2R/fs/volumes/clickhouse-03/var
+clickhouse/cluster_2S_2R/fs/volumes/clickhouse-04/var
+clickhouse/cluster_2S_2R/fs/volumes/clickhouse-keeper-01/var
+clickhouse/cluster_2S_2R/fs/volumes/clickhouse-keeper-02/var
+clickhouse/cluster_2S_2R/fs/volumes/clickhouse-keeper-03/var
+spark/data/*
+build-and-push.sh
+/.venv

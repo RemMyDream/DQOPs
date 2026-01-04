@@ -1,0 +1,303 @@
+{{- if .Values.clickhouse.enabled }}
+# -----------------------------------------------------------------------------
+# ClickHouse ConfigMap for Init SQL
+# -----------------------------------------------------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clickhouse-init-sql
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: clickhouse
+data:
+  01_init.sql: |
+    -- Create Database
+    CREATE DATABASE IF NOT EXISTS warehouse;
+
+    --------------------------------------------------------------------------------
+    -- 1. GOLD LAYER (Iceberg Connection)
+    --------------------------------------------------------------------------------
+    -- Kết nối trực tiếp vào bảng Iceberg có sẵn trong MinIO.
+    -- Bảng này chứa đầy đủ dữ liệu Price + Sentiment theo format bạn cần.
+    CREATE TABLE IF NOT EXISTS warehouse.gold_sentiment_features
+    ENGINE = Iceberg('http://minio:9000/gold/sentiment_features', 'minio_access_key', 'minio_secret_key');
+    -- SETTINGS allow_experimental_iceberg_engine = 1;
+
+
+    --------------------------------------------------------------------------------
+    -- 2. SERVING LAYER (Views & Compatibility)
+    --------------------------------------------------------------------------------
+    -- Tạo các "bí danh" (Views) để Dashboard cũ (tên 'csv_data' hoặc 'gold_stock_analytics') 
+    -- có thể lấy dữ liệu trực tiếp từ nguồn Iceberg ở trên.
+
+    -- Cầu nối cho Dashboard dùng tên mới gold_stock_analytics
+    CREATE VIEW IF NOT EXISTS warehouse.gold_stock_analytics AS 
+    SELECT * FROM warehouse.gold_sentiment_features;
+
+    -- Cầu nối cho Dashboard cũ dùng tên csv_data
+    CREATE VIEW IF NOT EXISTS warehouse.csv_data AS 
+    SELECT * FROM warehouse.gold_sentiment_features;
+
+    -- Cầu nối cho Dashboard dùng tên gold_analytics_summary
+    CREATE VIEW IF NOT EXISTS warehouse.gold_analytics_summary AS 
+    SELECT * FROM warehouse.gold_sentiment_features;
+
+
+    -- =============================================================================
+    -- 3. SPEED LAYER (Kafka → ClickHouse Realtime)
+    -- =============================================================================
+
+    -- -------------------------------------------------------------------------
+    -- A. Final Storage Table (Grafana query table)
+    -- -------------------------------------------------------------------------
+    CREATE TABLE IF NOT EXISTS warehouse.stock_realtime
+    (
+        symbol String,
+        price Float64,
+        volume Float64,
+        timestamp DateTime
+    )
+    ENGINE = MergeTree()
+    ORDER BY (symbol, timestamp);
+
+    -- -------------------------------------------------------------------------
+    -- B. Kafka Engine Table (Debezium Avro – FIXED)
+    -- IMPORTANT: before / after MUST be Nullable
+    -- -------------------------------------------------------------------------
+    DROP TABLE IF EXISTS warehouse.kafka_stock_stream;
+
+    CREATE TABLE warehouse.kafka_stock_stream
+    (
+        before_id Nullable(Int32),
+        before_symbol Nullable(String),
+        before_price Nullable(Float64),
+        before_volume Nullable(Int64),
+        before_timestamp Nullable(Int64),
+        
+        after_id Nullable(Int32),
+        after_symbol Nullable(String),
+        after_price Nullable(Float64),
+        after_volume Nullable(Int64),
+        after_timestamp Nullable(Int64),
+        
+        op String
+    )
+    ENGINE = Kafka
+    SETTINGS
+        kafka_broker_list = 'kafka-node-1:9092',
+        kafka_topic_list = 'sourcedb.public.finnhub_stock_prices',
+        kafka_group_name = 'clickhouse_consumer_group',
+        kafka_format = 'AvroConfluent',
+        format_avro_schema_registry_url = 'http://schema-registry:8081';
+
+    -- -------------------------------------------------------------------------
+    -- C. Materialized View (NULL-safe)
+    -- -------------------------------------------------------------------------
+    CREATE MATERIALIZED VIEW warehouse.mv_kafka_to_stock
+    TO warehouse.stock_realtime
+    AS
+    SELECT
+        after_symbol AS symbol,
+        after_price AS price,
+        after_volume AS volume,
+        toDateTime(after_timestamp / 1000) AS timestamp
+    FROM warehouse.kafka_stock_stream
+    WHERE
+        op IN ('c', 'r')
+        AND after_id IS NOT NULL;
+---
+# -----------------------------------------------------------------------------
+# ClickHouse Service & StatefulSet
+# -----------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: clickhouse
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: clickhouse
+spec:
+  type: {{ .Values.clickhouse.service.type }}
+  ports:
+  - port: {{ .Values.clickhouse.service.httpPort }}
+    targetPort: 8123
+    name: http
+  - port: {{ .Values.clickhouse.service.tcpPort }}
+    targetPort: 9000
+    name: tcp
+  selector:
+    app: clickhouse
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: clickhouse
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: clickhouse
+spec:
+  serviceName: clickhouse
+  replicas: {{ .Values.clickhouse.replica }}
+  selector:
+    matchLabels:
+      app: clickhouse
+  template:
+    metadata:
+      labels:
+        app: clickhouse
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: clickhouse
+        image: "{{ .Values.clickhouse.image.repository }}:{{ .Values.clickhouse.image.tag }}"
+        imagePullPolicy: {{ .Values.clickhouse.image.pullPolicy }}
+        ports:
+        - containerPort: 8123
+          name: http
+        - containerPort: 9000
+          name: tcp
+        env:
+        - name: CLICKHOUSE_USER
+          value: {{ .Values.clickhouse.auth.username | quote }}
+        - name: CLICKHOUSE_PASSWORD
+          value: {{ .Values.clickhouse.auth.password | quote }}
+        - name: CLICKHOUSE_DB
+          value: {{ .Values.clickhouse.auth.database | quote }}
+        {{- if .Values.clickhouse.resources }}
+        resources:
+          {{- toYaml .Values.clickhouse.resources | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        - name: clickhouse-data
+          mountPath: /var/lib/clickhouse
+        - name: clickhouse-init-sql
+          mountPath: /docker-entrypoint-initdb.d
+          readOnly: true
+      volumes:
+      - name: clickhouse-init-sql
+        configMap:
+          name: clickhouse-init-sql
+  {{- if .Values.clickhouse.persistence.enabled }}
+      - name: clickhouse-data
+        persistentVolumeClaim:
+          claimName: clickhouse-data
+  volumeClaimTemplates:
+  - metadata:
+      name: clickhouse-data
+    spec:
+      accessModes:
+        - {{ .Values.clickhouse.persistence.accessMode }}
+      {{- if .Values.clickhouse.persistence.storageClass }}
+      storageClassName: {{ .Values.clickhouse.persistence.storageClass }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.clickhouse.persistence.size }}
+  {{- else }}
+      - name: clickhouse-data
+        emptyDir: {}
+  {{- end }}
+{{- end }}
+---
+{{- if .Values.grafana.enabled }}
+# -----------------------------------------------------------------------------
+# Grafana ConfigMap for ClickHouse Datasource
+# -----------------------------------------------------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: grafana
+data:
+  clickhouse.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: ClickHouse
+        type: grafana-clickhouse-datasource
+        access: proxy
+        url: http://clickhouse:{{ .Values.clickhouse.service.httpPort }}
+        jsonData:
+          defaultDatabase: {{ .Values.clickhouse.auth.database }}
+          username: {{ .Values.clickhouse.auth.username }}
+        secureJsonData:
+          password: {{ .Values.clickhouse.auth.password }}
+---
+# -----------------------------------------------------------------------------
+# Grafana Service & Deployment
+# -----------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: grafana
+spec:
+  type: {{ .Values.grafana.service.type }}
+  ports:
+  - port: {{ .Values.grafana.service.port }}
+    targetPort: 3000
+    {{- if eq .Values.grafana.service.type "NodePort" }}
+    nodePort: {{ .Values.grafana.service.nodePort }}
+    {{- end }}
+  selector:
+    app: grafana
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: grafana
+spec:
+  replicas: {{ .Values.grafana.replicaCount }}
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      # InitContainer to wait for ClickHouse availability
+      initContainers:
+      - name: wait-for-clickhouse
+        image: busybox:1.28
+        command: ['sh', '-c', "until nc -z -w 2 clickhouse {{ .Values.clickhouse.service.httpPort }}; do echo waiting for clickhouse; sleep 2; done;"]
+      containers:
+      - name: grafana
+        image: "{{ .Values.grafana.image.repository }}:{{ .Values.grafana.image.tag }}"
+        imagePullPolicy: {{ .Values.grafana.image.pullPolicy }}
+        ports:
+        - containerPort: 3000
+        env:
+        - name: GF_SECURITY_ADMIN_USER
+          value: {{ .Values.grafana.admin.user | quote }}
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: {{ .Values.grafana.admin.password | quote }}
+        - name: GF_INSTALL_PLUGINS
+          value: {{ .Values.grafana.plugins | quote }}
+        {{- if .Values.grafana.resources }}
+        resources:
+          {{- toYaml .Values.grafana.resources | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+          - name: grafana-datasources
+            mountPath: /etc/grafana/provisioning/datasources/
+            readOnly: true
+      volumes:
+        - name: grafana-datasources
+          configMap:
+            name: grafana-datasources
+{{- end }}
+---
