@@ -1,5 +1,29 @@
 {{- if .Values.superset.enabled }}
 {{- if .Values.superset.redis.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: superset-config
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: superset
+data:
+  ADMIN_USERNAME: {{ .Values.superset.config.adminUsername | quote }}
+  ADMIN_EMAIL: {{ .Values.superset.config.adminEmail | quote }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: superset-secret
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: superset
+type: Opaque
+stringData:
+  ADMIN_PASSWORD: {{ .Values.superset.config.adminPassword | quote }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:

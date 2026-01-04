@@ -5,7 +5,7 @@ namespace: dqops
 
 # PostgreSQL configuration
 postgres:
-  enabled: true
+  enabled: false
   image:
     repository: postgres
     tag: "15"
@@ -49,7 +49,7 @@ postgres:
 
 # MinIO configuration
 minio:
-  enabled: true
+  enabled: false
   image:
     repository: minio/minio
     tag: latest
@@ -111,7 +111,7 @@ minio:
 
 # Spark configuration
 spark:
-  enabled: true
+  enabled: false
   
   # Custom Spark image with all dependencies pre-installed
   image:
@@ -176,7 +176,7 @@ spark:
   
   # Spark Worker configuration
   worker:
-    replicas: 2
+    replicas: 1
     
     service:
       type: ClusterIP
@@ -222,7 +222,7 @@ spark:
 
 # Kafka & Debezium configuration
 kafka:
-  enabled: true
+  enabled: false
   
   broker:
     image:
@@ -554,7 +554,7 @@ openmetadata:
 
 # ClickHouse Configuration
 clickhouse:
-  enabled: true
+  enabled: false
   image:
     repository: clickhouse/clickhouse-server
     tag: latest
@@ -583,7 +583,7 @@ clickhouse:
 
 # Grafana Configuration
 grafana:
-  enabled: true
+  enabled: false
   image:
     repository: grafana/grafana
     tag: latest
@@ -851,7 +851,7 @@ backend:
 
 # MLflow Configuration
 mlflow:
-  enabled: true
+  enabled: false
   image:
     repository: votaquangnhat/mlflow-service
     tag: "latest"
@@ -864,11 +864,11 @@ mlflow:
 
   resources:
     limits:
-      memory: 2Gi
-      cpu: 1000m
-    requests:
-      memory: 1Gi
+      memory: 512Mi
       cpu: 500m
+    requests:
+      memory: 256Mi
+      cpu: 250m
 
   # Backend Store Database
   postgres:
@@ -889,7 +889,7 @@ mlflow:
 
 # Superset Configuration
 superset:
-  enabled: true
+  enabled: false
   
   # Custom Superset image with required dependencies
   image:
