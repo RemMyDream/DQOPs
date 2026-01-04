@@ -115,10 +115,6 @@ spec:
         app: schema-registry
         {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
     spec:
-      initContainers:
-      - name: wait-for-kafka
-        image: busybox:1.28
-        command: ['sh', '-c', "until nc -z -w 2 kafka-node-1 {{ .Values.kafka.broker.service.plaintextPort }}; do echo waiting for kafka; sleep 2; done;"]
       containers:
       - name: schema-registry
         image: "{{ .Values.kafka.schemaRegistry.image.repository }}:{{ .Values.kafka.schemaRegistry.image.tag }}"
@@ -180,13 +176,6 @@ spec:
         app: debezium
         {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
     spec:
-      initContainers:
-      - name: wait-for-kafka
-        image: busybox:1.28
-        command: ['sh', '-c', "until nc -z -w 2 kafka-node-1 {{ .Values.kafka.broker.service.plaintextPort }}; do echo waiting for kafka; sleep 2; done;"]
-      - name: wait-for-schema-registry
-        image: busybox:1.28
-        command: ['sh', '-c', "until nc -z -w 2 schema-registry {{ .Values.kafka.schemaRegistry.service.port }}; do echo waiting for schema-registry; sleep 2; done;"]
       containers:
       - name: debezium
         image: "{{ .Values.kafka.debezium.image.repository }}:{{ .Values.kafka.debezium.image.tag }}"
@@ -258,10 +247,6 @@ spec:
         app: debezium-ui
         {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
     spec:
-      initContainers:
-      - name: wait-for-debezium
-        image: busybox:1.28
-        command: ['sh', '-c', "until nc -z -w 2 debezium {{ .Values.kafka.debezium.service.port }}; do echo waiting for debezium; sleep 2; done;"]
       containers:
       - name: debezium-ui
         image: "{{ .Values.kafka.debeziumUI.image.repository }}:{{ .Values.kafka.debeziumUI.image.tag }}"
@@ -317,16 +302,6 @@ spec:
         app: control-center
         {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
     spec:
-      initContainers:
-      - name: wait-for-kafka
-        image: busybox:1.28
-        command: ['sh', '-c', "until nc -z -w 2 kafka-node-1 {{ .Values.kafka.broker.service.plaintextPort }}; do echo waiting for kafka; sleep 2; done;"]
-      - name: wait-for-schema-registry
-        image: busybox:1.28
-        command: ['sh', '-c', "until nc -z -w 2 schema-registry {{ .Values.kafka.schemaRegistry.service.port }}; do echo waiting for schema-registry; sleep 2; done;"]
-      - name: wait-for-debezium
-        image: busybox:1.28
-        command: ['sh', '-c', "until nc -z -w 2 debezium {{ .Values.kafka.debezium.service.port }}; do echo waiting for debezium; sleep 2; done;"]
       containers:
       - name: control-center
         image: "{{ .Values.kafka.controlCenter.image.repository }}:{{ .Values.kafka.controlCenter.image.tag }}"

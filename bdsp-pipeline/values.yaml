@@ -677,27 +677,27 @@ airflow:
     # Volume mounts for DAGs and scripts
     persistence:
       dags:
-        enabled: true
+        enabled: false
         size: 5Gi
         storageClass: ""
         accessMode: ReadWriteOnce
       sparkApps:
-        enabled: true
+        enabled: false
         size: 10Gi
         storageClass: ""
         accessMode: ReadWriteOnce
       scripts:
-        enabled: true
+        enabled: false
         size: 2Gi
         storageClass: ""
         accessMode: ReadWriteOnce
       utils:
-        enabled: true
+        enabled: false
         size: 1Gi
         storageClass: ""
         accessMode: ReadWriteOnce
       backend:
-        enabled: true
+        enabled: false
         size: 1Gi
         storageClass: ""
         accessMode: ReadWriteOnce
@@ -750,7 +750,7 @@ airflow:
 
 # Backend configuration (FastAPI + Internal PostgreSQL)
 backend:
-  enabled: false
+  enabled: true
   
   # Backend PostgreSQL (internal database for backend service)
   postgres:
@@ -851,7 +851,7 @@ backend:
 
 # MLflow Configuration
 mlflow:
-  enabled: true
+  enabled: false
   image:
     repository: votaquangnhat/mlflow-service
     tag: "latest"

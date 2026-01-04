@@ -1,29 +1,8 @@
 {{- if .Values.superset.enabled }}
 {{- if .Values.superset.redis.enabled }}
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: superset-config
-  namespace: {{ include "bdsp-pipeline.namespace" . }}
-  labels:
-    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
-    app: superset
-data:
-  ADMIN_USERNAME: {{ .Values.superset.config.adminUsername | quote }}
-  ADMIN_EMAIL: {{ .Values.superset.config.adminEmail | quote }}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: superset-secret
-  namespace: {{ include "bdsp-pipeline.namespace" . }}
-  labels:
-    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
-    app: superset
-type: Opaque
-stringData:
-  ADMIN_PASSWORD: {{ .Values.superset.config.adminPassword | quote }}
----
+# -----------------------------------------------------------------------------
+# Superset Redis Deployment & Service
+# -----------------------------------------------------------------------------
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -89,6 +68,33 @@ spec:
   type: {{ .Values.superset.redis.service.type }}
 ---
 {{- end }}
+# -----------------------------------------------------------------------------
+# Superset ConfigMaps & Secrets
+# -----------------------------------------------------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: superset-config
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: superset
+data:
+  ADMIN_USERNAME: {{ .Values.superset.config.adminUsername | quote }}
+  ADMIN_EMAIL: {{ .Values.superset.config.adminEmail | quote }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: superset-secret
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: superset
+type: Opaque
+stringData:
+  ADMIN_PASSWORD: {{ .Values.superset.config.adminPassword | quote }}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -101,6 +107,35 @@ data:
   config.py: |
 {{ .Values.superset.config.pythonConfig | indent 4 }}
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: superset-init-script
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: superset
+data:
+  init.sh: |
+    #!/bin/bash
+    set -e
+
+    superset db upgrade
+
+    superset fab create-admin \
+        --username "$ADMIN_USERNAME" \
+        --firstname Superset \
+        --lastname Admin \
+        --email "$ADMIN_EMAIL" \
+        --password "$ADMIN_PASSWORD" || true
+
+    superset init
+
+    exec /usr/bin/run-server.sh
+---
+# -----------------------------------------------------------------------------
+# Superset Deployment & Service
+# -----------------------------------------------------------------------------
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -124,6 +159,7 @@ spec:
       - name: superset
         image: "{{ .Values.superset.image.repository }}:{{ .Values.superset.image.tag }}"
         imagePullPolicy: {{ .Values.superset.image.pullPolicy }}
+        command: ["/bin/bash", "/app/init.sh"]
         env:
         - name: ADMIN_USERNAME
           valueFrom:
@@ -144,6 +180,10 @@ spec:
           value: /app/config.py
         - name: SUPERSET_PORT
           value: "{{ .Values.superset.service.port }}"
+        - name: SUPERSET_SECRET_KEY
+          value: {{ .Values.superset.config.secretKey | quote }}
+        - name: FEATURE_FLAGS
+          value: '{"ALLOW_DATA_UPLOAD": true}'
         ports:
         - containerPort: {{ .Values.superset.service.port }}
           name: http
@@ -152,6 +192,9 @@ spec:
         - name: superset-config-volume
           mountPath: /app/config.py
           subPath: config.py
+        - name: superset-init-script
+          mountPath: /app/init.sh
+          subPath: init.sh
         {{- if .Values.superset.resources }}
         resources:
           {{- toYaml .Values.superset.resources | nindent 10 }}
@@ -182,6 +225,10 @@ spec:
       - name: superset-config-volume
         configMap:
           name: superset-python-config
+      - name: superset-init-script
+        configMap:
+          name: superset-init-script
+          defaultMode: 0755
 ---
 apiVersion: v1
 kind: Service

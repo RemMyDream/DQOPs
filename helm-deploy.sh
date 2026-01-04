@@ -57,7 +57,7 @@ deploy() {
     helm upgrade --install "$RELEASE_NAME" "$CHART_DIR" \
         --create-namespace \
         --wait \
-        --timeout 10m \
+        --timeout 5m \
         "$@"
     
     print_info "Deployment completed successfully!"
