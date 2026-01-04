@@ -97,18 +97,14 @@ class GoldIngestionService:
         return self.spark.table(gold_table).count()
 
 
-def build_ml_features(target_catalog: str = "gold") -> int:
-    spark = create_spark_connection()
-    try:
-        service = GoldIngestionService(spark, target_catalog)
-        return service.process_ml_features()
-    finally:
-        spark.stop()
+def build_ml_features(spark: SparkSession, target_catalog: str = "gold") -> int:
+    service = GoldIngestionService(spark, target_catalog)
+    return service.process_ml_features()
 
 
-def main():
-    row_count = build_ml_features()
-    logger.info(f"Processing completed: {row_count} rows in ml_features table")
+# def main():
+#     row_count = build_ml_features()
+#     logger.info(f"Processing completed: {row_count} rows in ml_features table")
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

@@ -1,46 +1,34 @@
 import sys
 import os
 import re
-from datetime import timedelta
-import pandas as pd
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from create_spark_connection import create_spark_connection
-from utils.helpers import create_logger, load_cfg
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import (
     col, udf, when, length, from_utc_timestamp, 
-    hour, to_date, from_utc_timestamp, lower, lit, current_timestamp, to_timestamp
+    hour, to_date, lower, lit, current_timestamp
 )
-from pyspark.sql.types import StringType, DateType
+from pyspark.sql.types import StringType
 from typing import List
+from functools import reduce
 
-logger = create_logger("bronze_to_silver_gdelt")
 
 def extract_xml_title(extras_str):
     if not isinstance(extras_str, str):
         return None
-    try:
-        match = re.search(r'<PAGE_TITLE>(.*?)</PAGE_TITLE>', extras_str)
-        if match:
-            return match.group(1).strip()
-    except:
-        pass
-    return None
+    match = re.search(r'<PAGE_TITLE>(.*?)</PAGE_TITLE>', extras_str)
+    return match.group(1).strip() if match else None
 
 
 def extract_url_title(url):
     if not isinstance(url, str):
         return ""
-    try:
-        slug = re.search(r'([^/]+)(?:\.html|\?|$)', url.strip('/'))
-        if slug:
-            text = slug.group(1)
-            text = re.sub(r'\d+', '', text)
-            text = text.replace('-', ' ').replace('_', ' ').replace('+', ' ')
-            return text.strip().title()
-    except:
-        pass
+    slug = re.search(r'([^/]+)(?:\.html|\?|$)', url.strip('/'))
+    if slug:
+        text = slug.group(1)
+        text = re.sub(r'\d+', '', text)
+        text = text.replace('-', ' ').replace('_', ' ').replace('+', ' ')
+        return text.strip().title()
     return ""
 
 
@@ -73,7 +61,6 @@ class GdeltSilverService:
             WHEN MATCHED THEN UPDATE SET {update_set}
             WHEN NOT MATCHED THEN INSERT ({insert_cols}) VALUES ({insert_vals})
         """
-        
         self.spark.sql(merge_sql)
     
     def process_gdelt_to_silver(self, stock_config: dict) -> int:
@@ -82,24 +69,24 @@ class GdeltSilverService:
         
         df = self.spark.read.format("iceberg").load("bronze.gdelt_gkg")
         
+        if df.count() == 0:
+            return 0
+        
+        # Extract titles
         df = df.withColumn("xml_title", extract_xml_udf(col("extras")))
         df = df.withColumn("url_title", extract_url_udf(col("source_url")))
         df = df.withColumn(
             "extracted_title",
-            when(col("xml_title").isNotNull(), col("xml_title"))
-            .otherwise(col("url_title"))
+            when(col("xml_title").isNotNull(), col("xml_title")).otherwise(col("url_title"))
         )
-        
         df = df.filter(length(col("extracted_title")) > 10)
         
-        df = df.withColumn("timestamp_utc", to_timestamp(col("date").cast("string"), "yyyyMMddHHmmss"))
+        # Date is already TimestampType
+        df = df.withColumn("timestamp_utc", col("date"))
         df = df.filter(col("timestamp_utc").isNotNull())
         
-        df = df.withColumn(
-            "timestamp_et",
-            from_utc_timestamp(col("timestamp_utc"), "America/New_York")
-        )
-        
+        # Convert to ET and calculate trading date
+        df = df.withColumn("timestamp_et", from_utc_timestamp(col("timestamp_utc"), "America/New_York"))
         df = df.withColumn(
             "trading_date",
             when(hour(col("timestamp_et")) < 9, to_date(col("timestamp_et")))
@@ -107,15 +94,13 @@ class GdeltSilverService:
         )
         df = df.filter(col("trading_date").isNotNull())
         
+        # Process each ticker
         all_ticker_dfs = []
-        
         for ticker, rules in stock_config.items():
             aliases = rules['aliases']
             alias_pattern = '|'.join([re.escape(a) for a in aliases])
             
-            ticker_df = df.filter(
-                lower(col("extracted_title")).rlike(f"(?i){alias_pattern}")
-            )
+            ticker_df = df.filter(lower(col("extracted_title")).rlike(f"(?i){alias_pattern}"))
             
             if rules.get('blacklist'):
                 blk_pattern = '|'.join([re.escape(b) for b in rules['blacklist']])
@@ -125,53 +110,35 @@ class GdeltSilverService:
                 )
             
             ticker_df = ticker_df.withColumn("ticker", lit(ticker))
-            
-            ticker_count = ticker_df.count()
-            if ticker_count > 0:
+            if ticker_df.count() > 0:
                 all_ticker_dfs.append(ticker_df)
         
-        if all_ticker_dfs:
-            from functools import reduce
-            df_silver = reduce(lambda df1, df2: df1.union(df2), all_ticker_dfs)
-            
-            df_silver = df_silver.select(
-                col("trading_date").alias("date"),
-                col("ticker"),
-                col("extracted_title"),
-                col("source_url"),
-                col("timestamp_et")
-            )
-            
-            df_silver = df_silver.dropDuplicates(["date", "ticker", "extracted_title"])
-            df_silver = df_silver.withColumn("ingestion_timestamp", current_timestamp())
-            
-            silver_table = "silver.gdelt_news"
-            table_exists = self._table_exists(silver_table)
-            
-            if not table_exists:
-                df_silver.write.format("iceberg").mode("overwrite").saveAsTable(silver_table)
-            else:
-                self._merge_into_table(df_silver, silver_table, ["date", "ticker", "extracted_title"])
-            
-            return self.spark.table(silver_table).count()
+        if not all_ticker_dfs:
+            return 0
         
-        return 0
+        # Union all ticker dataframes
+        df_silver = reduce(lambda df1, df2: df1.union(df2), all_ticker_dfs)
+        
+        df_silver = df_silver.select(
+            col("trading_date").alias("date"),
+            col("ticker"),
+            col("extracted_title"),
+            col("source_url"),
+            col("timestamp_et")
+        )
+        df_silver = df_silver.dropDuplicates(["date", "ticker", "extracted_title"])
+        df_silver = df_silver.withColumn("ingestion_timestamp", current_timestamp())
+        
+        # Write to silver
+        silver_table = "silver.gdelt_news"
+        if not self._table_exists(silver_table):
+            df_silver.write.format("iceberg").mode("overwrite").saveAsTable(silver_table)
+        else:
+            self._merge_into_table(df_silver, silver_table, ["date", "ticker", "extracted_title"])
+        
+        return self.spark.table(silver_table).count()
 
 
 def process_gdelt_to_silver(spark: SparkSession, stock_config: dict):
     service = GdeltSilverService(spark)
     return service.process_gdelt_to_silver(stock_config)
-
-
-def main():
-    stock_config = load_cfg("utils/config.yaml")['stock_config']
-    spark = create_spark_connection()
-    
-    try:
-        row_count = process_gdelt_to_silver(spark, stock_config)
-        logger.info(f"Processing completed: {row_count} rows")
-    finally:
-        spark.stop()
-
-if __name__ == "__main__":
-    main()

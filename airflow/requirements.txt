@@ -4,3 +4,6 @@ confluent-kafka==2.3.0
 connexion[swagger-ui]==2.14.2 
 apache-airflow-providers-apache-kafka 
 apache-airflow-providers-apache-spark
+
+torch>=2.0,<3.0
+transformers>=4.36,<5.0

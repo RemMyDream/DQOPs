@@ -11,7 +11,6 @@ from utils.helpers import create_logger
 
 logger = create_logger("bronze_to_gold_stooq")
 
-
 class StooqGoldService:
     
     def __init__(self, spark: SparkSession):
@@ -70,17 +69,27 @@ class StooqGoldService:
         return self.spark.table(gold_table).count()
 
 
-def process_bronze_to_gold_stooq() -> int:
-    spark = create_spark_connection()
-    try:
-        service = StooqGoldService(spark)
-        return service.process_bronze_to_gold()
-    finally:
-        spark.stop()
+def process_bronze_to_gold_stooq(spark: SparkSession) -> int:
+    service = StooqGoldService(spark)
+    return service.process_bronze_to_gold()
 
-def main():
-    row_count = process_bronze_to_gold_stooq()
-    logger.info(f"Processing completed: {row_count} rows in gold.stooq")
 
-if __name__ == "__main__":
-    main()
+# def main():
+#     row_count = process_bronze_to_gold_stooq()
+#     logger.info(f"Processing completed: {row_count} rows in gold.stooq")
+
+# if __name__ == "__main__":
+#     spark = create_spark_connection()
+
+#     df = spark.read.parquet("s3a://bronze/gdelt_gkg/data")
+
+#     (
+#         df
+#         .coalesce(1)          # nếu muốn 1 file CSV duy nhất
+#         .write
+#         .mode("overwrite")    # hoặc "append"
+#         .option("header", "true")
+#         .csv("/opt/spark/data/gdelt_gkg")
+#     )
+
+#     spark.stop()
