@@ -25,14 +25,13 @@ services:
     volumes:
       - ./data/kafka-node-1:/var/lib/kafka/data-node-1
     healthcheck:
-      test: ["CMD", "kafka-topics", "--bootstrap-server=kafka-node-1:9092", "--list"]
+      test: [ "CMD", "kafka-topics", "--bootstrap-server=kafka-node-1:9092", "--list" ]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 45s
     networks:
       - data-pipeline
-  
   schema-registry:
     image: confluentinc/cp-schema-registry:7.6.0
     container_name: schema-registry
@@ -46,7 +45,7 @@ services:
       KAFKA_SCHEMA_REGISTRY_TOPIC_REPLICATION_FACTOR: 1
     restart: on-failure
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/subjects"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/subjects" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -73,10 +72,10 @@ services:
     depends_on:
       kafka-node-1:
         condition: service_healthy
-      debezium: 
+      debezium:
         condition: service_healthy
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:9021/healthcheck']
+      test: [ 'CMD', 'curl', '-f', 'http://localhost:9021/healthcheck' ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -100,7 +99,7 @@ services:
       KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
     healthcheck:
-      test: ["CMD", "curl", "--silent", "--fail", "-X", "GET", "http://localhost:8083/connectors"]
+      test: [ "CMD", "curl", "--silent", "--fail", "-X", "GET", "http://localhost:8083/connectors" ]
       start_period: 10s
       interval: 10s
       timeout: 5s

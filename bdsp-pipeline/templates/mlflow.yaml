@@ -1,0 +1,178 @@
+{{- if .Values.mlflow.enabled }}
+# --- PostgreSQL Backend Store for MLflow ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mlflow-postgres-pvc
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: mlflow-postgres
+spec:
+  storageClassName: {{ .Values.mlflow.postgres.persistence.storageClass | default "" }}
+  accessModes:
+    - {{ .Values.mlflow.postgres.persistence.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.mlflow.postgres.persistence.size }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow-postgres
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: mlflow-postgres
+spec:
+  replicas: {{ .Values.mlflow.postgres.replicas }}
+  selector:
+    matchLabels:
+      app: mlflow-postgres
+  template:
+    metadata:
+      labels:
+        app: mlflow-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: "postgres:15"
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: {{ .Values.mlflow.postgres.user }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.mlflow.postgres.password }}
+            - name: POSTGRES_DB
+              value: {{ .Values.mlflow.postgres.db }}
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "{{ .Values.mlflow.postgres.user }}", "-d", "{{ .Values.mlflow.postgres.db }}"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: mlflow-postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow-postgres
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: mlflow-postgres
+spec:
+  selector:
+    app: mlflow-postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+---
+# --- MLflow Server ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow-server
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: mlflow-server
+spec:
+  replicas: {{ .Values.mlflow.replicas }}
+  selector:
+    matchLabels:
+      app: mlflow-server
+  template:
+    metadata:
+      labels:
+        app: mlflow-server
+    spec:
+      # Init container to wait for Postgres to be ready
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox
+          # Updated to use /dev/tcp which is more standard than 'nc' in some busybox images
+          command: 
+            - 'sh'
+            - '-c'
+            - 'until (echo > /dev/tcp/mlflow-postgres/5432) >/dev/null 2>&1; do echo "Waiting for postgres..."; sleep 2; done;'
+      containers:
+        - name: mlflow
+          image: "{{ .Values.mlflow.image.repository }}:{{ .Values.mlflow.image.tag }}"
+          imagePullPolicy: {{ .Values.mlflow.image.pullPolicy }}
+          command:
+            - mlflow
+            - server
+            - --backend-store-uri
+            - postgresql://{{ .Values.mlflow.postgres.user }}:{{ .Values.mlflow.postgres.password }}@mlflow-postgres:5432/{{ .Values.mlflow.postgres.db }}
+            - --artifacts-destination
+            - s3://{{ .Values.mlflow.s3.bucket }}
+            - --host
+            - {{ .Values.mlflow.service.host }}
+            - --port
+            - {{ .Values.mlflow.service.port | quote }}
+            
+          ports:
+            - containerPort: {{ .Values.mlflow.service.port }}
+          resources:
+            {{- toYaml .Values.mlflow.resources | nindent 12 }}
+          env:
+            # Postgres Config
+            - name: POSTGRES_USER
+              value: {{ .Values.mlflow.postgres.user }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.mlflow.postgres.password }}
+            - name: POSTGRES_DB
+              value: {{ .Values.mlflow.postgres.db }}
+            
+            # S3/MinIO Config
+            - name: MLFLOW_S3_ENDPOINT_URL
+              # Points to the existing MinIO service defined in minio.yaml
+              value: "http://minio:{{ .Values.minio.service.apiPort }}"
+            - name: MLFLOW_S3_IGNORE_TLS
+              value: "true"
+            - name: MLFLOW_S3_BUCKET
+              value: {{ .Values.mlflow.s3.bucket }}
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: MINIO_ROOT_USER
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: MINIO_ROOT_PASSWORD
+            - name: AWS_DEFAULT_REGION
+              value: {{ .Values.mlflow.s3.region }}
+          readinessProbe:
+            exec:
+              command: ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:{{ .Values.mlflow.service.port }}/health')"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: mlflow-server
+spec:
+  selector:
+    app: mlflow-server
+  ports:
+    - protocol: TCP
+      port: {{ .Values.mlflow.service.port }}
+      targetPort: {{ .Values.mlflow.service.port }}
+  type: {{ .Values.mlflow.service.type }}
+{{- end }}
