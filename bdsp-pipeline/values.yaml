@@ -5,7 +5,7 @@ namespace: dqops
 
 # PostgreSQL configuration
 postgres:
-  enabled: true
+  enabled: false
   image:
     repository: postgres
     tag: "15"
@@ -607,7 +607,7 @@ grafana:
 
 # Airflow configuration
 airflow:
-  enabled: false
+  enabled: true
   
   # Custom Airflow image with Spark, Kafka, etc.
   image:
