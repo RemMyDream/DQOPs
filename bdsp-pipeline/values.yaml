@@ -529,9 +529,62 @@ openmetadata:
     
     backoffLimit: 3
 
+# ClickHouse Configuration
+clickhouse:
+  enabled: true
+  image:
+    repository: clickhouse/clickhouse-server
+    tag: latest
+    pullPolicy: IfNotPresent
+  replica: 1
+  service:
+    type: ClusterIP
+    httpPort: 8123
+    tcpPort: 9000
+  auth:
+    username: admin
+    password: password123
+    database: warehouse
+  persistence:
+    enabled: true
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    size: 10Gi
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 100m
+      memory: 512Mi
+
+# Grafana Configuration
+grafana:
+  enabled: true
+  image:
+    repository: grafana/grafana
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    type: NodePort
+    port: 3000
+    nodePort: 30000
+  admin:
+    user: admin
+    password: admin
+  plugins: "grafana-clickhouse-datasource"
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
 # Airflow configuration
 airflow:
-  enabled: true
+  enabled: false
   
   # Custom Airflow image with Spark, Kafka, etc.
   image:

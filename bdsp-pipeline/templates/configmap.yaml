@@ -376,3 +376,33 @@ data:
         
         return config
 {{- end }}
+---
+# -----------------------------------------------------------------------------
+# Grafana Datasource
+# -----------------------------------------------------------------------------
+{{- if and .Values.grafana.enabled .Values.clickhouse.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: grafana
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+    - name: ClickHouse
+      type: grafana-clickhouse-datasource
+      access: proxy
+      url: http://clickhouse:{{ .Values.clickhouse.service.httpPort }}
+      user: {{ .Values.clickhouse.auth.username }}
+      secureJsonData:
+        password: {{ .Values.clickhouse.auth.password }}
+      jsonData:
+        defaultDatabase: {{ .Values.clickhouse.auth.database }}
+        port: {{ .Values.clickhouse.service.httpPort }}
+        protocol: http
+      isDefault: true
+{{- end }}
