@@ -48,15 +48,16 @@ ORDER BY (symbol, timestamp);
 -- B. Kafka Consumer (Đầu hút dữ liệu)
 CREATE TABLE IF NOT EXISTS warehouse.kafka_stock_stream
 (
-    before Tuple(id Int32, symbol String, price Float64, volume Int64, timestamp Int64),
-    after Tuple(id Int32, symbol String, price Float64, volume Int64, timestamp Int64),
-    op String
+    before Nullable(Tuple(id Int32, symbol String, price Float64, volume Int64, timestamp Int64)),
+    after Nullable(Tuple(id Int32, symbol String, price Float64, volume Int64, timestamp Int64)),
+    op Nullable(String)
 )
 ENGINE = Kafka
-SETTINGS kafka_broker_list = 'kafka:9092',
+SETTINGS kafka_broker_list = 'kafka-node-1:9092',
          kafka_topic_list = 'sourcedb.public.finnhub_stock_prices',
          kafka_group_name = 'clickhouse_consumer_group',
-         kafka_format = 'JSONEachRow';
+         kafka_format = 'AvroConfluent',
+         kafka_schema_registry_url = 'http://schema-registry:8081';
 
 -- C. Materialized View (Cầu nối tự động bơm data)
 CREATE MATERIALIZED VIEW IF NOT EXISTS warehouse.mv_kafka_to_stock
