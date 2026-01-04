@@ -111,6 +111,8 @@ echo ""
 echo -e "${YELLOW}Step 5: Checking Python dependencies...${NC}"
 if [ -f "requirements.txt" ]; then
     echo -e "Installing from requirements.txt..."
+    python -m venv .venv
+    .venv\Scripts\activate
     pip install -q -r requirements.txt
     echo -e "${GREEN}✓ Dependencies installed${NC}\n"
 else
