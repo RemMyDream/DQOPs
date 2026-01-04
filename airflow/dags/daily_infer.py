@@ -66,6 +66,7 @@ with DAG(
             "--model-name", "stock-gru-model",
             "--look-back", "45",
             "--minio-endpoint", "http://minio-service.default.svc.cluster.local:9000",
+            "--save-to-minio",
             # Add --no-sentiment if your model was trained without sentiment
         ],
         env_vars=env_vars,
@@ -81,18 +82,19 @@ with DAG(
     )
 
     # Optional: Add more stocks
-    predict_aapl = KubernetesPodOperator(
-        task_id='predict_aapl',
-        name='stock-inference-aapl-{{ ts_nodash | lower }}',
+    predict_msft = KubernetesPodOperator(
+        task_id='predict_msft',
+        name='stock-inference-msft-{{ ts_nodash | lower }}',
         namespace='default',
         image='stock-inference:latest',
         image_pull_policy='IfNotPresent',
         cmds=["python", "infer.py"],
         arguments=[
-            "--stock", "AAPL",
+            "--stock", "MSFT",
             "--model-name", "stock-gru-model",
             "--look-back", "45",
             "--minio-endpoint", "http://minio-service.default.svc.cluster.local:9000",
+            "--save-to-minio",
         ],
         env_vars=env_vars,
         secrets=[secret_aws_key, secret_aws_secret],
@@ -106,4 +108,4 @@ with DAG(
     )
 
     # Run predictions in parallel
-    [predict_nvda, predict_aapl]
+    [predict_nvda, predict_msft]
