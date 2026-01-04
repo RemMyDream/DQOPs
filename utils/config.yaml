@@ -14,7 +14,7 @@ data_source:
   password: postgres
 
 finnhub:
-  api_key:
+  api_key: 
 
 stock_config:
   NVDA:
