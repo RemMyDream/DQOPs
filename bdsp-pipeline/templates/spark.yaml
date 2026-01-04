@@ -57,11 +57,11 @@ spec:
   {{- end }}
 
 ---
-# PersistentVolumeClaim for Spark applications
+# PersistentVolumeClaim for Spark data directory
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: spark-apps
+  name: spark-data
   namespace: {{ include "bdsp-pipeline.namespace" . }}
   labels:
     {{- include "bdsp-pipeline.labels" . | nindent 4 }}
@@ -71,7 +71,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.spark.persistence.appsSize }}
+      storage: {{ .Values.spark.persistence.dataSize }}
   {{- if .Values.spark.persistence.storageClass }}
   storageClassName: {{ .Values.spark.persistence.storageClass }}
   {{- end }}
@@ -128,8 +128,8 @@ spec:
         volumeMounts:
         - name: spark-logs
           mountPath: /opt/spark/spark-events
-        - name: spark-apps
-          mountPath: /opt/spark/apps
+        - name: spark-data
+          mountPath: /opt/spark/data
         - name: spark-config
           mountPath: /opt/spark/conf/spark-defaults.conf
           subPath: spark-defaults.conf
@@ -161,9 +161,9 @@ spec:
       - name: spark-logs
         persistentVolumeClaim:
           claimName: spark-logs
-      - name: spark-apps
+      - name: spark-data
         persistentVolumeClaim:
-          claimName: spark-apps
+          claimName: spark-data
       - name: spark-config
         configMap:
           name: spark-config
@@ -246,8 +246,8 @@ spec:
         volumeMounts:
         - name: spark-logs
           mountPath: /opt/spark/spark-events
-        - name: spark-apps
-          mountPath: /opt/spark/apps
+        - name: spark-data
+          mountPath: /opt/spark/data
         - name: spark-config
           mountPath: /opt/spark/conf/spark-defaults.conf
           subPath: spark-defaults.conf
@@ -259,9 +259,9 @@ spec:
       - name: spark-logs
         persistentVolumeClaim:
           claimName: spark-logs
-      - name: spark-apps
+      - name: spark-data
         persistentVolumeClaim:
-          claimName: spark-apps
+          claimName: spark-data
       - name: spark-config
         configMap:
           name: spark-config
@@ -338,8 +338,8 @@ spec:
         volumeMounts:
         - name: spark-logs
           mountPath: /opt/spark/spark-events
-        - name: spark-apps
-          mountPath: /opt/spark/apps
+        - name: spark-data
+          mountPath: /opt/spark/data
         - name: spark-config
           mountPath: /opt/spark/conf/spark-defaults.conf
           subPath: spark-defaults.conf
@@ -371,9 +371,9 @@ spec:
       - name: spark-logs
         persistentVolumeClaim:
           claimName: spark-logs
-      - name: spark-apps
+      - name: spark-data
         persistentVolumeClaim:
-          claimName: spark-apps
+          claimName: spark-data
       - name: spark-config
         configMap:
           name: spark-config

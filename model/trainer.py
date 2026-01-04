@@ -1,5 +1,9 @@
 import os
-import json
+import warnings
+warnings.filterwarnings('ignore')
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
 import logging
 import argparse
 import joblib
@@ -21,13 +25,13 @@ from tensorflow.keras.layers import GRU, Dense, Dropout, BatchNormalization
 import keras_tuner as kt
 import mlflow
 import mlflow.keras
-from mlflow.models.signature import infer_signature
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
+logging.getLogger('tensorflow').setLevel(logging.ERROR)
 logger = logging.getLogger(__name__)
 
 FEATURE_COLUMNS = [
@@ -48,85 +52,25 @@ NON_SENTIMENT_FEATURES = [col for col in FEATURE_COLUMNS
 
 def load_data_from_minio(
     stock: str,
-    bucket: str = "gold",
-    prefix: str = "ml_features/data",
-    minio_endpoint: str = None,
-) -> pd.DataFrame:
-    """
-    Load Parquet data from MinIO.
-    This is for loading TRAINING DATA, not MLflow artifacts.
-    MLflow artifact storage is handled by the MLflow server in K8s.
-    """
-    
-    # Check if running with MinIO credentials
-    if not os.environ.get("AWS_ACCESS_KEY_ID"):
-        logger.warning("AWS credentials not found. Returning mock data for demonstration.")
-        dates = pd.date_range(start="2020-01-01", periods=1000)
-        df = pd.DataFrame(np.random.randn(1000, len(FEATURE_COLUMNS)), columns=FEATURE_COLUMNS)
-        df[TARGET_COLUMN] = np.random.randn(1000)
-        df['ticker'] = stock
-        df['date'] = dates
-        return df
-    
-    # Get MinIO endpoint - different depending on where we run
-    if minio_endpoint is None:
-        # Default to localhost for local runs with port-forward
-        # Will be overridden to 'minio:9000' when running inside K8s
-        minio_endpoint = os.environ.get("MINIO_ENDPOINT_URL", "http://localhost:9000")
-    
-    # Create S3 filesystem for data loading
+    folder_path: str = "gold/ml_features/data",
+    minio_endpoint: str = "http://localhost:9010",
+) -> pd.DataFrame: 
     fs = s3fs.S3FileSystem(
         key=os.environ.get("AWS_ACCESS_KEY_ID"),
         secret=os.environ.get("AWS_SECRET_ACCESS_KEY"),
         client_kwargs={"endpoint_url": minio_endpoint}
-    )
-
-    # Construct path - s3fs expects bucket/path format
-    full_path = f"{bucket}/{prefix}"
-    logger.info(f"Loading training data from s3://{full_path} for {stock}")
-    
-    try:
-        # List files in the directory
-        files = fs.ls(full_path)
-        if not files:
-            raise FileNotFoundError(f"No files found in {full_path}")
-        
-        # Find parquet files
-        parquet_files = [f for f in files if f.endswith('.parquet')]
-        if not parquet_files:
-            raise FileNotFoundError(f"No parquet files found in {full_path}")
-        
-        logger.info(f"Found {len(parquet_files)} parquet file(s)")
-        
-        # Read the first parquet file (or combine multiple if needed)
-        df = pd.read_parquet(f"s3://{parquet_files[0]}", filesystem=fs)
-        
-    except Exception as e:
-        logger.error(f"Failed to load data from MinIO: {e}")
-        logger.error(f"Attempted path: s3://{full_path}")
-        logger.error(f"Endpoint: {minio_endpoint}")
-        raise
-
-    # Filter for the specific stock
+    )    
+    parquet_files = [f for f in fs.ls(folder_path) if f.endswith('.parquet')]
+    df = pd.read_parquet(f"s3://{parquet_files[0]}", filesystem=fs)
     df = df[df['ticker'] == stock].copy()
-    
-    if len(df) == 0:
-        raise ValueError(f"No data found for ticker {stock}")
-    
     if 'date' in df.columns:
         df['date'] = pd.to_datetime(df['date'])
         df = df.sort_values('date').set_index('date')
-    
-    cols_to_drop = ['ticker', 'ingestion_timestamp']
-    df = df.drop(columns=[c for c in cols_to_drop if c in df.columns])
-    df = df.dropna(subset=[TARGET_COLUMN])
-    
-    logger.info(f"Loaded {len(df)} samples for {stock}")
+    df = df.drop(columns=['ticker', 'ingestion_timestamp'], errors='ignore')
+    df = df.dropna()
     return df
 
-class StockData:
-    """Handles data preprocessing, scaling, and fold creation."""
-    
+class StockData:    
     def __init__(
         self,
         data: pd.DataFrame,
@@ -139,22 +83,15 @@ class StockData:
         self.rebalancing_frequency = rebalancing_frequency
         self.target_col = target_col
         
-        # Filter features based on sentiment flag
         if get_sentiment:
             self.feature_cols = FEATURE_COLUMNS.copy()
         else:
             self.feature_cols = NON_SENTIMENT_FEATURES.copy()
         
-        # Ensure all feature columns exist
         available_cols = [col for col in self.feature_cols if col in data.columns]
-        if len(available_cols) != len(self.feature_cols):
-            missing = set(self.feature_cols) - set(available_cols)
-            logger.warning(f"Missing columns: {missing}")
-            self.feature_cols = available_cols
-        
+        self.feature_cols = available_cols
         self.data = data[self.feature_cols + [target_col]].copy()
         
-        # Store dates
         if isinstance(self.data.index, pd.DatetimeIndex):
             self.dates = self.data.index.copy()
             self.data = self.data.reset_index(drop=True)
@@ -163,8 +100,6 @@ class StockData:
         
         self.X = self.data[self.feature_cols].values
         self.y = self.data[target_col].values.reshape(-1, 1)
-        
-        # Scalers
         self.x_scaler: Optional[MinMaxScaler] = None
         self.y_scaler: Optional[MinMaxScaler] = None
         
@@ -176,7 +111,6 @@ class StockData:
         y: np.ndarray, 
         fit_scaler: bool = True
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """Create sequences for GRU input, handling scaling."""
         if fit_scaler:
             self.x_scaler = MinMaxScaler()
             self.y_scaler = MinMaxScaler()
@@ -196,14 +130,12 @@ class StockData:
         X: np.ndarray, 
         y: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """Helper to create sequences with look_back window."""
         input_data = []
         target_data = []
         
         for i in range(0, len(X) - self.look_back, self.rebalancing_frequency):
             input_seq = X[i:i + self.look_back]
             target_value = y[i + self.look_back]
-            
             input_data.append(input_seq)
             target_data.append(target_value)
         
@@ -217,7 +149,6 @@ class StockData:
         anchored: bool = True,
         min_train_size: Optional[int] = None
     ) -> List[Dict]:
-        """Create walk-forward validation folds."""
         n_samples = len(self.X)
         
         if test_window is None:
@@ -254,7 +185,6 @@ class StockData:
                     current_train_start += step_size
                 continue
             
-            # Ensure we have enough data for at least one sequence
             if (test_end - test_start) < 1:
                 break
 
@@ -280,7 +210,6 @@ class StockData:
         return folds
     
     def inverse_transform(self, data: np.ndarray, scaler: str = 'y') -> np.ndarray:
-        """Inverse transform scaled data."""
         if scaler == 'y' and self.y_scaler is not None:
             return self.y_scaler.inverse_transform(data)
         elif scaler == 'x' and self.x_scaler is not None:
@@ -289,7 +218,6 @@ class StockData:
             raise ValueError(f"Scaler '{scaler}' not fitted.")
     
     def get_info(self) -> Dict[str, Any]:
-        """Get data information."""
         return {
             'total_samples': len(self.X),
             'n_features': len(self.feature_cols),
@@ -300,84 +228,51 @@ class StockData:
         }
 
 class GRUHyperModel(kt.HyperModel):
-    """Keras Tuner HyperModel for GRU architecture."""
-    
     def __init__(self, look_back: int, input_size: int):
         self.look_back = look_back
         self.input_size = input_size
     
     def build(self, hp) -> Sequential:
-        model = Sequential()
+        from tensorflow.keras.layers import Input
         
-        # Hyperparameters
+        model = Sequential()
+        model.add(Input(shape=(self.look_back, self.input_size)))
+        
         num_gru_layers = hp.Int("num_gru_layers", 1, 3)
         optimizer_choice = hp.Choice('optimizer', ['adam', 'rmsprop'])
         learning_rate = hp.Float('learning_rate', min_value=1e-4, max_value=1e-2, sampling='log')
         use_batch_norm = hp.Boolean("batch_norm", default=True)
         
-        # GRU layers
         for i in range(num_gru_layers):
             units = hp.Int(f"gru_units_{i}", min_value=32, max_value=200, step=32)
             dropout_rate = hp.Float(f"dropout_{i}", min_value=0.1, max_value=0.4, step=0.1)
             
-            if i == 0:
-                model.add(
-                    GRU(
-                        units=units,
-                        return_sequences=(num_gru_layers > 1),
-                        input_shape=(self.look_back, self.input_size)
-                    )
-                )
-            else:
-                model.add(
-                    GRU(
-                        units=units,
-                        return_sequences=(i < num_gru_layers - 1)
-                    )
-                )
+            model.add(GRU(units=units, return_sequences=(i < num_gru_layers - 1)))
             
             if use_batch_norm:
                 model.add(BatchNormalization())
             model.add(Dropout(dropout_rate))
         
-        # Dense layers
         dense_units = hp.Int("dense_units", min_value=16, max_value=64, step=16)
         model.add(Dense(dense_units, activation='relu'))
         model.add(Dropout(0.2))
-        
-        # Output
         model.add(Dense(1))
         
-        # Optimizer
         if optimizer_choice == 'adam':
             optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
         else:
             optimizer = tf.keras.optimizers.RMSprop(learning_rate=learning_rate)
         
-        model.compile(
-            optimizer=optimizer,
-            loss=tf.keras.losses.Huber(),
-            metrics=['mae']
-        )
-        
+        model.compile(optimizer=optimizer, loss=tf.keras.losses.Huber(), metrics=['mae'])
         return model
 
 class MLflowCallback(Callback):
-    """
-    MLflow callback for logging metrics during training.
-    Logs to the currently active MLflow run (child run in nested structure).
-    """
     def on_epoch_end(self, epoch, logs=None):
         if logs:
             for key, value in logs.items():
                 mlflow.log_metric(key, value, step=epoch)
 
 class StockModel:
-    """
-    Stock prediction model with MLflow Nested Runs integration.
-    MLflow artifact storage is handled by the MLflow server (configured in K8s).
-    """
-    
     def __init__(
         self,
         stock_data: StockData,
@@ -389,11 +284,9 @@ class StockModel:
         self.folds = folds
         self.experiment_name = experiment_name
         self.run_name = run_name or f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        
         self.best_hps = None
         self.latest_model = None
         
-        # Get input shape from first fold
         fold = folds[0]
         X_tmp, _ = stock_data.create_sequences_from_raw(
              fold['train'][0], fold['train'][1], fit_scaler=True
@@ -402,7 +295,6 @@ class StockModel:
         self.input_size = X_tmp.shape[2]
         self.feature_names = stock_data.feature_cols
         
-        # Hypermodel
         self.hypermodel = GRUHyperModel(
             look_back=self.look_back,
             input_size=self.input_size
@@ -417,10 +309,6 @@ class StockModel:
         patience: int = 10,
         verbose: int = 1
     ) -> Dict:
-        """
-        Tune hyperparameters using Bayesian Optimization.
-        Uses the LAST fold (most recent data) to ensure relevance.
-        """
         fold = self.folds[-1] 
         logger.info(f"Tuning hyperparameters on fold {fold['fold']} (most recent data)")
         
@@ -428,9 +316,7 @@ class StockModel:
             fold['train'][0], fold['train'][1], fit_scaler=True
         )
         
-        # Create a unique directory for tuner to avoid conflicts
         tuner_dir = f'tuner_dir_{datetime.now().strftime("%Y%m%d_%H%M%S")}'
-
         tuner = kt.BayesianOptimization(
             self.hypermodel,
             objective='val_loss',
@@ -457,7 +343,6 @@ class StockModel:
         
         self.best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
         
-        # Extract best params as dict
         best_params = {
             'num_gru_layers': self.best_hps.get('num_gru_layers'),
             'optimizer': self.best_hps.get('optimizer'),
@@ -471,20 +356,18 @@ class StockModel:
             best_params[f'dropout_{i}'] = self.best_hps.get(f'dropout_{i}')
         
         logger.info(f"Best hyperparameters: {best_params}")
-        
         return best_params
     
     def _build_model(self) -> Sequential:
-        """Build model from best hyperparameters."""
         if self.best_hps is None:
             raise ValueError("Run tune_hyperparameters() first.")
         return self.hypermodel.build(self.best_hps)
+
     def _calculate_all_metrics(
         self,
         actuals: np.ndarray,
         predictions: np.ndarray
     ) -> Dict[str, float]:
-        """Calculate all evaluation metrics."""
         metrics = {
             'mse': mean_squared_error(actuals, predictions),
             'rmse': np.sqrt(mean_squared_error(actuals, predictions)),
@@ -492,20 +375,16 @@ class StockModel:
             'r2': r2_score(actuals, predictions)
         }
         
-        # Direction accuracy
         y_dir = np.sign(np.diff(actuals))
         pred_dir = np.sign(np.diff(predictions))
         metrics['direction_accuracy'] = float(np.mean(y_dir == pred_dir))
         
-        # Information Coefficient (Spearman correlation)
-        ic, ic_pvalue = stats.spearmanr(actuals, predictions)
+        ic, _ = stats.spearmanr(actuals, predictions)
         metrics['ic'] = float(ic)
         
-        # Pearson correlation
-        pearson, pearson_pvalue = stats.pearsonr(actuals, predictions)
+        pearson, _ = stats.pearsonr(actuals, predictions)
         metrics['pearson'] = float(pearson)
         
-        # Sharpe Ratio (annualized)
         strategy_returns = np.where(
             pred_dir == y_dir,
             np.abs(np.diff(actuals)),
@@ -529,19 +408,12 @@ class StockModel:
         register_model: bool = True,
         model_name: str = "stock-gru-model"
     ) -> Dict:
-        """
-        Full training pipeline with MLflow Nested Runs.
-        
-        Note: MLflow artifact storage (models, scalers) is automatically handled
-        by the MLflow server which is configured to use MinIO in K8s.
-        """
         mlflow.set_experiment(self.experiment_name)
         
-        # Start PARENT Run
         with mlflow.start_run(run_name=self.run_name) as parent_run:
             logger.info(f"Parent Run ID: {parent_run.info.run_id}")
             
-            # 1. Log Global Parameters
+            # Log global parameters
             data_info = self.stock_data.get_info()
             mlflow.log_params({
                 **data_info,
@@ -551,18 +423,16 @@ class StockModel:
                 'n_folds': len(self.folds)
             })
             
-            # 2. Hyperparameter Tuning
+            # Hyperparameter tuning
             logger.info("Phase 1: Hyperparameter Tuning")
             best_params = self.tune_hyperparameters(
                 max_trials=max_trials, 
                 epochs=50,
                 patience=10
             )
-            
-            # Log best hyperparameters to Parent Run
             mlflow.log_params({f"hp_{k}": v for k, v in best_params.items()})
 
-            # 3. Walk-Forward Validation (Nested Runs)
+            # Walk-forward validation
             all_predictions = []
             all_actuals = []
             fold_metrics = []
@@ -572,15 +442,12 @@ class StockModel:
             for fold in self.folds:
                 fold_num = fold['fold']
                 
-                # Start CHILD Run for this Fold
-                with mlflow.start_run(run_name=f"Fold_{fold_num}", nested=True) as child_run:
-                    logger.info(f"  Starting Child Run for Fold {fold_num}")
+                with mlflow.start_run(run_name=f"Fold_{fold_num}", nested=True):
+                    logger.info(f"  Training Fold {fold_num}")
                     
-                    # Tag the child run
                     mlflow.set_tag("fold_index", fold_num)
                     mlflow.set_tag("parent_run_id", parent_run.info.run_id)
                     
-                    # Prepare Data
                     X_train, y_train = self.stock_data.create_sequences_from_raw(
                         fold['train'][0], fold['train'][1], fit_scaler=True
                     )
@@ -592,10 +459,8 @@ class StockModel:
                         logger.warning(f"Fold {fold_num} has empty data. Skipping.")
                         continue
 
-                    # Build Model
                     model = self._build_model()
                     
-                    # Train
                     history = model.fit(
                         X_train, y_train,
                         validation_data=(X_test, y_test),
@@ -608,74 +473,68 @@ class StockModel:
                         verbose=0
                     )
                     
-                    # Predict
                     predictions = model.predict(X_test, verbose=0)
                     predictions_inv = self.stock_data.inverse_transform(predictions)
                     y_test_inv = self.stock_data.inverse_transform(y_test)
                     
-                    # Calculate Fold Metrics
                     mse = mean_squared_error(y_test_inv, predictions_inv)
                     
-                    # Log metrics to Child Run
                     mlflow.log_metric("mse", mse)
                     mlflow.log_metric("epochs_trained", len(history.history['loss']))
                     
-                    # Aggregate results
                     all_predictions.extend(predictions_inv.flatten())
                     all_actuals.extend(y_test_inv.flatten())
                     fold_metrics.append({'fold': fold_num, 'mse': mse})
                     
-                    # Update latest model
                     self.latest_model = model
-                    
-                    # Clean up
                     tf.keras.backend.clear_session()
             
-            # 4. Calculate & Log Aggregate Metrics to PARENT Run
+            # Calculate aggregate metrics
             all_predictions = np.array(all_predictions)
             all_actuals = np.array(all_actuals)
             
             if len(all_predictions) > 0:
                 metrics = self._calculate_all_metrics(all_actuals, all_predictions)
-                
                 logger.info(f"Overall MSE: {metrics['mse']:.6f}")
                 
-                # Log aggregate metrics to Parent Run
                 for k, v in metrics.items():
                     if v is not None:
                         mlflow.log_metric(f"avg_{k}", v)
-
-            # 5. Log Artifacts & Model to Parent Run
-            # MLflow server will automatically store these in MinIO
             
-            # Save Scalers locally then log as artifacts
+            # Log scalers
             os.makedirs('tmp_artifacts', exist_ok=True)
             joblib.dump(self.stock_data.x_scaler, 'tmp_artifacts/x_scaler.pkl')
             joblib.dump(self.stock_data.y_scaler, 'tmp_artifacts/y_scaler.pkl')
             mlflow.log_artifact('tmp_artifacts/x_scaler.pkl')
             mlflow.log_artifact('tmp_artifacts/y_scaler.pkl')
 
-            # Log Model (MLflow server stores this in MinIO automatically)
+            # Log model
             if self.latest_model:
-                sample_input = self.folds[0]['train'][0][:self.look_back]
-                X_sample, _ = self.stock_data.create_sequences_from_raw(
-                    sample_input.reshape(1, -1).repeat(self.look_back + 1, axis=0),
-                    np.zeros((self.look_back + 1, 1)),
-                    fit_scaler=True
-                )
-                
-                signature = infer_signature(
-                    X_sample[:1],
-                    self.latest_model.predict(X_sample[:1], verbose=0)
-                )
-                
-                mlflow.keras.log_model(
-                    self.latest_model,
-                    "model",
-                    signature=signature,
-                    registered_model_name=model_name if register_model else None
-                )
-                logger.info("Model logged to MLflow (artifacts stored in MinIO by MLflow server)")
+                try:
+                    local_model_path = "tmp_model.keras"
+                    if os.path.exists(local_model_path):
+                        os.remove(local_model_path)
+                    
+                    self.latest_model.save(local_model_path)
+                    mlflow.log_artifact(local_model_path, artifact_path="model")
+                    logger.info("Model logged successfully")
+                    
+                    if register_model:
+                        model_uri = f"runs:/{parent_run.info.run_id}/model/tmp_model.keras"
+                        try:
+                            result = mlflow.register_model(model_uri, model_name)
+                            logger.info(f"Model registered as '{model_name}' version {result.version}")
+                        except Exception as e:
+                            if "Successfully registered" in str(e):
+                                logger.info(f"Model registered as '{model_name}'")
+                            else:
+                                logger.warning(f"Registration issue: {e}")
+                    
+                    if os.path.exists(local_model_path):
+                        os.remove(local_model_path)
+                        
+                except Exception as e:
+                    logger.error(f"Failed to log model: {e}")
 
             return {
                 'run_id': parent_run.info.run_id,
@@ -686,51 +545,31 @@ class StockModel:
 def main():
     parser = argparse.ArgumentParser(description='Train Stock Prediction Model')
     
-    # Data arguments
     parser.add_argument('--stock', type=str, default='NVDA', help='Stock ticker')
-    parser.add_argument('--bucket', type=str, default='gold', help='MinIO bucket for training data')
-    parser.add_argument('--prefix', type=str, default='ml_features/data', help='Path prefix in bucket')
-    parser.add_argument('--minio-endpoint', type=str, default=None, 
-                       help='MinIO endpoint (default: localhost:9000 for local, minio:9000 for K8s)')
-    
-    # Model arguments
+    parser.add_argument('--minio-endpoint', type=str, default=None, help='MinIO endpoint')
     parser.add_argument('--look-back', type=int, default=45, help='Look back window')
     parser.add_argument('--get-sentiment', action='store_true', help='Include sentiment features')
-    
-    # Training arguments
     parser.add_argument('--initial-train-samples', type=int, default=800)
     parser.add_argument('--test-window', type=int, default=60)
     parser.add_argument('--step-size', type=int, default=60)
-    parser.add_argument('--anchored', action='store_true', help='Use anchored (expanding) window')
+    parser.add_argument('--anchored', action='store_true', help='Use anchored window')
     parser.add_argument('--max-trials', type=int, default=10, help='Max hyperparameter trials')
     parser.add_argument('--epochs', type=int, default=50, help='Training epochs')
     parser.add_argument('--batch-size', type=int, default=32)
     parser.add_argument('--patience', type=int, default=10)
-    
-    # MLflow arguments
-    parser.add_argument('--mlflow-tracking-uri', type=str, default='http://localhost:5000',
-                       help='MLflow tracking server URI')
+    parser.add_argument('--mlflow-tracking-uri', type=str, default='http://localhost:5000')
     parser.add_argument('--mlflow-experiment', type=str, default='stock-prediction')
-    parser.add_argument('--register-model', action='store_true', help='Register model to MLflow')
+    parser.add_argument('--register-model', action='store_true', help='Register model')
     parser.add_argument('--model-name', type=str, default='stock-gru-model')
     
     args = parser.parse_args()
     
-    # Set MLflow tracking URI
     mlflow.set_tracking_uri(args.mlflow_tracking_uri)
     logger.info(f"MLflow Tracking URI: {args.mlflow_tracking_uri}")
-    logger.info("Note: MLflow artifact storage is handled by the MLflow server")
     
     try:
-        # Load training data from MinIO
-        data = load_data_from_minio(
-            stock=args.stock,
-            bucket=args.bucket,
-            prefix=args.prefix,
-            minio_endpoint=args.minio_endpoint
-        )
+        data = load_data_from_minio(stock=args.stock)
         
-        # Create StockData
         stock_data = StockData(
             data=data,
             look_back=args.look_back,
@@ -738,7 +577,6 @@ def main():
             target_col=TARGET_COLUMN
         )
         
-        # Create folds
         folds = stock_data.create_walk_forward_folds(
             initial_train_samples=args.initial_train_samples,
             test_window=args.test_window,
@@ -750,7 +588,6 @@ def main():
             logger.error("No folds created. Check data size or initial_train_samples.")
             return
 
-        # Create model
         model = StockModel(
             stock_data=stock_data,
             folds=folds,
@@ -758,7 +595,6 @@ def main():
             run_name=f"{args.stock}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         )
         
-        # Train with MLflow
         results = model.train_with_mlflow(
             max_trials=args.max_trials,
             epochs=args.epochs,
@@ -768,7 +604,6 @@ def main():
             model_name=args.model_name
         )
         
-        # Print summary
         print("\n" + "=" * 60)
         print("TRAINING SUMMARY")
         print("=" * 60)

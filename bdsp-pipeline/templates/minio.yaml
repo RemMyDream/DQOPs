@@ -43,23 +43,34 @@ spec:
         env:
         - name: MINIO_ROOT_USER
           valueFrom:
-            configMapKeyRef:
-              name: minio-config
-              key: MINIO_ROOT_USER
+            secretKeyRef:
+              name: minio-secret
+              key: root-user
         - name: MINIO_ROOT_PASSWORD
           valueFrom:
-            configMapKeyRef:
-              name: minio-config
-              key: MINIO_ROOT_PASSWORD
+            secretKeyRef:
+              name: minio-secret
+              key: root-password
+        {{- if .Values.minio.config.region }}
+        - name: MINIO_REGION
+          value: {{ .Values.minio.config.region | quote }}
+        {{- end }}
+        {{- if .Values.minio.config.browserRedirectUrl }}
+        - name: MINIO_BROWSER_REDIRECT_URL
+          value: {{ .Values.minio.config.browserRedirectUrl | quote }}
+        {{- end }}
         command:
         - /bin/sh
         - -c
-        - minio server /data --console-address ":9001"
+        - |
+          minio server /data --console-address ":{{ .Values.minio.service.consolePort }}"
         ports:
         - containerPort: {{ .Values.minio.service.apiPort }}
           name: api
+          protocol: TCP
         - containerPort: {{ .Values.minio.service.consolePort }}
           name: console
+          protocol: TCP
         volumeMounts:
         - name: minio-storage
           mountPath: /data
@@ -72,16 +83,22 @@ spec:
           httpGet:
             path: /minio/health/live
             port: {{ .Values.minio.service.apiPort }}
+            scheme: HTTP
           initialDelaySeconds: {{ .Values.minio.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.minio.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.minio.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.minio.livenessProbe.failureThreshold }}
         {{- end }}
         {{- if .Values.minio.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
             path: /minio/health/ready
             port: {{ .Values.minio.service.apiPort }}
+            scheme: HTTP
           initialDelaySeconds: {{ .Values.minio.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.minio.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.minio.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.minio.readinessProbe.failureThreshold }}
         {{- end }}
       volumes:
       - name: minio-storage
@@ -102,9 +119,69 @@ spec:
   ports:
   - name: api
     port: {{ .Values.minio.service.apiPort }}
-    targetPort: {{ .Values.minio.service.apiPort }}
+    targetPort: api
+    protocol: TCP
+    {{- if and (eq .Values.minio.service.type "NodePort") .Values.minio.service.apiNodePort }}
+    nodePort: {{ .Values.minio.service.apiNodePort }}
+    {{- end }}
   - name: console
     port: {{ .Values.minio.service.consolePort }}
-    targetPort: {{ .Values.minio.service.consolePort }}
+    targetPort: console
+    protocol: TCP
+    {{- if and (eq .Values.minio.service.type "NodePort") .Values.minio.service.consoleNodePort }}
+    nodePort: {{ .Values.minio.service.consoleNodePort }}
+    {{- end }}
   type: {{ .Values.minio.service.type }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-init-buckets
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: minio-init
+spec:
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app: minio-init
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: minio-init-buckets
+        image: "minio/mc:{{ .Values.minio.mcImage.tag }}"
+        imagePullPolicy: {{ .Values.minio.mcImage.pullPolicy }}
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -e
+          echo "Waiting for MinIO service to be ready..."
+          until mc alias set myminio http://minio.{{ include "bdsp-pipeline.namespace" . }}.svc.cluster.local:{{ .Values.minio.service.apiPort }} "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" 2>/dev/null; do
+            echo "MinIO not ready yet, retrying in 5 seconds..."
+            sleep 5
+          done
+
+          echo "MinIO is ready. Creating buckets..."
+          {{- range .Values.minio.buckets }}
+          mc mb myminio/{{ . }} --ignore-existing || true
+          echo "Bucket '{{ . }}' created or already exists"
+          {{- end }}
+
+          echo "Listing all buckets:"
+          mc ls myminio
+
+          echo "MinIO bucket initialization complete."
+        env:
+        - name: MINIO_ROOT_USER
+          valueFrom:
+            secretKeyRef:
+              name: minio-secret
+              key: root-user
+        - name: MINIO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: minio-secret
+              key: root-password
 {{- end }}

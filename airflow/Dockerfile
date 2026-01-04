@@ -33,19 +33,16 @@ RUN curl -L https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-$
     && mv /opt/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} ${SPARK_HOME} \
     && rm spark.tgz
 
-# Download JAR files trực tiếp vào thư mục jars của Spark
-RUN curl -L -o ${SPARK_HOME}/jars/spark-sql-kafka-0-10_2.12-3.5.1.jar \
-        https://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.12/3.5.1/spark-sql-kafka-0-10_2.12-3.5.1.jar && \
-    curl -L -o ${SPARK_HOME}/jars/hadoop-aws-3.3.4.jar \
-        https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar && \
+# Download Iceberg JARs
+RUN curl -L -o ${SPARK_HOME}/jars/iceberg-spark-runtime-3.5_2.12-1.7.1.jar \
+    https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark-runtime-3.5_2.12/1.7.1/iceberg-spark-runtime-3.5_2.12-1.7.1.jar && \
+    curl -L -o ${SPARK_HOME}/jars/iceberg-aws-bundle-1.7.1.jar \
+    https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-aws-bundle/1.7.1/iceberg-aws-bundle-1.7.1.jar
+
+RUN curl -L -o ${SPARK_HOME}/jars/hadoop-aws-3.3.4.jar \
+    https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar && \
     curl -L -o ${SPARK_HOME}/jars/aws-java-sdk-bundle-1.12.262.jar \
-        https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar && \
-    curl -L -o ${SPARK_HOME}/jars/kafka-clients-3.4.1.jar \
-        https://repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.4.1/kafka-clients-3.4.1.jar && \
-    curl -L -o ${SPARK_HOME}/jars/spark-token-provider-kafka-0-10_2.12-3.5.1.jar \
-        https://repo1.maven.org/maven2/org/apache/spark/spark-token-provider-kafka-0-10_2.12/3.5.1/spark-token-provider-kafka-0-10_2.12-3.5.1.jar && \
-    curl -L -o ${SPARK_HOME}/jars/commons-pool2-2.11.1.jar \
-        https://repo1.maven.org/maven2/org/apache/commons/commons-pool2/2.11.1/commons-pool2-2.11.1.jar
+    https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar
 
 # Set environment variables for Spark 3.5.1
 ENV PATH=${SPARK_HOME}/bin:${SPARK_HOME}/sbin:${JAVA_HOME}/bin:/home/airflow/.local/bin:${PATH}
@@ -59,6 +56,9 @@ COPY entrypoint.sh ${AIRFLOW_HOME}/entrypoint.sh
 
 RUN dos2unix ${AIRFLOW_HOME}/entrypoint.sh && \
     chmod +x ${AIRFLOW_HOME}/entrypoint.sh
+
+# Copy DAGs to the image
+COPY dags/ ${AIRFLOW_HOME}/dags/
 
 USER airflow
 RUN pip3 install -r ./requirements.txt --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.9.0/constraints-3.10.txt"
