@@ -1,4 +1,3 @@
-.venv
 __pycache__/
 spark/data/*
 spark/__pycache__/
@@ -27,3 +26,4 @@ clickhouse/cluster_2S_2R/fs/volumes/clickhouse-keeper-02/var
 clickhouse/cluster_2S_2R/fs/volumes/clickhouse-keeper-03/var
 spark/data/*
 build-and-push.sh
+/.venv
