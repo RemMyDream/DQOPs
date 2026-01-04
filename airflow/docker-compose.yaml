@@ -16,7 +16,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - default
+      - data-pipeline
   webserver:
     build: .
     image: my-airflow:latest
@@ -29,14 +29,13 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
       AIRFLOW__WEBSERVER__SECRET_KEY: this_is_a_very_secured_key
-      AIRFLOW_CONN_SPARK_DEFAULT: spark://spark-master:7077?deploy_mode=client
+      AIRFLOW_CONN_SPARK_DEFAULT: spark://spark-master:7077?deploy_mode=cluster
       AIRFLOW__API__AUTH_BACKEND: airflow.api.auth.backend.basic_auth
     volumes:
       - ./dags:/opt/airflow/dags
-      - ../spark/spark_apps:/opt/airflow/spark_apps
+      - ../spark/spark_apps:/opt/spark/apps
       - ./scripts:/opt/airflow/scripts
-      - ../utils:/opt/airflow/utils
-      - ../backend:/opt/airflow/backend
+      - ../utils:/opt/spark/utils
     ports:
       - "8080:8080"
     healthcheck:
@@ -45,7 +44,7 @@ services:
       timeout: 30s
       retries: 3
     networks:
-      - default
+      - data-pipeline
 
   scheduler:
     image: my-airflow:latest
@@ -56,22 +55,22 @@ services:
         condition: service_healthy
     volumes:
       - ./dags:/opt/airflow/dags
-      - ../spark/spark_apps:/opt/airflow/spark_apps
+      - ../spark/spark_apps:/opt/spark/apps
       - ./scripts:/opt/airflow/scripts
-      - ../utils:/opt/airflow/utils
-      - ../backend:/opt/airflow/backend
+      - ../utils:/opt/spark/utils
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
       AIRFLOW__WEBSERVER__SECRET_KEY: this_is_a_very_secured_key
-      AIRFLOW_CONN_SPARK_DEFAULT: spark://spark-master:7077?deploy_mode=client
+      AIRFLOW_CONN_SPARK_DEFAULT: spark://spark-master:7077?deploy_mode=cluster
       AIRFLOW__API__AUTH_BACKEND: airflow.api.auth.backend.basic_auth
     networks:
-      - default
+      - data-pipeline
 
 networks:
-  default:
-    name: bigdata-net
+  data-pipeline:
+    name: data-pipeline
     external: True
+
 volumes:
   postgres_data:

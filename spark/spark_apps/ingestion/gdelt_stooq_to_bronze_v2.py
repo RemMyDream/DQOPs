@@ -4,22 +4,20 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List, Dict
-import pandas_datareader.data as pdr
 import pandas as pd
+import pandas_datareader.data as pdr
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from create_spark_connection import create_spark_connection
-from utils.helpers import create_logger, load_cfg
+
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import current_timestamp
 from pyspark.sql.types import StructType, StructField, StringType, TimestampType
 
+from utils.helpers import create_logger, load_cfg
+
 logger = create_logger("gdelt_stooq_to_minio")
 
 lakehouse_cfg = load_cfg("utils/config.yaml")['lakehouse']
-MINIO_ENDPOINT = lakehouse_cfg.get('endpoint')
-MINIO_ACCESS_KEY = lakehouse_cfg.get('root_user')
-MINIO_SECRET_KEY = lakehouse_cfg.get('root_password')
 BIGQUERY_API_KEY = "utils/bigquery_api.json"
 
 @dataclass
@@ -34,9 +32,7 @@ class GdeltConfig:
     end_date: str
     stock_config: Dict[str, Dict]
 
-
 class DataProvider(ABC):
-    
     @abstractmethod
     def fetch_data(self) -> Optional[pd.DataFrame]:
         pass
@@ -84,8 +80,7 @@ class StooqProvider(DataProvider):
         if not all_data:
             return None
         
-        combined = pd.concat(all_data, ignore_index=True)
-        return combined
+        return pd.concat(all_data, ignore_index=True)
     
     def get_table_name(self) -> str:
         return "stooq"
@@ -125,7 +120,7 @@ class GdeltGkgProvider(DataProvider):
             
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = BIGQUERY_API_KEY
             
-            self._logger.info(f"Fetching GDELT GKG from BigQuery: {self.config.start_date} to {self.config.end_date}")
+            self._logger.info(f"Fetching GDELT GKG: {self.config.start_date} to {self.config.end_date}")
             
             client = bigquery.Client()
             filter_logic = self._generate_bq_filter()
@@ -185,7 +180,8 @@ class IcebergWriter:
         if df is None or df.empty:
             self._logger.warning("No data to write")
             return 0
-                
+        
+        # Convert to Spark DataFrame
         if table_name == "gdelt_gkg":
             if 'date' in df.columns:
                 df['date'] = pd.to_datetime(df['date'].astype(str), format='%Y%m%d%H%M%S', errors='coerce')
@@ -198,21 +194,18 @@ class IcebergWriter:
                 StructField("tone", StringType(), True),
                 StructField("extras", StringType(), True),
             ])
-            
             spark_df = self.spark.createDataFrame(df, schema=schema)
         else:
             spark_df = self.spark.createDataFrame(df)
         
         spark_df = spark_df.withColumn("ingestion_timestamp", current_timestamp())
         iceberg_table = f"{self.catalog}.{table_name}"
-        table_exists = self._table_exists(iceberg_table)
         
-        if not table_exists:
+        if not self._table_exists(iceberg_table):
             self._logger.info(f"Creating new table: {iceberg_table}")
             spark_df.write.format("iceberg").mode("overwrite").saveAsTable(iceberg_table)
-            self._logger.info(f"Table created at s3a://{self.catalog}/{table_name}/")
         else:
-            self._logger.info(f"Performing merge: {iceberg_table}")
+            self._logger.info(f"Merging into: {iceberg_table}")
             self._merge_into_table(spark_df, iceberg_table, primary_keys)
         
         row_count = self.spark.table(iceberg_table).count()
@@ -250,11 +243,10 @@ class IcebergWriter:
         """
         
         self.spark.sql(merge_sql)
-        self._logger.info(f"Merge completed")
+        self._logger.info("Merge completed")
 
 
-class BronzeIngestionService:
-    
+class BronzeIngestionService:    
     def __init__(self, spark: SparkSession, catalog: str = "bronze"):
         self.spark = spark
         self.catalog = catalog
@@ -262,7 +254,7 @@ class BronzeIngestionService:
         self._logger = create_logger(self.__class__.__name__)
     
     def ingest(self, provider: DataProvider) -> int:
-        self._logger.info(f"Starting ingestion: {provider.get_table_name()} into {self.catalog}")
+        self._logger.info(f"Ingesting: {provider.get_table_name()} → {self.catalog}")
         
         df = provider.fetch_data()
         if df is None:
@@ -275,75 +267,32 @@ class BronzeIngestionService:
             primary_keys=provider.get_primary_keys(),
         )
         
-        self._logger.info(f"Ingestion completed: {count} rows")
+        self._logger.info(f"Completed: {count} rows")
         return count
 
 
 def ingest_stooq(
+    spark: SparkSession,
     tickers: List[str],
     start_date: str,
     end_date: Optional[str] = None,
     catalog: str = "bronze"
 ) -> int:
-    spark = create_spark_connection()
-    try:
-        config = StooqConfig(tickers=tickers, start_date=start_date, end_date=end_date)
-        provider = StooqProvider(config)
-        service = BronzeIngestionService(spark, catalog=catalog)
-        return service.ingest(provider)
-    finally:
-        spark.stop()
-
+    config = StooqConfig(tickers=tickers, start_date=start_date, end_date=end_date)
+    provider = StooqProvider(config)
+    service = BronzeIngestionService(spark, catalog=catalog)
+    return service.ingest(provider)
 
 def ingest_gdelt_gkg(
+    spark: SparkSession,
     start_date: str,
     end_date: str,
     stock_config: Dict[str, Dict],
     catalog: str = "bronze"
 ) -> int:
-    spark = create_spark_connection()
-    try:
-        config = GdeltConfig(start_date=start_date, end_date=end_date, stock_config=stock_config)
-        provider = GdeltGkgProvider(config)
-        service = BronzeIngestionService(spark, catalog=catalog)
-        return service.ingest(provider)
-    finally:
-        spark.stop()
+    config = GdeltConfig(start_date=start_date, end_date=end_date, stock_config=stock_config)
+    provider = GdeltGkgProvider(config)
+    service = BronzeIngestionService(spark, catalog=catalog)
+    return service.ingest(provider)
 
 
-def main():
-    logger.info("Starting Bronze Layer Ingestion Pipeline")
-    
-    stooq_tickers = ['NVDA', 'MSFT']
-    stooq_start = '2020-01-02'
-    stooq_end = '2025-12-22'
-    
-    gdelt_start = '2019-12-31'
-    gdelt_end = '2025-12-23'
-    stock_config = load_cfg("utils/config.yaml")['stock_config']
-    
-    try:
-        logger.info("=== Ingesting Stooq Data ===")
-        stooq_count = ingest_stooq(
-            tickers=stooq_tickers,
-            start_date=stooq_start,
-            end_date=stooq_end
-        )
-        logger.info(f"Stooq ingestion completed: {stooq_count} rows")
-        
-        logger.info("=== Ingesting GDELT GKG Data ===")
-        gdelt_count = ingest_gdelt_gkg(
-            start_date=gdelt_start,
-            end_date=gdelt_end,
-            stock_config=stock_config
-        )
-        logger.info(f"GDELT GKG ingestion completed: {gdelt_count} rows")
-        
-        logger.info("Pipeline completed successfully!")
-
-    except Exception as e:
-        logger.error(f"Pipeline failed: {e}")
-        raise
-
-if __name__ == "__main__":
-    main()
