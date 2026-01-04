@@ -1,4 +1,7 @@
 ### Grafana: Kết nối Real-time từ Kafka
+## Grafana: Hướng dẫn Kết nối Real-time từ Kafka
+
+Speed: Finnhub -> Postgres -> Debezium -> Kafka -> ClickHouse (Kafka Engine -> MV) -> Grafana
 
 Trong file `kafka/connector_configs/demo_configs.json`, bạn đang dùng Debezium để bắt thay đổi từ bảng Postgres `finnhub_stock_prices` và bắn vào Kafka topic `sourcedb.public.finnhub_stock_prices`.
 
@@ -68,6 +71,10 @@ WHERE op IN ('c', 'r'); -- Chỉ lấy thao tác Create hoặc Read (snapshot)
 
 
 # REFERENCE FOR DEMO (BỎ QUA)
+
+
+# Old Demo Reference (bỏ qua)
+
 ### 1\. Kiến trúc tổng quan
 
 - **Hiện tại (Simulation/Mock):** `Python Script (Loop)` -> `ClickHouse (MergeTree Table)` -> `Grafana` *(Mô phỏng dòng chảy dữ liệu bằng cách insert liên tục mỗi giây).*
