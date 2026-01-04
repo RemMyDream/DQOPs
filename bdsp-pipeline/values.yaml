@@ -851,7 +851,7 @@ backend:
 
 # MLflow Configuration
 mlflow:
-  enabled: false
+  enabled: true
   image:
     repository: votaquangnhat/mlflow-service
     tag: "latest"
