@@ -32,63 +32,68 @@ spec:
         runAsNonRoot: true
       # init container to fix permissions
       initContainers:
-      - name: fix-permissions
-        image: busybox
-        command: ["sh", "-c", "chown -R 999:999 /var/lib/postgresql/data && chmod 700 /var/lib/postgresql/data"]
-        volumeMounts:
-        - name: postgres-storage
-          mountPath: /var/lib/postgresql/data
-          subPath: pgdata
-        securityContext:
-          runAsUser: 0
-          runAsNonRoot: false
+        - name: fix-permissions
+          image: busybox
+          command:
+            [
+              "sh",
+              "-c",
+              "chown -R 999:999 /var/lib/postgresql/data && chmod 700 /var/lib/postgresql/data",
+            ]
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+              subPath: pgdata
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
       containers:
-      - name: postgres
-        image: docker.getcollate.io/openmetadata/postgresql:1.11.0
-        args: ["postgres", "--work_mem=10MB"]
-        env:
-        - name: POSTGRES_USER
-          valueFrom:
-            configMapKeyRef:
-              name: postgres-metadata-config
-              key: POSTGRES_USER
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            configMapKeyRef:
-              name: postgres-metadata-config
-              key: POSTGRES_PASSWORD
-        - name: PGDATA
-          value: /var/lib/postgresql/data
-        ports:
-        - containerPort: 5432
-        volumeMounts:
-        - name: postgres-storage
-          mountPath: /var/lib/postgresql/data
-          subPath: pgdata
-        livenessProbe:
-          exec:
-            command:
-            - sh
-            - -c
-            - "psql -U openmetadata_user -tAc 'select 1' -d openmetadata_db || exit 1"
-          initialDelaySeconds: 60
-          periodSeconds: 15
-          timeoutSeconds: 10
-          failureThreshold: 10
-        readinessProbe:
-          exec:
-            command:
-            - sh
-            - -c
-            - "psql -U openmetadata_user -tAc 'select 1' -d openmetadata_db || exit 1"
-          initialDelaySeconds: 15
-          periodSeconds: 15
-          timeoutSeconds: 10
-          failureThreshold: 10
+        - name: postgres
+          image: docker.getcollate.io/openmetadata/postgresql:1.11.0
+          args: ["postgres", "--work_mem=10MB"]
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-metadata-config
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-metadata-config
+                  key: POSTGRES_PASSWORD
+            - name: PGDATA
+              value: /var/lib/postgresql/data
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+              subPath: pgdata
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "psql -U openmetadata_user -tAc 'select 1' -d openmetadata_db || exit 1"
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 10
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "psql -U openmetadata_user -tAc 'select 1' -d openmetadata_db || exit 1"
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 10
       volumes:
-      - name: postgres-storage
-        persistentVolumeClaim:
-          claimName: postgres-metadata-pvc
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-metadata-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -99,6 +104,6 @@ spec:
   selector:
     app: postgres-metadata
   ports:
-  - port: 5432
-    targetPort: 5432
+    - port: 5432
+      targetPort: 5432
   type: ClusterIP
