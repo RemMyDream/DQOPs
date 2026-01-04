@@ -1,28 +1,30 @@
 services:
   superset:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  # user admin || pass: 123
+    image: apache/superset:latest
     container_name: superset
+    user: root
     environment:
-      - ADMIN_USERNAME=admin
-      - ADMIN_EMAIL=admin@superset.com
-      - ADMIN_PASSWORD=admin
+      SUPERSET_SECRET_KEY: "demo_secret_key"
+      FEATURE_FLAGS: '{"ALLOW_DATA_UPLOAD": true}'
+    entrypoint: >
+      /bin/sh -c "
+        pip install clickhouse-connect -t /app/.venv/lib/python3.10/site-packages &&
+        superset db upgrade &&
+        superset init &&
+        /usr/bin/run-server.sh
+        "
     ports:
-      - '8088:8088'
-    depends_on:
-      - redis
+      - "8088:8088"
     networks:
       - data-pipeline
-
-  redis:
-    image: redis:7
-    container_name: superset-redis
-    restart: unless-stopped
-    networks:
-      - data-pipeline
+    volumes:
+      - superset_home:/app/superset_home
 
 networks:
   data-pipeline:
     name: data-pipeline
     external: true
+
+volumes:
+  superset_home:
