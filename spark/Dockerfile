@@ -46,7 +46,7 @@ RUN curl -L -o spark-3.5.1-bin-hadoop3.tgz \
 ENV PATH=${SPARK_HOME}/sbin:${SPARK_HOME}/bin:${PATH}
 ENV PYTHONPATH=${SPARK_HOME}/python:${SPARK_HOME}/python/lib/py4j-0.10.9.7-src.zip:/opt/spark
 
-COPY ./requirements.txt .
+COPY ./spark/requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 RUN mkdir -p ${SPARK_HOME}/jars
@@ -76,11 +76,15 @@ RUN curl -L -o ${SPARK_HOME}/jars/iceberg-aws-bundle-1.7.1.jar \
 
 ENV SPARK_CLASSPATH=${SPARK_HOME}/jars/postgresql-42.6.0.jar:${SPARK_HOME}/jars/iceberg-spark-runtime-3.5_2.12-1.7.1.jar:${SPARK_HOME}/jars/iceberg-aws-bundle-1.7.1.jar
 
-COPY conf/spark-defaults.conf "$SPARK_HOME/conf"
+COPY spark/conf/spark-defaults.conf "$SPARK_HOME/conf"
 
 RUN chmod u+x ${SPARK_HOME}/sbin/* && chmod u+x ${SPARK_HOME}/bin/*
 
-COPY entrypoint.sh .
+COPY spark/entrypoint.sh .
 RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
+
+# Copy Python applications and utils (these layers rebuild quickly when code changes)
+COPY ./spark/spark_apps ${SPARK_HOME}/apps
+COPY ./utils ${SPARK_HOME}/utils
 
 ENTRYPOINT ["./entrypoint.sh"]

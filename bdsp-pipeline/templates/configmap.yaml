@@ -36,20 +36,6 @@ data:
     {{- end }}
 {{- end }}
 ---
-{{- if .Values.minio.enabled }}
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: minio-config
-  namespace: {{ include "bdsp-pipeline.namespace" . }}
-  labels:
-    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
-    app: minio
-data:
-  MINIO_ROOT_USER: {{ .Values.minio.config.rootUser | quote }}
-  MINIO_ROOT_PASSWORD: {{ .Values.minio.config.rootPassword | quote }}
-{{- end }}
----
 {{- if .Values.openmetadata.enabled }}
 {{- if .Values.openmetadata.elasticsearch.enabled }}
 apiVersion: v1
@@ -375,4 +361,18 @@ data:
             config = yaml.safe_load(f)
         
         return config
+{{- end }}
+---
+{{- if .Values.superset.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: superset-config
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: superset
+data:
+  ADMIN_USERNAME: {{ .Values.superset.config.adminUsername | quote }}
+  ADMIN_EMAIL: {{ .Values.superset.config.adminEmail | quote }}
 {{- end }}
