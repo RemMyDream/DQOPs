@@ -25,5 +25,9 @@ helm upgrade --install bdsp ./bdsp-pipeline \
     --namespace dqops \
     --wait \
     --timeout 10m
+
+# to uninstall run these two commands
+helm uninstall bdsp || true
+kubectl delete namespace dqops --ignore-not-found=true
 ```
 ```
