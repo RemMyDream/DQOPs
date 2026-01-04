@@ -260,8 +260,10 @@ data:
   AIRFLOW__CORE__EXECUTOR: {{ .Values.airflow.webserver.config.executor | quote }}
   AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://{{ .Values.airflow.postgres.config.user }}:{{ .Values.airflow.postgres.config.password }}@airflow-postgres:{{ .Values.airflow.postgres.service.port }}/{{ .Values.airflow.postgres.config.database }}"
   AIRFLOW__WEBSERVER__SECRET_KEY: {{ .Values.airflow.webserver.config.secretKey | quote }}
+  AIRFLOW__WEBSERVER__BASE_URL: "http://airflow-webserver:8080"
   AIRFLOW_CONN_SPARK_DEFAULT: {{ .Values.airflow.webserver.config.sparkConnection | quote }}
   AIRFLOW__API__AUTH_BACKEND: {{ .Values.airflow.webserver.config.authBackend | quote }}
+  AIRFLOW__LOGGING__REMOTE_LOGGING: "False"
   AIRFLOW_HOME: "/opt/airflow"
 ---
 apiVersion: v1
