@@ -19,15 +19,8 @@ Data flow (current)
 helm command:
 
 ```bash
-# From /mnt/c/Coding/bdsp-test/
-helm upgrade --install bdsp ./bdsp-pipeline \
-    --create-namespace \
-    --namespace dqops \
-    --wait \
-    --timeout 10m
-
-# to uninstall run these two commands
-helm uninstall bdsp || true
-kubectl delete namespace dqops --ignore-not-found=true
+.\helm-deploy.ps1 deploy
+.\helm-deploy.ps1 status
+.\helm-deploy.ps1 uninstall
 ```
 ```
