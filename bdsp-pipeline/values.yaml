@@ -5,7 +5,7 @@ namespace: dqops
 
 # PostgreSQL configuration
 postgres:
-  enabled: false
+  enabled: true
   image:
     repository: postgres
     tag: "15"
@@ -49,7 +49,7 @@ postgres:
 
 # MinIO configuration
 minio:
-  enabled: false
+  enabled: true
   image:
     repository: minio/minio
     tag: latest
@@ -90,7 +90,7 @@ minio:
 
 # Spark configuration
 spark:
-  enabled: false
+  enabled: true
   
   # Custom Spark image with all dependencies pre-installed
   image:
@@ -674,7 +674,7 @@ airflow:
 
 # Backend configuration (FastAPI + Internal PostgreSQL)
 backend:
-  enabled: true
+  enabled: false
   
   # Backend PostgreSQL (internal database for backend service)
   postgres:

@@ -100,7 +100,6 @@ def parse_args():
     group.add_argument('--jobs', type=str, help='Comma-separated job names: bronze,silver')
     group.add_argument('--pipeline', type=str, choices=list(PIPELINES.keys()), 
                        help='Predefined pipeline: full, bronze, silver')
-    group.add_argument('--list', action='store_true', help='List available jobs/pipelines')
     
     # Stooq parameters
     parser.add_argument('--stooq-tickers', type=str, default='NVDA,MSFT',
@@ -127,18 +126,7 @@ def parse_bool(val: str) -> bool:
 
 def main():
     args = parse_args()
-    
-    # List mode
-    if args.list:
-        print("\n=== Available Jobs ===")
-        for job in JOBS.keys():
-            print(f"  - {job}")
         
-        print("\n=== Predefined Pipelines ===")
-        for name, jobs in PIPELINES.items():
-            print(f"  {name}: {' → '.join(jobs)}")
-        return 0
-    
     # Determine jobs to run
     if args.pipeline:
         job_names = PIPELINES[args.pipeline]
