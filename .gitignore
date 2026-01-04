@@ -1,6 +1,8 @@
 .venv
 __pycache__/
-spark/
+spark/data/*
+spark/__pycache__/
+spark/spark_apps/__pycache__/
 docs/
 .env
 notebooks/
