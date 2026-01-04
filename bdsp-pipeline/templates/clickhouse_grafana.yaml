@@ -1,0 +1,161 @@
+{{- if .Values.clickhouse.enabled }}
+# -----------------------------------------------------------------------------
+# ClickHouse Service & StatefulSet
+# -----------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: clickhouse
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: clickhouse
+spec:
+  type: {{ .Values.clickhouse.service.type }}
+  ports:
+  - port: {{ .Values.clickhouse.service.httpPort }}
+    targetPort: 8123
+    name: http
+  - port: {{ .Values.clickhouse.service.tcpPort }}
+    targetPort: 9000
+    name: tcp
+  selector:
+    app: clickhouse
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: clickhouse
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: clickhouse
+spec:
+  serviceName: clickhouse
+  replicas: {{ .Values.clickhouse.replica }}
+  selector:
+    matchLabels:
+      app: clickhouse
+  template:
+    metadata:
+      labels:
+        app: clickhouse
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: clickhouse
+        image: "{{ .Values.clickhouse.image.repository }}:{{ .Values.clickhouse.image.tag }}"
+        imagePullPolicy: {{ .Values.clickhouse.image.pullPolicy }}
+        ports:
+        - containerPort: 8123
+          name: http
+        - containerPort: 9000
+          name: tcp
+        env:
+        - name: CLICKHOUSE_USER
+          value: {{ .Values.clickhouse.auth.username | quote }}
+        - name: CLICKHOUSE_PASSWORD
+          value: {{ .Values.clickhouse.auth.password | quote }}
+        - name: CLICKHOUSE_DB
+          value: {{ .Values.clickhouse.auth.database | quote }}
+        {{- if .Values.clickhouse.resources }}
+        resources:
+          {{- toYaml .Values.clickhouse.resources | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        - name: clickhouse-data
+          mountPath: /var/lib/clickhouse
+  {{- if .Values.clickhouse.persistence.enabled }}
+  volumeClaimTemplates:
+  - metadata:
+      name: clickhouse-data
+    spec:
+      accessModes:
+        - {{ .Values.clickhouse.persistence.accessMode }}
+      {{- if .Values.clickhouse.persistence.storageClass }}
+      storageClassName: {{ .Values.clickhouse.persistence.storageClass }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.clickhouse.persistence.size }}
+  {{- else }}
+  volumes:
+  - name: clickhouse-data
+    emptyDir: {}
+  {{- end }}
+{{- end }}
+---
+{{- if .Values.grafana.enabled }}
+# -----------------------------------------------------------------------------
+# Grafana Service & Deployment
+# -----------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: grafana
+spec:
+  type: {{ .Values.grafana.service.type }}
+  ports:
+  - port: {{ .Values.grafana.service.port }}
+    targetPort: 3000
+    {{- if eq .Values.grafana.service.type "NodePort" }}
+    nodePort: {{ .Values.grafana.service.nodePort }}
+    {{- end }}
+  selector:
+    app: grafana
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: {{ include "bdsp-pipeline.namespace" . }}
+  labels:
+    {{- include "bdsp-pipeline.labels" . | nindent 4 }}
+    app: grafana
+spec:
+  replicas: {{ .Values.grafana.replicaCount }}
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+        {{- include "bdsp-pipeline.selectorLabels" . | nindent 8 }}
+    spec:
+      # InitContainer to wait for ClickHouse availability
+      initContainers:
+      - name: wait-for-clickhouse
+        image: busybox:1.28
+        command: ['sh', '-c', "until nc -z -w 2 clickhouse {{ .Values.clickhouse.service.httpPort }}; do echo waiting for clickhouse; sleep 2; done;"]
+      containers:
+      - name: grafana
+        image: "{{ .Values.grafana.image.repository }}:{{ .Values.grafana.image.tag }}"
+        imagePullPolicy: {{ .Values.grafana.image.pullPolicy }}
+        ports:
+        - containerPort: 3000
+        env:
+        - name: GF_SECURITY_ADMIN_USER
+          value: {{ .Values.grafana.admin.user | quote }}
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: {{ .Values.grafana.admin.password | quote }}
+        - name: GF_INSTALL_PLUGINS
+          value: {{ .Values.grafana.plugins | quote }}
+        {{- if .Values.grafana.resources }}
+        resources:
+          {{- toYaml .Values.grafana.resources | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+          - name: grafana-datasources
+            mountPath: /etc/grafana/provisioning/datasources/
+            readOnly: true
+      volumes:
+        - name: grafana-datasources
+          configMap:
+            name: grafana-datasources
+{{- end }}
+---
