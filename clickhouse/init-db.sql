@@ -7,7 +7,7 @@ CREATE DATABASE IF NOT EXISTS warehouse;
 -- Kết nối trực tiếp vào MinIO Gold Layer. 
 -- Tự động có dữ liệu sau khi Spark job 'gold' chạy xong.
 CREATE TABLE IF NOT EXISTS warehouse.gold_ml_features
-ENGINE = Iceberg('http://minio:9000/gold/ml_features', 'admin', 'password')
+ENGINE = Iceberg('http://minio:9000/gold/ml_features', 'minio_access_key', 'minio_secret_key')
 SETTINGS allow_experimental_iceberg_engine = 1;
 
 
@@ -35,6 +35,11 @@ CREATE TABLE IF NOT EXISTS warehouse.gold_stock_analytics (
 ) 
 ENGINE = MergeTree() 
 ORDER BY (ticker, date);
+
+-- D. COMPATIBILITY VIEWS (Hỗ trợ các Dashboard cũ)
+-- Nếu bạn có Dashboard cũ trỏ vào 'csv_data', các View này sẽ chuyển hướng query sang tên mới.
+CREATE VIEW IF NOT EXISTS warehouse.csv_data AS SELECT * FROM warehouse.gold_stock_analytics;
+CREATE VIEW IF NOT EXISTS warehouse.gold_analytics_summary AS SELECT * FROM warehouse.gold_ml_features;
 
 
 --------------------------------------------------------------------------------
