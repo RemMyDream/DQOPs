@@ -1,3 +1,36 @@
+## Superset: Hướng dẫn Kết nối Gold Layer từ MinIO (Batch)
+
+Batch: Spark -> MinIO (Iceberg) -> ClickHouse (Iceberg Engine) -> Superset
+
+Hiện tại code Spark (`pycode-spark-gold.py`) đang ghi dữ liệu vào MinIO dưới định dạng **Apache Iceberg**. ClickHouse có thể đọc trực tiếp định dạng này.
+
+**Giả định:** Spark lưu bảng Gold vào bucket `gold`, đường dẫn `s3a://gold/lakehouse.db/analytics_summary` (tên bảng ví dụ dựa trên `spark_utils.py`).
+
+Chạy lệnh SQL sau trong ClickHouse để "mount" dữ liệu từ MinIO về:
+
+SQL
+
+```
+-- Bước 1: Tạo bảng kết nối trực tiếp vào MinIO (Iceberg)
+CREATE TABLE warehouse.gold_analytics_summary
+ENGINE = Iceberg('http://minio:9000/gold/lakehouse.db/analytics_summary', 'admin', 'password')
+SETTINGS allow_experimental_iceberg_engine = 1;
+
+-- Lưu ý: Nếu ClickHouse phiên bản cũ chưa hỗ trợ Iceberg, dùng S3 Engine đọc file Parquet:
+-- CREATE TABLE warehouse.gold_analytics_summary (...)
+-- ENGINE = S3('http://minio:9000/gold/lakehouse.db/analytics_summary/data/*.parquet', 'admin', 'password', 'Parquet');
+```
+
+**Cập nhật Superset:**
+
+1. Vào Superset -> Datasets.
+2. Thêm Dataset mới từ bảng `warehouse.gold_analytics_summary`.
+3. Lúc này Superset sẽ hiển thị báo cáo dựa trên dữ liệu Spark đã xử lý xong thay vì file CSV upload tay.
+
+
+
+## Old Demo Reference (Bỏ qua)
+
 **Local CSV -> ClickHouse (Storage/Compute) -> Superset (Visualization).**
 
 ### Bước 1: Dựng cấu trúc bảng (Schema) trong ClickHouse
