@@ -83,7 +83,7 @@ with DAG(
             '--skip-stooq', '{{ params.skip_stooq }}',  
             '--skip-gdelt', '{{ params.skip_gdelt }}'
         ],
-        deploy_mode="cluster",
+        deploy_mode="client",
         packages="org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.2",
         verbose=True,
     )
