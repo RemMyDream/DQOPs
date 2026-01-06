@@ -7,8 +7,6 @@ Tài liệu này hướng dẫn cách khôi phục và sử dụng hệ thống 
 - **Superset:** Cổng `8088`.
 - **Grafana:** Cổng `3000`.
 - **ClickHouse:** Cổng `8123` (HTTP) và `9000` (Native).
-có thể cần tạo network nếu không chung docker-compose: 
-docker network create data-pipeline
 
 ---
 
@@ -30,39 +28,19 @@ docker exec -it superset superset init
 ### Bước 2: Tạo kết nối Database
 
 1. Truy cập UI: `http://localhost:8088` (Admin/Admin).
-2. Vào **Settings** (icon bánh răng) 
-	$$
-	→
-	$$
-	 **Database Connections**.
-3. Nhấn **\+ Database** 
-	$$
-	→
-	$$
-	 Chọn **ClickHouse Connect**.
+2. Vào **Settings** (icon bánh răng) → **Database Connections**.
+3. Nhấn **\+ Database** → **ClickHouse Connect**.
 4. Điền thông tin kết nối:
 	- **Display Name:** `ClickHouse` (Bắt buộc đặt đúng tên này để khớp với file export).
 	- **SQLAlchemy URI:** \`\`\` clickhousedb://admin:password123@clickhouse-server:8123/warehouse
-	- Nhấn **Test Connection** 
-		$$
-		→
-		$$
-		 **Connect**.
+	- Nhấn **Test Connection** → **Connect**.
 
 ### Bước 3: Import Dashboard
 
-1. Vào **Settings** 
-	$$
-	→
-	$$
-	 **Import Dashboards**.
+1. Vào **Settings** → **Import Dashboards**.
 2. Chọn file: `visualization/superset_assets/dashboard_export_20260103T114154.zip`.
 3. Nhập mật khẩu database (nếu được hỏi): `password123`.
-4. Sau khi import thành công, truy cập tab **Dashboards** 
-	$$
-	→
-	$$
-	 Chọn **"Quant Trader Dashboard"**.
+4. Sau khi import thành công, truy cập tab **Dashboards** → **Quant Trader Dashboard**.
 
 ---
 
@@ -77,15 +55,7 @@ Grafana được sử dụng để theo dõi biến động giá cổ phiếu th
 ### Bước 2: Cấu hình Data Source
 
 1. Truy cập UI: `http://localhost:3000` (admin/admin).
-2. Vào **Connections** 
-	$$
-	→
-	$$
-	 **Data Sources** 
-	$$
-	→
-	$$
-	 **Add data source**.
+2. Vào **Connections** → **Data Sources** → **Add data source**.
 3. Tìm và chọn **ClickHouse**.
 4. Cấu hình:
 	- **Name:** `ClickHouse-Realtime` (Đặt tên này để khớp với file JSON).
@@ -98,15 +68,7 @@ Grafana được sử dụng để theo dõi biến động giá cổ phiếu th
 
 ### Bước 3: Import Dashboard
 
-1. Vào menu **Dashboards** 
-	$$
-	→
-	$$
-	 **New** 
-	$$
-	→
-	$$
-	 **Import**.
+1. Vào menu **Dashboards** → **New** → **Import**.
 2. Cách 1: Upload file JSON từ đường dẫn `visualization/grafana_dashboards/realtime_stock_dashboard.json`.
 3. Cách 2: Copy toàn bộ nội dung file JSON và paste vào ô "Import via panel json".
 4. Tại mục **Select a ClickHouse data source**, chọn `ClickHouse-Realtime` vừa tạo.
