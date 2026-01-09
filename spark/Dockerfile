@@ -1,7 +1,6 @@
 FROM python:3.10
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
       sudo \
       bash \
       curl \
@@ -12,9 +11,17 @@ RUN apt-get update && \
       ssh \
       wget \
       dnsutils \
-      postgresql-client && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+      postgresql-client \
+      libpq-dev \
+      libxml2-dev \
+      libxslt1-dev \
+      zlib1g-dev \
+      libssl-dev \
+      libffi-dev \
+      python3-dev \
+      git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN curl -L -o openjdk-11.tar.gz \
     "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.20%2B8/OpenJDK11U-jdk_x64_linux_hotspot_11.0.20_8.tar.gz" && \
@@ -39,8 +46,8 @@ RUN curl -L -o spark-3.5.1-bin-hadoop3.tgz \
 ENV PATH=${SPARK_HOME}/sbin:${SPARK_HOME}/bin:${PATH}
 ENV PYTHONPATH=${SPARK_HOME}/python:${SPARK_HOME}/python/lib/py4j-0.10.9.7-src.zip:/opt/spark
 
-COPY ./requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt
 
 RUN mkdir -p ${SPARK_HOME}/jars
 
@@ -61,20 +68,19 @@ RUN curl -L -o ${SPARK_HOME}/jars/spark-sql-kafka-0-10_2.12-3.5.1.jar \
     curl -L -o ${SPARK_HOME}/jars/commons-pool2-2.11.1.jar \
       https://repo1.maven.org/maven2/org/apache/commons/commons-pool2/2.11.1/commons-pool2-2.11.1.jar
 
-RUN curl -L -o ${SPARK_HOME}/jars/delta-spark_2.12-3.2.0.jar \
-    https://repo1.maven.org/maven2/io/delta/delta-spark_2.12/3.2.0/delta-spark_2.12-3.2.0.jar && \
-    curl -L -o ${SPARK_HOME}/jars/delta-storage-3.2.0.jar \
-    https://repo1.maven.org/maven2/io/delta/delta-storage/3.2.0/delta-storage-3.2.0.jar && \
-    curl -L -o ${SPARK_HOME}/jars/delta-core_2.12-3.2.0.jar \
-    https://repo1.maven.org/maven2/io/delta/delta-core_2.12/3.2.0/delta-core_2.12-3.2.0.jar
+RUN curl -L -o ${SPARK_HOME}/jars/iceberg-spark-runtime-3.5_2.12-1.7.1.jar \
+    https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark-runtime-3.5_2.12/1.7.1/iceberg-spark-runtime-3.5_2.12-1.7.1.jar
 
-ENV SPARK_CLASSPATH=${SPARK_HOME}/jars/postgresql-42.6.0.jar:${SPARK_HOME}/jars/delta-spark_2.12-3.2.0.jar:${SPARK_HOME}/jars/delta-storage-3.2.0.jar:${SPARK_HOME}/jars/delta-core_2.12-3.2.0.jar
+RUN curl -L -o ${SPARK_HOME}/jars/iceberg-aws-bundle-1.7.1.jar \
+    https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-aws-bundle/1.7.1/iceberg-aws-bundle-1.7.1.jar
+
+ENV SPARK_CLASSPATH=${SPARK_HOME}/jars/postgresql-42.6.0.jar:${SPARK_HOME}/jars/iceberg-spark-runtime-3.5_2.12-1.7.1.jar:${SPARK_HOME}/jars/iceberg-aws-bundle-1.7.1.jar
 
 COPY conf/spark-defaults.conf "$SPARK_HOME/conf"
 
 RUN chmod u+x ${SPARK_HOME}/sbin/* && chmod u+x ${SPARK_HOME}/bin/*
 
 COPY entrypoint.sh .
-RUN chmod +x entrypoint.sh
+RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
 
 ENTRYPOINT ["./entrypoint.sh"]
