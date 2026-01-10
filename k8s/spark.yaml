@@ -65,7 +65,6 @@ metadata:
 data:
   SPARK_NO_DAEMONIZE: "true"
   SPARK_MASTER_PORT: "7077"
-  SPARK_DAEMON_JAVA_OPTS: "-Dspark.ui.bindAddress=0.0.0.0"
 
 ---
 apiVersion: v1
@@ -160,6 +159,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            - name: SPARK_MASTER_OPTS
+              value: "0.0.0.0"
           envFrom:
             - configMapRef:
                 name: spark-env
@@ -274,6 +275,8 @@ spec:
                   fieldPath: status.podIP
             - name: SPARK_MASTER
               value: "spark://spark-master:7077"
+            - name: SPARK_MASTER_OPTS
+              value: "0.0.0.0"
           envFrom:
             - configMapRef:
                 name: spark-env
@@ -349,6 +352,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            - name: SPARK_HISTORY_OPTS
+              value: "-Dspark.history.ui.port=18080 -Dspark.ui.bindAddress=0.0.0.0"
           envFrom:
             - configMapRef:
                 name: spark-env
