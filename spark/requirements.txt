@@ -1,6 +1,5 @@
 confluent-kafka==2.3.0
-pyspark==3.5.1
-pandas==2.1.4
+pandas
 numpy
 protobuf==4.25.3
 requests
@@ -12,5 +11,3 @@ SQLAlchemy==1.4.49
 pandas-datareader
 pyarrow==14.0.2
 pyiceberg[s3fs]>=0.7.0
-torch>=2.0,<3.0
-transformers>=4.36,<5.0

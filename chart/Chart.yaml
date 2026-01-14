@@ -1,0 +1,6 @@
+apiVersion: v2
+name: data-pipeline
+description: A Helm chart for Data Pipeline (MinIO, PostgreSQL, Spark, Airflow)
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

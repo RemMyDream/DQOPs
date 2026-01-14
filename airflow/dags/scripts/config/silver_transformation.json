@@ -1,0 +1,52 @@
+{
+  "transformations": [
+    {
+      "source": {
+        "catalog": "bronze",
+        "database": "data_source",
+        "table": "user_behavior"
+      },
+      "target": {
+        "catalog": "silver",
+        "database": "data_source",
+        "table": "user_behavior",
+        "primary_keys": [],
+        "partition_cols": null,
+        "mode": "overwrite"
+      },
+      "transformations": {
+        "log1p": [
+          {"column": "sessions_30d", "output": "sessions_30d_log"},
+          {"column": "sessions_90d", "output": "sessions_90d_log"}
+        ],
+        "clip": [
+          {"column": "sessions_30d_log"},
+          {"column": "sessions_90d_log"},
+          {"column": "avg_session_duration_90d"},
+          {"column": "median_pages_viewed_30d"},
+          {"column": "aov_2024"},
+          {"column": "category_diversity_2024"},
+          {"column": "discount_rate_2024"},
+          {"column": "emails_click_rate_90d"},
+          {"column": "rfm_frequency"},
+          {"column": "rfm_monetary"}
+        ],
+        "clip_value": [
+          {"column": "orders_30d", "upper": 2},
+          {"column": "orders_90d", "upper": 5},
+          {"column": "support_tickets_2024", "upper": 2}
+        ],
+        "iqr_clip": [
+          {"column": "search_queries_30d", "output": "search_queries_30d_iqr"},
+          {"column": "review_count_2024", "output": "review_count_2024_iqr"}
+        ],
+        "drop_columns": [
+          "user_id", "age", "country", "city", "marketing_source", "app_version_major",
+          "refunds_count_2024", "refund_rate_2024",
+          "orders_2024", "gmv_2024", "days_since_last_order",
+          "sessions_30d", "sessions_90d", "search_queries_30d", "review_count_2024"
+        ]
+      }
+    }
+  ]
+}

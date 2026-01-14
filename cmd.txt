@@ -1,0 +1,28 @@
+kubectl get pods -n cert-manager
+
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.0/cert-manager.yaml
+
+kubectl cp ./airflow/dags/ data-pipeline/airflow-scheduler-7cdd457794-mpwpc:/opt/airflow/
+
+kubectl get pods -n data-pipeline
+
+kubectl rollout restart deployment airflow-scheduler -n data-pipeline
+
+kubectl cp kafka/data.csv data-pipeline/postgres-5b895f667b-97w2l:/tmp/finance.csv
+kubectl exec -it postgres-5b895f667b-97w2l -n data-pipeline -- psql -U postgres
+
+CREATE TABLE IF NOT EXISTS finance (
+    transaction_id      TEXT,
+    transaction_date    TEXT,
+    customer_id         TEXT,
+    product_name        TEXT,
+    quantity            TEXT,
+    price               TEXT,
+    payment_method      TEXT,
+    transaction_status  TEXT
+);
+
+\copy finance
+FROM '/tmp/finance.csv'
+DELIMITER ','
+CSV HEADER;

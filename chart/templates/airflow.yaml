@@ -1,0 +1,291 @@
+{{- if .Values.airflow.enabled }}
+# ==================== AIRFLOW ENTRYPOINT ====================
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: airflow-entrypoint
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: airflow
+data:
+  entrypoint.sh: |
+    #!/bin/bash
+    set -e
+    export PATH="/home/airflow/.local/bin:$PATH"
+    exec "$@"
+
+# ==================== AIRFLOW ENV ====================
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: airflow-env
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: airflow
+data:
+  AIRFLOW__CORE__EXECUTOR: {{ .Values.airflow.config.executor | quote }}
+  AIRFLOW__WEBSERVER__SECRET_KEY: {{ .Values.airflow.config.secretKey | quote }}
+  AIRFLOW__API__AUTH_BACKENDS: "airflow.api.auth.backend.basic_auth"
+  AIRFLOW__LOGGING__REMOTE_LOGGING: "False"
+  AIRFLOW__LOGGING__BASE_LOG_FOLDER: "/opt/airflow/logs"
+  AIRFLOW__SCHEDULER__CHILD_PROCESS_LOG_DIRECTORY: "/opt/airflow/logs/scheduler"
+  AIRFLOW__WEBSERVER__BASE_URL: "http://airflow-webserver:8080"
+  AIRFLOW__WEBSERVER__ENABLE_PROXY_FIX: "True"
+
+# ==================== AIRFLOW DB SECRET ====================
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: airflow-db-secret
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: airflow
+type: Opaque
+stringData:
+  POSTGRES_USER: {{ .Values.airflow.postgres.user }}
+  POSTGRES_PASSWORD: {{ .Values.airflow.postgres.password }}
+  POSTGRES_DB: {{ .Values.airflow.postgres.database }}
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://{{ .Values.airflow.postgres.user }}:{{ .Values.airflow.postgres.password }}@airflow-postgres:5432/{{ .Values.airflow.postgres.database }}"
+
+# ==================== PVCs ====================
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-postgres-data
+  namespace: {{ include "chart.namespace" . }}
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: {{ .Values.airflow.postgres.persistence.size }}
+  {{- if .Values.storageClass }}
+  storageClassName: {{ .Values.storageClass }}
+  {{- end }}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-dags
+  namespace: {{ include "chart.namespace" . }}
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: {{ .Values.airflow.persistence.dagsSize }}
+  {{- if .Values.storageClass }}
+  storageClassName: {{ .Values.storageClass }}
+  {{- end }}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-logs
+  namespace: {{ include "chart.namespace" . }}
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: {{ .Values.airflow.persistence.logsSize | default "2Gi" }}
+  {{- if .Values.storageClass }}
+  storageClassName: {{ .Values.storageClass }}
+  {{- end }}
+
+# ==================== POSTGRES ====================
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-postgres
+  namespace: {{ include "chart.namespace" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow
+      component: postgres
+  template:
+    metadata:
+      labels:
+        app: airflow
+        component: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: airflow-db-secret
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: airflow-postgres-data
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: airflow-postgres
+  namespace: {{ include "chart.namespace" . }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+  selector:
+    app: airflow
+    component: postgres
+
+# ==================== AIRFLOW WEBSERVER ====================
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-webserver
+  namespace: {{ include "chart.namespace" . }}
+spec:
+  replicas: {{ .Values.airflow.webserver.replicas }}
+  selector:
+    matchLabels:
+      app: airflow
+      component: webserver
+  template:
+    metadata:
+      labels:
+        app: airflow
+        component: webserver
+    spec:
+      serviceAccountName: {{ .Values.airflow.serviceAccount.name }}
+
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:15
+          command:
+            - /bin/sh
+            - -c
+            - |
+              until pg_isready -h airflow-postgres -p 5432 -U {{ .Values.airflow.postgres.user }}; do
+                sleep 2
+              done
+
+        - name: airflow-db-init
+          image: "{{ .Values.airflow.image.repository }}:{{ .Values.airflow.image.tag }}"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              airflow db init
+              airflow users create \
+                --username {{ .Values.airflow.admin.username }} \
+                --password {{ .Values.airflow.admin.password }} \
+                --firstname {{ .Values.airflow.admin.firstname }} \
+                --lastname {{ .Values.airflow.admin.lastname }} \
+                --role Admin \
+                --email {{ .Values.airflow.admin.email }} || true
+          envFrom:
+            - configMapRef:
+                name: airflow-env
+            - secretRef:
+                name: airflow-db-secret
+
+      containers:
+        - name: webserver
+          image: "{{ .Values.airflow.image.repository }}:{{ .Values.airflow.image.tag }}"
+          command: ["/bin/bash", "/opt/airflow/entrypoint.sh", "airflow", "webserver"]
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: airflow-env
+            - secretRef:
+                name: airflow-db-secret
+          volumeMounts:
+            - name: entrypoint
+              mountPath: /opt/airflow/entrypoint.sh
+              subPath: entrypoint.sh
+            - name: dags
+              mountPath: /opt/airflow/dags
+            - name: logs
+              mountPath: /opt/airflow/logs
+
+      volumes:
+        - name: entrypoint
+          configMap:
+            name: airflow-entrypoint
+            defaultMode: 0755
+        - name: dags
+          persistentVolumeClaim:
+            claimName: airflow-dags
+        - name: logs
+          persistentVolumeClaim:
+            claimName: airflow-logs
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: airflow-webserver
+  namespace: {{ include "chart.namespace" . }}
+spec:
+  type: {{ .Values.airflow.webserver.service.type }}
+  ports:
+    - port: {{ .Values.airflow.webserver.service.port }}
+      targetPort: 8080
+  selector:
+    app: airflow
+    component: webserver
+
+# ==================== AIRFLOW SCHEDULER ====================
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-scheduler
+  namespace: {{ include "chart.namespace" . }}
+spec:
+  replicas: {{ .Values.airflow.scheduler.replicas }}
+  selector:
+    matchLabels:
+      app: airflow
+      component: scheduler
+  template:
+    metadata:
+      labels:
+        app: airflow
+        component: scheduler
+    spec:
+      serviceAccountName: {{ .Values.airflow.serviceAccount.name }}
+      containers:
+        - name: scheduler
+          image: "{{ .Values.airflow.image.repository }}:{{ .Values.airflow.image.tag }}"
+          command: ["airflow", "scheduler"]
+          envFrom:
+            - configMapRef:
+                name: airflow-env
+            - secretRef:
+                name: airflow-db-secret
+          volumeMounts:
+            - name: dags
+              mountPath: /opt/airflow/dags
+            - name: logs
+              mountPath: /opt/airflow/logs
+      volumes:
+        - name: dags
+          persistentVolumeClaim:
+            claimName: airflow-dags
+        - name: logs
+          persistentVolumeClaim:
+            claimName: airflow-logs
+{{- end }}

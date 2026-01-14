@@ -5,3 +5,4 @@ dqops/
 kafka/sql_file/*
 DS/
 K9S/
+model/

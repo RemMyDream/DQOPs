@@ -1,0 +1,148 @@
+{{- if .Values.minio.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minio-entrypoint
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: minio
+data:
+  entrypoint.sh: |
+    #!/bin/sh
+    set -e
+
+    echo "Starting MinIO..."
+    minio server /data --console-address ":9001" &
+    MINIO_PID=$!
+
+    echo "Waiting for MinIO to be ready..."
+    
+    until mc alias set myminio http://localhost:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" 2>/dev/null; do
+      sleep 1
+    done
+
+    echo "Creating buckets..."
+    {{- range .Values.minio.buckets }}
+    mc mb myminio/{{ . }} --ignore-existing
+    {{- end }}
+
+    echo "Buckets created:"
+    mc ls myminio
+
+    echo "MinIO is ready."
+    wait $MINIO_PID
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: minio-credential
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: minio
+type: Opaque
+stringData:
+  MINIO_ROOT_USER: {{ .Values.minio.credentials.rootUser }}
+  MINIO_ROOT_PASSWORD: {{ .Values.minio.credentials.rootPassword }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-data
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: minio
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.minio.persistence.size }}
+  {{- if .Values.storageClass }}
+  storageClassName: {{ .Values.storageClass }}
+  {{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+        - name: minio
+          image: "{{ .Values.minio.image.repository }}:{{ .Values.minio.image.tag }}"
+          imagePullPolicy: {{ .Values.minio.image.pullPolicy }}
+          command: ["/bin/sh", "/entrypoint/entrypoint.sh"]
+          ports:
+            - name: api
+              containerPort: 9000
+            - name: console
+              containerPort: 9001
+          envFrom:
+            - secretRef:
+                name: minio-credential
+          volumeMounts:
+            - name: entrypoint
+              mountPath: /entrypoint
+            - name: data
+              mountPath: /data
+          resources:
+            {{- toYaml .Values.minio.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /minio/health/live
+              port: 9000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /minio/health/ready
+              port: 9000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: entrypoint
+          configMap:
+            name: minio-entrypoint
+            defaultMode: 0755
+        - name: data
+          persistentVolumeClaim:
+            claimName: minio-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-svc
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: minio
+spec:
+  type: {{ .Values.minio.service.type }}
+  ports:
+    - name: api
+      port: {{ .Values.minio.service.apiPort }}
+      targetPort: 9000
+    - name: console
+      port: {{ .Values.minio.service.consolePort }}
+      targetPort: 9001
+  selector:
+    app: minio
+{{- end }}

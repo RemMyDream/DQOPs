@@ -1,0 +1,435 @@
+{{/*
+
+{{- if .Values.spark.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spark-entrypoint
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: spark
+data:
+  entrypoint.sh: |
+    #!/bin/bash
+    SPARK_WORKLOAD=$1
+    echo "SPARK_WORKLOAD: $SPARK_WORKLOAD"
+
+    MASTER_URL="${SPARK_MASTER:-spark://spark-master:7077}"
+    
+    unset SPARK_MASTER
+
+    if [ "$SPARK_WORKLOAD" = "master" ]; then
+        start-master.sh
+    elif [ "$SPARK_WORKLOAD" = "worker" ]; then
+        start-worker.sh "$MASTER_URL"
+    elif [ "$SPARK_WORKLOAD" = "history" ]; then
+        start-history-server.sh
+    else
+        echo "Unknown SPARK_WORKLOAD: $SPARK_WORKLOAD"
+        exit 1
+    fi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spark-config
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: spark
+data:
+  spark-defaults.conf: |
+    spark.master                                spark://spark-master:7077
+    spark.eventLog.enabled                      true
+    spark.eventLog.dir                          /opt/spark/spark-events
+    spark.history.fs.logDirectory               /opt/spark/spark-events
+
+    spark.hadoop.fs.s3a.endpoint                http://minio-svc:9000
+    spark.hadoop.fs.s3a.path.style.access       true
+    spark.hadoop.fs.s3a.impl                    org.apache.hadoop.fs.s3a.S3AFileSystem
+    spark.hadoop.fs.s3a.connection.ssl.enabled  false
+
+    {{- if .Values.spark.iceberg.enabled }}
+    spark.sql.extensions                        org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions
+
+    spark.sql.catalog.bronze                    org.apache.iceberg.spark.SparkCatalog
+    spark.sql.catalog.bronze.type               hadoop
+    spark.sql.catalog.bronze.warehouse          s3a://bronze
+
+    spark.sql.catalog.silver                    org.apache.iceberg.spark.SparkCatalog
+    spark.sql.catalog.silver.type               hadoop
+    spark.sql.catalog.silver.warehouse          s3a://silver
+
+    spark.sql.catalog.gold                      org.apache.iceberg.spark.SparkCatalog
+    spark.sql.catalog.gold.type                 hadoop
+    spark.sql.catalog.gold.warehouse            s3a://gold
+
+    spark.jars                                  {{ .Values.spark.iceberg.sparkRuntime }},{{ .Values.spark.iceberg.awsBundle }}
+    {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spark-env
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: spark
+data:
+  SPARK_NO_DAEMONIZE: "true"
+  SPARK_MASTER_PORT: "{{ .Values.spark.master.service.masterPort }}"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: spark-s3-credential
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: spark
+type: Opaque
+stringData:
+  AWS_ACCESS_KEY_ID: {{ .Values.spark.s3Credentials.accessKey }}
+  AWS_SECRET_ACCESS_KEY: {{ .Values.spark.s3Credentials.secretKey }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: spark-events
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: spark
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.spark.persistence.eventsSize }}
+  {{- if .Values.storageClass }}
+  storageClassName: {{ .Values.storageClass }}
+  {{- end }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: spark-data
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: spark
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.spark.persistence.dataSize }}
+  {{- if .Values.storageClass }}
+  storageClassName: {{ .Values.storageClass }}
+  {{- end }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: spark-apps
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: spark
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.spark.persistence.appsSize }}
+  {{- if .Values.storageClass }}
+  storageClassName: {{ .Values.storageClass }}
+  {{- end }}
+---
+# ==================== SPARK MASTER ====================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-master
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: spark
+    component: master
+spec:
+  replicas: {{ .Values.spark.master.replicas }}
+  selector:
+    matchLabels:
+      app: spark
+      component: master
+  template:
+    metadata:
+      labels:
+        app: spark
+        component: master
+    spec:
+      enableServiceLinks: false
+      hostname: spark-master
+      containers:
+        - name: spark-master
+          image: "{{ .Values.spark.image.repository }}:{{ .Values.spark.image.tag }}"
+          imagePullPolicy: {{ .Values.spark.image.pullPolicy }}
+          command: ["/bin/bash", "/entrypoint/entrypoint.sh", "master"]
+          ports:
+            - name: web-ui
+              containerPort: 8080
+            - name: master
+              containerPort: 7077
+          env:
+            - name: SPARK_MASTER_HOST
+              value: "spark-master"
+            - name: SPARK_MASTER_BIND_ADDRESS
+              value: "0.0.0.0"
+            - name: SPARK_UI_BIND_ADDRESS
+              value: "0.0.0.0"
+            - name: SPARK_LOCAL_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          envFrom:
+            - configMapRef:
+                name: spark-env
+            - secretRef:
+                name: spark-s3-credential
+          volumeMounts:
+            - name: entrypoint
+              mountPath: /entrypoint
+            - name: spark-config
+              mountPath: /opt/spark/conf/spark-defaults.conf
+              subPath: spark-defaults.conf
+            - name: spark-events
+              mountPath: /opt/spark/spark-events
+            - name: spark-data
+              mountPath: /opt/spark/data
+            - name: spark-apps
+              mountPath: /opt/spark/apps
+          resources:
+            {{- toYaml .Values.spark.master.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: entrypoint
+          configMap:
+            name: spark-entrypoint
+            defaultMode: 0755
+        - name: spark-config
+          configMap:
+            name: spark-config
+        - name: spark-events
+          persistentVolumeClaim:
+            claimName: spark-events
+        - name: spark-data
+          persistentVolumeClaim:
+            claimName: spark-data
+        - name: spark-apps
+          persistentVolumeClaim:
+            claimName: spark-apps
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-master
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: spark
+    component: master
+spec:
+  type: {{ .Values.spark.master.service.type }}
+  ports:
+    - name: web-ui
+      port: {{ .Values.spark.master.service.webUiPort }}
+      targetPort: 8080
+    - name: master
+      port: {{ .Values.spark.master.service.masterPort }}
+      targetPort: 7077
+  selector:
+    app: spark
+    component: master
+---
+# ==================== SPARK WORKER ====================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-worker
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: spark
+    component: worker
+spec:
+  replicas: {{ .Values.spark.worker.replicas }}
+  selector:
+    matchLabels:
+      app: spark
+      component: worker
+  template:
+    metadata:
+      labels:
+        app: spark
+        component: worker
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: spark-worker
+          image: "{{ .Values.spark.image.repository }}:{{ .Values.spark.image.tag }}"
+          imagePullPolicy: {{ .Values.spark.image.pullPolicy }}
+          command: ["/bin/bash", "/entrypoint/entrypoint.sh", "worker"]
+          ports:
+            - name: web-ui
+              containerPort: 8081
+          env:
+            - name: SPARK_MASTER
+              value: "spark://spark-master:7077"
+            - name: SPARK_WORKER_BIND_ADDRESS
+              value: "0.0.0.0"
+            - name: SPARK_LOCAL_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          envFrom:
+            - configMapRef:
+                name: spark-env
+            - secretRef:
+                name: spark-s3-credential
+          volumeMounts:
+            - name: entrypoint
+              mountPath: /entrypoint
+            - name: spark-config
+              mountPath: /opt/spark/conf/spark-defaults.conf
+              subPath: spark-defaults.conf
+            - name: spark-events
+              mountPath: /opt/spark/spark-events
+            - name: spark-data
+              mountPath: /opt/spark/data
+            - name: spark-apps
+              mountPath: /opt/spark/apps
+          resources:
+            {{- toYaml .Values.spark.worker.resources | nindent 12 }}
+      volumes:
+        - name: entrypoint
+          configMap:
+            name: spark-entrypoint
+            defaultMode: 0755
+        - name: spark-config
+          configMap:
+            name: spark-config
+        - name: spark-events
+          persistentVolumeClaim:
+            claimName: spark-events
+        - name: spark-data
+          persistentVolumeClaim:
+            claimName: spark-data
+        - name: spark-apps
+          persistentVolumeClaim:
+            claimName: spark-apps
+---
+# ==================== SPARK HISTORY SERVER ====================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-history
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: spark
+    component: history
+spec:
+  replicas: {{ .Values.spark.history.replicas }}
+  selector:
+    matchLabels:
+      app: spark
+      component: history
+  template:
+    metadata:
+      labels:
+        app: spark
+        component: history
+    spec:
+      containers:
+        - name: spark-history
+          image: "{{ .Values.spark.image.repository }}:{{ .Values.spark.image.tag }}"
+          imagePullPolicy: {{ .Values.spark.image.pullPolicy }}
+          command: ["/bin/bash", "/entrypoint/entrypoint.sh", "history"]
+          ports:
+            - name: web-ui
+              containerPort: 18080
+          env:
+            - name: SPARK_HISTORY_OPTS
+              value: "-Dspark.history.ui.port=18080 -Dspark.ui.bindAddress=0.0.0.0"
+          envFrom:
+            - configMapRef:
+                name: spark-env
+            - secretRef:
+                name: spark-s3-credential
+          volumeMounts:
+            - name: entrypoint
+              mountPath: /entrypoint
+            - name: spark-config
+              mountPath: /opt/spark/conf/spark-defaults.conf
+              subPath: spark-defaults.conf
+            - name: spark-events
+              mountPath: /opt/spark/spark-events
+          resources:
+            {{- toYaml .Values.spark.history.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 18080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 18080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: entrypoint
+          configMap:
+            name: spark-entrypoint
+            defaultMode: 0755
+        - name: spark-config
+          configMap:
+            name: spark-config
+        - name: spark-events
+          persistentVolumeClaim:
+            claimName: spark-events
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-history
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: spark
+    component: history
+spec:
+  type: {{ .Values.spark.history.service.type }}
+  ports:
+    - name: web-ui
+      port: {{ .Values.spark.history.service.port }}
+      targetPort: 18080
+  selector:
+    app: spark
+    component: history
+{{- end }}
+*/}}

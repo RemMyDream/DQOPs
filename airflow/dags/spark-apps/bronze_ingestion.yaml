@@ -1,0 +1,94 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: bronze_ingestion
+  namespace: data-pipeline
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: remmydream/spark-image:v3.0
+  imagePullPolicy: IfNotPresent
+  mainApplicationFile: local:///opt/airflow/dags/scripts/bronze_ingestion.py
+  sparkVersion: 3.5.1
+  arguments:
+    - "--config"
+    - "/opt/airflow/dags/scripts/config/bronze_ingestion.json"
+  # restartPolicy:
+  #   type: OnFailure
+  #   onFailureRetries: 1
+  #   onFailureRetryInterval: 10
+  sparkConf:
+    # S3/MinIO config
+    spark.hadoop.fs.s3a.endpoint: "http://minio-svc:9000"
+    spark.hadoop.fs.s3a.access.key: "minio_access_key"
+    spark.hadoop.fs.s3a.secret.key: "minio_secret_key"
+    spark.hadoop.fs.s3a.path.style.access: "true"
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    spark.hadoop.fs.s3a.connection.ssl.enabled: "false"
+    # Iceberg config
+    spark.sql.extensions: "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
+    spark.sql.catalog.bronze: "org.apache.iceberg.spark.SparkCatalog"
+    spark.sql.catalog.bronze.type: "hadoop"
+    spark.sql.catalog.bronze.warehouse: "s3a://bronze"
+    # Event log
+    # spark.eventLog.enabled: "true"
+    # spark.eventLog.dir: "/opt/spark/spark-events"
+  driver:
+    cores: 1
+    coreLimit: "1200m"
+    memory: "1g"
+    serviceAccount: spark-operator-spark
+    labels:
+      app: spark
+      role: driver
+    env:
+      - name: POSTGRES_USER
+        value: "postgres"
+      - name: POSTGRES_PASSWORD
+        value: "postgres"
+    volumeMounts:
+      - name: airflow-dags
+        mountPath: /opt/airflow/dags
+      # - name: spark-events
+      #   mountPath: /opt/spark/spark-events
+    securityContext:
+      capabilities:
+        drop:
+          - ALL
+      runAsGroup: 185
+      runAsUser: 185
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      seccompProfile:
+        type: RuntimeDefault
+  executor:
+    cores: 1
+    instances: 2
+    memory: "2g"
+    labels:
+      app: spark
+      role: executor
+      version: "3.5.1"
+    volumeMounts:
+      - name: airflow-dags
+        mountPath: /opt/airflow/dags
+      # - name: spark-events
+      #   mountPath: /opt/spark/spark-events
+    securityContext:
+      capabilities:
+        drop:
+          - ALL
+      runAsGroup: 185
+      runAsUser: 185
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      seccompProfile:
+        type: RuntimeDefault
+  volumes:
+    - name: airflow-dags
+      persistentVolumeClaim:
+        claimName: airflow-dags
+    # - name: spark-events
+    #   persistentVolumeClaim:
+    #     claimName: spark-events

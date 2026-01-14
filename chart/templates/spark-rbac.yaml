@@ -1,0 +1,130 @@
+{{- if .Values.airflow.enabled }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: airflow
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    app: airflow
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airflow-spark-role
+  namespace: {{ include "chart.namespace" . }}
+rules:
+  # Pods (driver + executor)
+  - apiGroups: [""]
+    resources: ["pods", "pods/log"]
+    verbs: ["get", "list", "watch", "create", "delete", "patch"]
+
+  # Services + ConfigMaps
+  - apiGroups: [""]
+    resources: ["services", "configmaps"]
+    verbs: ["get", "list", "create", "delete", "patch"]
+
+  # SparkApplications (CRD)
+  - apiGroups: ["sparkoperator.k8s.io"]
+    resources: ["sparkapplications", "sparkapplications/status"]
+    verbs: ["create", "get", "list", "watch", "delete", "patch", "update"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airflow-spark-rolebinding
+  namespace: {{ include "chart.namespace" . }}
+subjects:
+  - kind: ServiceAccount
+    name: airflow
+    namespace: {{ include "chart.namespace" . }}
+roleRef:
+  kind: Role
+  name: airflow-spark-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: spark-operator-controller-role
+  namespace: {{ include "chart.namespace" . }}
+rules:
+  - apiGroups: ["sparkoperator.k8s.io"]
+    resources:
+      - "sparkapplications"
+      - "sparkapplications/status"
+      - "sparkapplications/finalizers"
+      - "scheduledsparkapplications"
+      - "scheduledsparkapplications/status"
+      - "scheduledsparkapplications/finalizers"
+    verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "create", "delete", "patch", "update"]
+
+  - apiGroups: [""]
+    resources: ["services", "configmaps", "persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "create", "delete", "patch", "update"]
+
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch", "update"]
+
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: spark-operator-controller-rolebinding
+  namespace: {{ include "chart.namespace" . }}
+subjects:
+  - kind: ServiceAccount
+    name: spark-operator-controller
+    namespace: {{ include "chart.namespace" . }}
+roleRef:
+  kind: Role
+  name: spark-operator-controller-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: spark-operator-webhook-role
+  namespace: {{ include "chart.namespace" . }}
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: spark-operator-webhook-rolebinding
+  namespace: {{ include "chart.namespace" . }}
+subjects:
+  - kind: ServiceAccount
+    name: spark-operator-webhook
+    namespace: {{ include "chart.namespace" . }}
+roleRef:
+  kind: Role
+  name: spark-operator-webhook-role
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

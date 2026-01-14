@@ -19,7 +19,7 @@ services:
       - default
   webserver:
     build: .
-    image: my-airflow:latest
+    image: my-airflow:v1.0
     container_name: webserver
     command: ["airflow", "webserver"]
     entrypoint: ["/opt/airflow/entrypoint.sh"]
@@ -33,10 +33,6 @@ services:
       AIRFLOW__API__AUTH_BACKEND: airflow.api.auth.backend.basic_auth
     volumes:
       - ./dags:/opt/airflow/dags
-      - ../spark/spark_apps:/opt/airflow/spark_apps
-      - ./scripts:/opt/airflow/scripts
-      - ../utils:/opt/airflow/utils
-      - ../backend:/opt/airflow/backend
     ports:
       - "8080:8080"
     healthcheck:
@@ -48,7 +44,7 @@ services:
       - default
 
   scheduler:
-    image: my-airflow:latest
+    image: my-airflow:v1.0
     container_name: scheduler
     command: ["airflow", "scheduler"]
     depends_on:
@@ -56,10 +52,6 @@ services:
         condition: service_healthy
     volumes:
       - ./dags:/opt/airflow/dags
-      - ../spark/spark_apps:/opt/airflow/spark_apps
-      - ./scripts:/opt/airflow/scripts
-      - ../utils:/opt/airflow/utils
-      - ../backend:/opt/airflow/backend
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow

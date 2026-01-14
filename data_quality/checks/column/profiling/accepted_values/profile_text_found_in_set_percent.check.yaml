@@ -8,3 +8,7 @@ spec:
   friendly_name: Minimum percentage of rows having text values outside the list of expected values
   standard: true
   default_severity: error
+  params:
+    table:
+    column:
+    

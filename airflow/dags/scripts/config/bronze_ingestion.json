@@ -1,0 +1,20 @@
+{
+  "jdbc_url": "jdbc:postgresql://postgres:5432/data_source",
+  "database": "data_source",
+  "tables": [
+    {
+      "schema_name": "public",
+      "table_name": "finance",
+      "primary_keys": ["transaction_id"],
+      "partition_cols": null,
+      "mode": "merge"
+    },
+    {
+      "schema_name": "public",
+      "table_name": "user_behavior",
+      "primary_keys": ["user_id"],
+      "partition_cols": null,
+      "mode": "overwrite"
+    }
+  ]
+}

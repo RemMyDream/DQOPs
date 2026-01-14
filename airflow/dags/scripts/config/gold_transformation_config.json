@@ -1,0 +1,53 @@
+{
+  "transformations": [
+    {
+      "source": {
+        "catalog": "silver",
+        "database": "churn",
+        "table": "customer_features_cleaned"
+      },
+      "target": {
+        "catalog": "gold",
+        "database": "churn",
+        "table": "ml_churn_features",
+        "primary_keys": [],
+        "partition_cols": null,
+        "mode": "overwrite"
+      },
+      "feature_engineering": {
+        "drop_columns": [],
+        "log1p_features": [],
+        "clip_quantile_features": {},
+        "clip_value_features": {},
+        "iqr_features": [],
+        "drop_after_transform": [
+          "search_queries_30d_iqr",
+          "review_count_2024_iqr"
+        ],
+        "target_column": "churn_label",
+        "final_feature_columns": [
+          "reg_days",
+          "sessions_30d_log",
+          "sessions_90d_log",
+          "avg_session_duration_90d",
+          "median_pages_viewed_30d",
+          "device_mix_ratio",
+          "orders_30d",
+          "orders_90d",
+          "aov_2024",
+          "category_diversity_2024",
+          "discount_rate_2024",
+          "support_tickets_2024",
+          "avg_csat_2024",
+          "emails_open_rate_90d",
+          "emails_click_rate_90d",
+          "avg_review_stars_2024",
+          "rfm_recency",
+          "rfm_frequency",
+          "rfm_monetary",
+          "churn_label"
+        ]
+      }
+    }
+  ]
+}
