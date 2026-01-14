@@ -1,7 +1,7 @@
 apiVersion: sparkoperator.k8s.io/v1beta2
 kind: SparkApplication
 metadata:
-  name: silver_transformation
+  name: gold_transformation
   namespace: data-pipeline
 spec:
   type: Python
@@ -9,11 +9,11 @@ spec:
   mode: cluster
   image: remmydream/spark-image:v3.0
   imagePullPolicy: IfNotPresent
-  mainApplicationFile: local:///opt/airflow/dags/scripts/silver_transformation.py
+  mainApplicationFile: local:///opt/airflow/dags/scripts/gold_transformation.py
   sparkVersion: 3.5.1
   arguments:
     - "--config"
-    - "/opt/airflow/dags/scripts/config/silver_transformation.json"
+    - "/opt/airflow/dags/scripts/config/gold_transformation.json"
   # restartPolicy:
   #   type: OnFailure
   #   onFailureRetries: 1
@@ -31,9 +31,9 @@ spec:
     spark.sql.catalog.bronze: "org.apache.iceberg.spark.SparkCatalog"
     spark.sql.catalog.bronze.type: "hadoop"
     spark.sql.catalog.bronze.warehouse: "s3a://bronze"
-    spark.sql.catalog.silver: "org.apache.iceberg.spark.SparkCatalog"
-    spark.sql.catalog.silver.type: "hadoop"
-    spark.sql.catalog.silver.warehouse: "s3a://silver"
+    spark.sql.catalog.gold: "org.apache.iceberg.spark.SparkCatalog"
+    spark.sql.catalog.gold.type: "hadoop"
+    spark.sql.catalog.gold.warehouse: "s3a://gold"
     # Event log
     # spark.eventLog.enabled: "true"
     # spark.eventLog.dir: "/opt/spark/spark-events"

@@ -23,26 +23,26 @@ with DAG(
 ) as dag:
 
 
-    bronze_ingestion = SparkKubernetesOperator(
-        task_id='bronze_ingestion',
+    # bronze_ingestion = SparkKubernetesOperator(
+    #     task_id='bronze_ingestion',
+    #     namespace='data-pipeline',
+    #     application_file="/opt/airflow/dags/spark-apps/bronze_ingestion.yaml",
+    #     kubernetes_conn_id='kubernetes_default',
+    #     base_container_name='spark-kubernetes-driver',
+    #     do_xcom_push=False,
+    #     get_logs=True
+    # )
+
+    gold_transformation = SparkKubernetesOperator(
+        task_id='gold_transformation',
         namespace='data-pipeline',
-        application_file="/opt/airflow/dags/spark-apps/bronze_ingestion.yaml",
+        application_file="/opt/airflow/dags/spark-apps/gold_transformation.yaml",
         kubernetes_conn_id='kubernetes_default',
         base_container_name='spark-kubernetes-driver',
         do_xcom_push=False,
         get_logs=True
     )
 
-    silver_transformation = SparkKubernetesOperator(
-        task_id='silver_transformation',
-        namespace='data-pipeline',
-        application_file="/opt/airflow/dags/spark-apps/silver_transformation.yaml",
-        kubernetes_conn_id='kubernetes_default',
-        base_container_name='spark-kubernetes-driver',
-        do_xcom_push=False,
-        get_logs=True
-    )
-
-    bronze_ingestion >> silver_transformation
-    
+    # bronze_ingestion >> gold_transformation
+    gold_transformation
 

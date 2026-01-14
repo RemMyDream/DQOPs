@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""
-Gold Transformation: Silver to Gold layer
-Prepares ML-ready features for churn prediction model
-"""
+
 import sys
 import os
 import json
@@ -25,7 +22,15 @@ def create_spark_session(app_name: str = "GoldTransformation") -> SparkSession:
         .appName(app_name) \
         .getOrCreate()
     
-    spark.sparkContext.setLogLevel("WARN")
+    spark.sparkContext.setLogLevel("ERROR")
+    
+    spark._jvm.org.apache.log4j.Logger.getLogger("org.apache.iceberg").setLevel(
+        spark._jvm.org.apache.log4j.Level.ERROR
+    )
+    spark._jvm.org.apache.log4j.Logger.getLogger("org.apache.hadoop").setLevel(
+        spark._jvm.org.apache.log4j.Level.ERROR
+    )
+    
     logger.info("SparkSession created successfully")
     return spark
 
@@ -42,136 +47,89 @@ def read_from_iceberg(
     return spark.table(full_table_name)
 
 
-def apply_feature_engineering(
+def apply_transformations(
     df: DataFrame,
-    feature_config: Dict[str, Any]
+    transformations: Dict[str, Any]
 ) -> DataFrame:
-    """
-    Apply feature engineering transformations for ML pipeline.
     
-    Config structure:
-    {
-        "drop_columns": ["col1", "col2"],           # Columns to drop
-        "log1p_features": ["col1", "col2"],         # Apply log1p transformation
-        "clip_quantile_features": {                  # Clip by quantile
-            "col1": {"low": 0.01, "high": 0.99}
-        },
-        "clip_value_features": {                     # Clip by fixed value
-            "col1": {"upper": 5}
-        },
-        "iqr_features": ["col1"],                   # IQR outlier handling
-        "drop_after_transform": ["col1_original"],  # Drop after creating derived cols
-        "target_column": "churn_label"              # Target column name
-    }
-    """
+    # 1. Apply log1p transformations
+    log1p_configs = transformations.get('log1p', [])
+    for config in log1p_configs:
+        col_name = config['column']
+        output_col = config.get('output', f"{col_name}_log")
+        df = df.withColumn(output_col, F.log1p(F.col(col_name).cast(DoubleType())))
+        logger.info(f"Applied log1p: {col_name} -> {output_col}")
     
-    # Step 1: Drop initial columns (user_id, age, country, city, etc.)
-    drop_cols = feature_config.get('drop_columns', [])
+    # 2. Apply quantile clip transformations
+    clip_configs = transformations.get('clip', [])
+    for config in clip_configs:
+        col_name = config['column']
+        low = config.get('low', 0.01)
+        high = config.get('high', 0.99)
+        
+        quantiles = df.approxQuantile(col_name, [low, high], 0.01)
+        if len(quantiles) == 2:
+            q_low, q_high = quantiles[0], quantiles[1]
+            df = df.withColumn(
+                col_name,
+                F.when(F.col(col_name) < q_low, q_low)
+                 .when(F.col(col_name) > q_high, q_high)
+                 .otherwise(F.col(col_name))
+            )
+            logger.info(f"Clipped {col_name} to [{q_low:.4f}, {q_high:.4f}]")
+    
+    # 3. Apply clip transformations
+    clip_value_configs = transformations.get('clip_value', [])
+    for config in clip_value_configs:
+        col_name = config['column']
+        lower = config.get('lower')
+        upper = config.get('upper')
+        
+        if lower is not None:
+            df = df.withColumn(
+                col_name,
+                F.when(F.col(col_name) < lower, lower).otherwise(F.col(col_name))
+            )
+        if upper is not None:
+            df = df.withColumn(
+                col_name,
+                F.when(F.col(col_name) > upper, upper).otherwise(F.col(col_name))
+            )
+        logger.info(f"Clipped {col_name}: lower={lower}, upper={upper}")
+    
+    # 4. Apply IQR clip transformations
+    iqr_configs = transformations.get('iqr_clip', [])
+    for config in iqr_configs:
+        col_name = config['column']
+        output_col = config.get('output', f"{col_name}_iqr")
+        
+        quantiles = df.approxQuantile(col_name, [0.25, 0.75], 0.01)
+        if len(quantiles) == 2:
+            q1, q3 = quantiles[0], quantiles[1]
+            iqr = q3 - q1
+            lower_bound = q1 - 1.5 * iqr
+            upper_bound = q3 + 1.5 * iqr
+            
+            df = df.withColumn(
+                output_col,
+                F.when(
+                    (F.col(col_name) >= lower_bound) & (F.col(col_name) <= upper_bound),
+                    F.col(col_name)
+                ).otherwise(F.lit(None))
+            )
+            logger.info(f"IQR filter: {col_name} -> {output_col} [{lower_bound:.4f}, {upper_bound:.4f}]")
+    
+    # 5. Drop columns
+    drop_cols = transformations.get('drop_columns', [])
     if drop_cols:
         existing_cols = [c for c in drop_cols if c in df.columns]
         if existing_cols:
             df = df.drop(*existing_cols)
             logger.info(f"Dropped columns: {existing_cols}")
-    
-    # Step 2: Apply log1p transformations
-    log1p_features = feature_config.get('log1p_features', [])
-    for col_name in log1p_features:
-        if col_name in df.columns:
-            output_col = f"{col_name}_log"
-            df = df.withColumn(output_col, F.log1p(F.col(col_name).cast(DoubleType())))
-            logger.info(f"Applied log1p: {col_name} -> {output_col}")
-    
-    # Step 3: Apply quantile clipping
-    clip_quantile = feature_config.get('clip_quantile_features', {})
-    for col_name, params in clip_quantile.items():
-        if col_name in df.columns:
-            low = params.get('low', 0.01)
-            high = params.get('high', 0.99)
-            
-            quantiles = df.approxQuantile(col_name, [low, high], 0.01)
-            if len(quantiles) == 2:
-                q_low, q_high = quantiles[0], quantiles[1]
-                df = df.withColumn(
-                    col_name,
-                    F.when(F.col(col_name) < q_low, q_low)
-                     .when(F.col(col_name) > q_high, q_high)
-                     .otherwise(F.col(col_name))
-                )
-                logger.info(f"Clipped {col_name} to [{q_low:.4f}, {q_high:.4f}]")
-    
-    # Step 4: Apply fixed value clipping
-    clip_value = feature_config.get('clip_value_features', {})
-    for col_name, params in clip_value.items():
-        if col_name in df.columns:
-            lower = params.get('lower')
-            upper = params.get('upper')
-            
-            if lower is not None:
-                df = df.withColumn(
-                    col_name,
-                    F.when(F.col(col_name) < lower, lower).otherwise(F.col(col_name))
-                )
-            if upper is not None:
-                df = df.withColumn(
-                    col_name,
-                    F.when(F.col(col_name) > upper, upper).otherwise(F.col(col_name))
-                )
-            logger.info(f"Clipped {col_name}: lower={lower}, upper={upper}")
-    
-    # Step 5: Apply IQR outlier handling
-    iqr_features = feature_config.get('iqr_features', [])
-    for col_name in iqr_features:
-        if col_name in df.columns:
-            output_col = f"{col_name}_iqr"
-            quantiles = df.approxQuantile(col_name, [0.25, 0.75], 0.01)
-            if len(quantiles) == 2:
-                q1, q3 = quantiles[0], quantiles[1]
-                iqr = q3 - q1
-                lower_bound = q1 - 1.5 * iqr
-                upper_bound = q3 + 1.5 * iqr
-                
-                df = df.withColumn(
-                    output_col,
-                    F.when(
-                        (F.col(col_name) >= lower_bound) & (F.col(col_name) <= upper_bound),
-                        F.col(col_name)
-                    ).otherwise(F.lit(None))
-                )
-                logger.info(f"IQR filter: {col_name} -> {output_col} [{lower_bound:.4f}, {upper_bound:.4f}]")
-    
-    # Step 6: Drop columns after transformation
-    drop_after = feature_config.get('drop_after_transform', [])
-    if drop_after:
-        existing_cols = [c for c in drop_after if c in df.columns]
-        if existing_cols:
-            df = df.drop(*existing_cols)
-            logger.info(f"Dropped after transform: {existing_cols}")
-    
-    return df
-
-
-def prepare_ml_dataset(
-    df: DataFrame,
-    target_column: str,
-    feature_columns: Optional[List[str]] = None
-) -> DataFrame:
-    """
-    Prepare final ML dataset with features and target.
-    
-    Returns DataFrame with:
-    - feature columns (all columns except target if not specified)
-    - target column
-    """
-    if feature_columns:
-        # Use specified feature columns
-        all_cols = feature_columns + [target_column]
-        df = df.select(*[c for c in all_cols if c in df.columns])
-    
-    # Drop rows with null values in important columns
-    df = df.dropna()
-    
-    logger.info(f"Final dataset columns: {df.columns}")
-    logger.info(f"Target column: {target_column}")
+        
+        missing_cols = set(drop_cols) - set(existing_cols)
+        if missing_cols:
+            logger.warning(f"Columns not found (skipped): {missing_cols}")
     
     return df
 
@@ -182,18 +140,16 @@ def write_to_iceberg(
     catalog: str,
     database: str,
     table_name: str,
-    primary_keys: List[str],
     partition_cols: Optional[List[str]] = None,
     mode: str = "overwrite"
 ) -> int:
     """Write data to Iceberg table."""
     full_table_name = f"{catalog}.{database}.{table_name}"
-    
-    spark.sql(f"CREATE DATABASE IF NOT EXISTS {catalog}.{database}")
-    
+        
     try:
         spark.table(full_table_name)
         table_exists = True
+        logger.info(f"Table exists: {full_table_name}")
     except:
         table_exists = False
     
@@ -210,56 +166,26 @@ def write_to_iceberg(
         df.writeTo(full_table_name).append()
         logger.info(f"Appended to {full_table_name}")
     
-    elif mode == "merge" and primary_keys:
-        df.createOrReplaceTempView("source_data")
-        
-        merge_condition = " AND ".join([
-            f"target.{col} = source.{col}" for col in primary_keys
-        ])
-        
-        columns = df.columns
-        update_cols = [col for col in columns if col not in primary_keys]
-        
-        if update_cols:
-            update_set = ", ".join([f"target.{col} = source.{col}" for col in update_cols])
-        else:
-            update_set = ", ".join([f"target.{col} = source.{col}" for col in columns])
-        
-        insert_cols = ", ".join(columns)
-        insert_vals = ", ".join([f"source.{col}" for col in columns])
-        
-        merge_sql = f"""
-            MERGE INTO {full_table_name} AS target
-            USING source_data AS source
-            ON {merge_condition}
-            WHEN MATCHED THEN UPDATE SET {update_set}
-            WHEN NOT MATCHED THEN INSERT ({insert_cols}) VALUES ({insert_vals})
-        """
-        
-        spark.sql(merge_sql)
-        logger.info(f"Merged into {full_table_name}")
-    
     row_count = spark.table(full_table_name).count()
     logger.info(f"{full_table_name}: {row_count} rows")
     return row_count
 
 
-def process_gold_transformation(
+def process_transformation(
     spark: SparkSession,
     transform_info: Dict[str, Any]
 ) -> Dict[str, Any]:
-    """Process gold layer transformation."""
-    source = transform_info['source']
-    target = transform_info['target']
-    feature_config = transform_info.get('feature_engineering', {})
     
+    source = transform_info.get('source', {})
+    target = transform_info.get('target', {})
+    transformations = transform_info.get('transformations', {})
+    output_config = transform_info.get('output', {})
     source_table = f"{source['catalog']}.{source['database']}.{source['table']}"
-    target_table = f"{target['catalog']}.{target['database']}.{target['table']}"
     
-    logger.info(f"Gold Transformation: {source_table} -> {target_table}")
+    logger.info(f"Processing: {source_table}")
     
     try:
-        # Read from silver
+        # Read source
         df = read_from_iceberg(
             spark=spark,
             catalog=source['catalog'],
@@ -268,44 +194,70 @@ def process_gold_transformation(
         )
         
         logger.info(f"Source row count: {df.count()}")
-        logger.info(f"Source columns: {df.columns}")
         
-        # Apply feature engineering
-        df = apply_feature_engineering(df, feature_config)
+        # Apply transformations
+        df = apply_transformations(df, transformations)
         
-        # Prepare ML dataset
-        target_column = feature_config.get('target_column', 'churn_label')
-        feature_columns = feature_config.get('final_feature_columns')
+        # Get output config
+        feature_columns = output_config.get('feature_columns', [])
+        target_column = output_config.get('target_column', 'churn_label')
+        drop_nulls = output_config.get('drop_nulls', True)
         
-        df = prepare_ml_dataset(df, target_column, feature_columns)
+        # Select và drop nulls
+        all_cols = feature_columns + [target_column]
+        existing_cols = [c for c in all_cols if c in df.columns]
+        df_clean = df.select(*existing_cols)
         
-        # Write to gold
-        row_count = write_to_iceberg(
+        if drop_nulls:
+            before_count = df_clean.count()
+            df_clean = df_clean.dropna()
+            after_count = df_clean.count()
+            dropped = before_count - after_count
+            if dropped > 0:
+                logger.info(f"Dropped {dropped} rows with nulls ({dropped/before_count*100:.2f}%)")
+        
+        # Split into features and label
+        df_features = df_clean.select(*[c for c in feature_columns if c in df_clean.columns])
+        df_label = df_clean.select(target_column)
+        
+        # Write features table
+        features_table = target.get('features_table', 'features')
+        features_count = write_to_iceberg(
             spark=spark,
-            df=df,
+            df=df_features,
             catalog=target['catalog'],
             database=target['database'],
-            table_name=target['table'],
-            primary_keys=target.get('primary_keys', []),
+            table_name=features_table,
+            partition_cols=target.get('partition_cols'),
+            mode=target.get('mode', 'overwrite')
+        )
+        
+        # Write label table
+        label_table = target.get('label_table', 'label')
+        label_count = write_to_iceberg(
+            spark=spark,
+            df=df_label,
+            catalog=target['catalog'],
+            database=target['database'],
+            table_name=label_table,
             partition_cols=target.get('partition_cols'),
             mode=target.get('mode', 'overwrite')
         )
         
         return {
             "source": source_table,
-            "target": target_table,
             "status": "success",
-            "rows": row_count,
-            "columns": df.columns
+            "features_table": f"{target['catalog']}.{target['database']}.{features_table}",
+            "features_rows": features_count,
+            "features_columns": df_features.columns,
+            "label_table": f"{target['catalog']}.{target['database']}.{label_table}",
+            "label_rows": label_count
         }
         
     except Exception as e:
-        logger.error(f"Failed {source_table} -> {target_table}: {e}")
-        import traceback
-        logger.error(traceback.format_exc())
+        logger.error(f"Failed {source_table}: {e}")
         return {
             "source": source_table,
-            "target": target_table,
             "status": "error",
             "message": str(e)
         }
@@ -323,14 +275,14 @@ def main():
     with open(args.config, 'r') as f:
         config = json.load(f)
     
-    transformations = config.get('transformations', [])
-    logger.info(f"Starting gold transformation: {len(transformations)} job(s)")
+    transforms = config.get('transformations', [])
+    logger.info(f"Starting transformation: {len(transforms)} job(s)")
     
     spark = None
     try:
         spark = create_spark_session("GoldTransformation")
         
-        results = [process_gold_transformation(spark, t) for t in transformations]
+        results = [process_transformation(spark, t) for t in transforms]
         
         success = sum(1 for r in results if r['status'] == 'success')
         failed = sum(1 for r in results if r['status'] == 'error')
@@ -339,13 +291,11 @@ def main():
         
         for r in results:
             if r['status'] == 'success':
-                logger.info(f"  {r['target']}: {r['rows']} rows, columns: {r.get('columns', [])}")
+                logger.info(f"  Features: {r['features_table']} ({r['features_rows']} rows, {len(r['features_columns'])} cols)")
+                logger.info(f"  Label: {r['label_table']} ({r['label_rows']} rows)")
         
         if failed > 0:
-            failed_jobs = [
-                f"{r['source']} -> {r['target']}" 
-                for r in results if r['status'] == 'error'
-            ]
+            failed_jobs = [r['source'] for r in results if r['status'] == 'error']
             logger.error(f"Failed jobs: {failed_jobs}")
             sys.exit(1)
             

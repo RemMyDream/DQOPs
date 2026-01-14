@@ -2,30 +2,53 @@
   "transformations": [
     {
       "source": {
-        "catalog": "silver",
-        "database": "churn",
-        "table": "customer_features_cleaned"
+        "catalog": "bronze",
+        "database": "data_source",
+        "table": "user_behavior"
       },
       "target": {
         "catalog": "gold",
-        "database": "churn",
-        "table": "ml_churn_features",
-        "primary_keys": [],
+        "database": "data_source",
+        "features_table": "churn_features",
+        "label_table": "churn_label",
         "partition_cols": null,
         "mode": "overwrite"
       },
-      "feature_engineering": {
-        "drop_columns": [],
-        "log1p_features": [],
-        "clip_quantile_features": {},
-        "clip_value_features": {},
-        "iqr_features": [],
-        "drop_after_transform": [
-          "search_queries_30d_iqr",
-          "review_count_2024_iqr"
+      "transformations": {
+        "log1p": [
+          {"column": "sessions_30d", "output": "sessions_30d_log"},
+          {"column": "sessions_90d", "output": "sessions_90d_log"}
         ],
-        "target_column": "churn_label",
-        "final_feature_columns": [
+        "clip": [
+          {"column": "sessions_30d_log"},
+          {"column": "sessions_90d_log"},
+          {"column": "avg_session_duration_90d"},
+          {"column": "median_pages_viewed_30d"},
+          {"column": "aov_2024"},
+          {"column": "category_diversity_2024"},
+          {"column": "discount_rate_2024"},
+          {"column": "emails_click_rate_90d"},
+          {"column": "rfm_frequency"},
+          {"column": "rfm_monetary"}
+        ],
+        "clip_value": [
+          {"column": "orders_30d", "upper": 2},
+          {"column": "orders_90d", "upper": 5},
+          {"column": "support_tickets_2024", "upper": 2}
+        ],
+        "iqr_clip": [
+          {"column": "search_queries_30d", "output": "search_queries_30d_iqr"},
+          {"column": "review_count_2024", "output": "review_count_2024_iqr"}
+        ],
+        "drop_columns": [
+          "user_id", "age", "country", "city", "marketing_source", "app_version_major",
+          "refunds_count_2024", "refund_rate_2024",
+          "orders_2024", "gmv_2024", "days_since_last_order",
+          "sessions_30d", "sessions_90d", "search_queries_30d", "review_count_2024"
+        ]
+      },
+      "output": {
+        "feature_columns": [
           "reg_days",
           "sessions_30d_log",
           "sessions_90d_log",
@@ -39,14 +62,16 @@
           "discount_rate_2024",
           "support_tickets_2024",
           "avg_csat_2024",
+          "review_count_2024_iqr",
           "emails_open_rate_90d",
           "emails_click_rate_90d",
           "avg_review_stars_2024",
           "rfm_recency",
           "rfm_frequency",
-          "rfm_monetary",
-          "churn_label"
-        ]
+          "rfm_monetary"
+        ],
+        "target_column": "churn_label",
+        "drop_nulls": true
       }
     }
   ]
