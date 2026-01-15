@@ -170,40 +170,35 @@ mlflow:
 # ==================== Model ====================
 trainer:
   enabled: true
-  
+
   image:
     repository: remmydream/model
-    tag: "v3.0"
+    tag: v3.0
     pullPolicy: IfNotPresent
-  
-  backoffLimit: 2
-  ttlSecondsAfterFinished: 86400  # Cleanup after 24h
-  
-  # Data paths in MinIO
+
+  git:
+    repo: https://github.com/your-org/churn-training.git
+    branch: main   # hoặc tag / commit
+
+  codeSize: 1Gi
+
   data:
-    featuresPath: "gold/data_source/churn_features/data"
-    labelsPath: "gold/data_source/churn_label/data"
-  
-  # Training parameters
+    featuresPath: gold/data_source/churn_features/data
+    labelsPath: gold/data_source/churn_label/data
+
   training:
-    models:
-      - xgb
-      - lightgbm
-    nTrials: 15      # Optuna trials
-    nSplits: 5       # CV folds
-    testSize: 0.2
-    bestThreshold: 0.5
-  
-  # MLflow settings
+    models: ["xgb", "lightgbm"]
+    nTrials: 5
+    nSplits: 5
+
   mlflow:
-    experiment: "churn-prediction"
+    experiment: churn-prediction
     registerModels: true
-  
-  # Resource allocation
+
   resources:
     requests:
-      memory: "4Gi"
       cpu: "2"
+      memory: "4Gi"
     limits:
-      memory: "8Gi"
       cpu: "4"
+      memory: "8Gi"
