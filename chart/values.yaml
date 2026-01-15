@@ -70,65 +70,6 @@ postgres:
       memory: "1Gi"
       cpu: "1000m"
 
-# ==================== SPARK ====================
-# spark:
-#   enabled: true
-#   image:
-#     repository: remmydream/spark-image
-#     tag: "v1.0"
-#     pullPolicy: IfNotPresent
-  
-#   s3Credentials:
-#     accessKey: minio_access_key
-#     secretKey: minio_secret_key
-  
-#   master:
-#     replicas: 1
-#     service:
-#       type: ClusterIP
-#       webUiPort: 8080
-#       masterPort: 7077
-#     resources:
-#       requests:
-#         memory: "512Mi"
-#         cpu: "250m"
-#       limits:
-#         memory: "2Gi"
-#         cpu: "1000m"
-  
-#   worker:
-#     replicas: 2
-#     resources:
-#       requests:
-#         memory: "1Gi"
-#         cpu: "500m"
-#       limits:
-#         memory: "4Gi"
-#         cpu: "2000m"
-  
-#   history:
-#     replicas: 1
-#     service:
-#       type: ClusterIP
-#       port: 18080
-#     resources:
-#       requests:
-#         memory: "256Mi"
-#         cpu: "250m"
-#       limits:
-#         memory: "1Gi"
-#         cpu: "500m"
-  
-#   persistence:
-#     eventsSize: 2Gi
-#     dataSize: 4Gi
-#     appsSize: 2Gi
-  
-#   iceberg:
-#     enabled: true
-#     sparkRuntime: /opt/spark/jars/iceberg-spark-runtime-3.5_2.12-1.7.1.jar
-#     awsBundle: /opt/spark/jars/iceberg-aws-bundle-1.7.1.jar
-
 # ==================== AIRFLOW ====================
 airflow:
   enabled: true
@@ -185,3 +126,84 @@ airflow:
   persistence:
     dagsSize: 2Gi
     logsSize: 2Gi 
+
+# ==================== MLFLOW ====================
+mlflow:
+  enabled: true
+  
+  image:
+    repository: remmydream/mlflow-image
+    tag: "v1.0"
+    pullPolicy: IfNotPresent
+  
+  replicas: 1
+  
+  service:
+    type: ClusterIP
+    host: "0.0.0.0"
+    port: 5000
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "3Gi"
+  
+  # Backend Store Database (PostgreSQL)
+  postgres:
+    user: mlflow
+    password: mlflow
+    db: mlflow
+    replicas: 1
+    persistence:
+      enabled: true
+      size: 5Gi
+      storageClass: ""
+      accessMode: ReadWriteOnce
+  
+  # Artifact Store (S3/MinIO)
+  s3:
+    bucket: mlflow-artifacts
+
+# ==================== Model ====================
+trainer:
+  enabled: true
+  
+  image:
+    repository: remmydream/model
+    tag: "v3.0"
+    pullPolicy: IfNotPresent
+  
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 86400  # Cleanup after 24h
+  
+  # Data paths in MinIO
+  data:
+    featuresPath: "gold/data_source/churn_features/data"
+    labelsPath: "gold/data_source/churn_label/data"
+  
+  # Training parameters
+  training:
+    models:
+      - xgb
+      - lightgbm
+    nTrials: 15      # Optuna trials
+    nSplits: 5       # CV folds
+    testSize: 0.2
+    bestThreshold: 0.5
+  
+  # MLflow settings
+  mlflow:
+    experiment: "churn-prediction"
+    registerModels: true
+  
+  # Resource allocation
+  resources:
+    requests:
+      memory: "4Gi"
+      cpu: "2"
+    limits:
+      memory: "8Gi"
+      cpu: "4"

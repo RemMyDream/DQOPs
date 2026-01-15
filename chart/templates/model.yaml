@@ -1,0 +1,93 @@
+{{- if .Values.trainer.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: trainer-code
+  namespace: {{ include "chart.namespace" . }}
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: {{ .Values.airflow.persistence.dagsSize }}
+  {{- if .Values.storageClass }}
+  storageClassName: {{ .Values.storageClass }}
+  {{- end }}
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: trainer
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: trainer
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  backoffLimit: {{ .Values.trainer.backoffLimit | default 2 }}
+  ttlSecondsAfterFinished: {{ .Values.trainer.ttlSecondsAfterFinished | default 86400 }}
+  template:
+    metadata:
+      labels:
+        app: churn-training
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: model
+        image: "{{ .Values.trainer.image.repository }}:{{ .Values.trainer.image.tag }}"
+        imagePullPolicy: {{ .Values.trainer.image.pullPolicy | default "Always" }}
+        command: ["python", "/app/trainer.py"]
+        volumeMounts:
+        - name: trainer-code
+          mountPath: /app
+        env:
+        - name: GIT_PYTHON_REFRESH
+          value: "quiet"
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: minio-credential
+              key: MINIO_ROOT_USER
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: minio-credential
+              key: MINIO_ROOT_PASSWORD
+        args:
+        - "--features-path"
+        - "{{ .Values.trainer.data.featuresPath }}"
+        - "--labels-path"
+        - "{{ .Values.trainer.data.labelsPath }}"
+        - "--minio-endpoint"
+        - "http://minio-svc:{{ .Values.minio.service.apiPort | default 9000 }}"
+        - "--mlflow-tracking-uri"
+        - "http://mlflow-svc:{{ .Values.mlflow.service.port | default 5000 }}"
+        - "--mlflow-experiment"
+        - "{{ .Values.trainer.mlflow.experiment }}"
+        - "--models"
+        {{- range .Values.trainer.training.models }}
+        - "{{ . }}"
+        {{- end }}
+        - "--n-trials"
+        - "{{ .Values.trainer.training.nTrials }}"
+        - "--n-splits"
+        - "{{ .Values.trainer.training.nSplits }}"
+        {{- if .Values.trainer.mlflow.registerModels }}
+        - "--register-models"
+        {{- end }}
+        resources:
+          requests:
+            memory: {{ .Values.trainer.resources.requests.memory | quote }}
+            cpu: {{ .Values.trainer.resources.requests.cpu | quote }}
+          limits:
+            memory: {{ .Values.trainer.resources.limits.memory | quote }}
+            cpu: {{ .Values.trainer.resources.limits.cpu | quote }}
+      volumes:
+      - name: trainer-code
+        configMap:
+          name: trainer-code
+          defaultMode: 0755
+{{- end }}
