@@ -14,7 +14,7 @@ default_args = {
 }
 
 with DAG(
-    dag_id='spark_postgres_to_iceberg',
+    dag_id='etl_process',
     default_args=default_args,
     description='Ingest data from PostgreSQL to Minio',
     schedule_interval='@daily',
@@ -23,15 +23,15 @@ with DAG(
 ) as dag:
 
 
-    # bronze_ingestion = SparkKubernetesOperator(
-    #     task_id='bronze_ingestion',
-    #     namespace='data-pipeline',
-    #     application_file="/opt/airflow/dags/spark-apps/bronze_ingestion.yaml",
-    #     kubernetes_conn_id='kubernetes_default',
-    #     base_container_name='spark-kubernetes-driver',
-    #     do_xcom_push=False,
-    #     get_logs=True
-    # )
+    bronze_ingestion = SparkKubernetesOperator(
+        task_id='bronze_ingestion',
+        namespace='data-pipeline',
+        application_file="/opt/airflow/dags/spark-apps/bronze_ingestion.yaml",
+        kubernetes_conn_id='kubernetes_default',
+        base_container_name='spark-kubernetes-driver',
+        do_xcom_push=False,
+        get_logs=True
+    )
 
     gold_transformation = SparkKubernetesOperator(
         task_id='gold_transformation',
@@ -43,6 +43,5 @@ with DAG(
         get_logs=True
     )
 
-    # bronze_ingestion >> gold_transformation
-    gold_transformation
+    bronze_ingestion >> gold_transformation
 

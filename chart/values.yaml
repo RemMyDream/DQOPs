@@ -166,39 +166,3 @@ mlflow:
   # Artifact Store (S3/MinIO)
   s3:
     bucket: mlflow-artifacts
-
-# ==================== Model ====================
-trainer:
-  enabled: true
-
-  image:
-    repository: remmydream/model
-    tag: v3.0
-    pullPolicy: IfNotPresent
-
-  git:
-    repo: https://github.com/your-org/churn-training.git
-    branch: main   # hoặc tag / commit
-
-  codeSize: 1Gi
-
-  data:
-    featuresPath: gold/data_source/churn_features/data
-    labelsPath: gold/data_source/churn_label/data
-
-  training:
-    models: ["xgb", "lightgbm"]
-    nTrials: 5
-    nSplits: 5
-
-  mlflow:
-    experiment: churn-prediction
-    registerModels: true
-
-  resources:
-    requests:
-      cpu: "2"
-      memory: "4Gi"
-    limits:
-      cpu: "4"
-      memory: "8Gi"
