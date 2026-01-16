@@ -31,7 +31,7 @@ import s3fs
 import numpy as np
 import pandas as pd
 import matplotlib
-matplotlib.use('Agg') 
+matplotlib.use('Agg')  # Non-interactive backend for containers
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split, StratifiedKFold
@@ -39,7 +39,7 @@ from sklearn.metrics import (
     roc_auc_score, precision_score, recall_score,
     f1_score, average_precision_score, classification_report,
     confusion_matrix, roc_curve, precision_recall_curve,
-    log_loss, brier_score_loss
+    log_loss, brier_score_loss, auc
 )
 from sklearn.calibration import calibration_curve
 from xgboost import XGBClassifier
@@ -162,7 +162,9 @@ class ChurnDataset:
         }
 
 
-class ChurnModelTrainer:    
+class ChurnModelTrainer:
+    """Trainer for churn prediction models with comprehensive MLflow logging."""
+    
     MODEL_CONFIGS = {
         'xgb': {
             'class': XGBClassifier,

@@ -115,7 +115,7 @@ with DAG(
             requests=RESOURCE_REQUESTS,
             limits=RESOURCE_LIMITS
         ),
-        is_delete_operator_pod=True,
+        is_delete_operator_pod=False,
         get_logs=True,
         startup_timeout_seconds=600,
     )
@@ -146,7 +146,7 @@ with DAG(
             requests=RESOURCE_REQUESTS,
             limits=RESOURCE_LIMITS
         ),
-        is_delete_operator_pod=True,
+        is_delete_operator_pod=False,
         get_logs=True,
         startup_timeout_seconds=600,
     )
