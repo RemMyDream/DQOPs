@@ -1,54 +1,149 @@
-kubectl get pods -n cert-manager
+0. K8s
+Mở PowerShell (Run as Administrator):
+wsl --install
+RESTART MÁY
+wsl -l -v
+========
+https://www.docker.com/products/docker-desktop/
+Sau khi cài:
+Settings → General
+Mở Docker Desktop → bật:
+✅ Use WSL 2 based engine
+✅ WSL Integration (Ubuntu)
+
+
+# kubectl
+docker pull kindest/node:v1.30.0
+curl.exe -LO https://dl.k8s.io/release/v1.30.0/bin/windows/amd64/kubectl.exe
+move kubectl.exe C:\Windows\System32
+
+# kind
+curl.exe -Lo kind.exe https://kind.sigs.k8s.io/dl/v0.31.0/kind-windows-amd64
+move kind.exe C:\Windows\System32
+
+
+0. Find port 
+netstat -ano | findstr :9001
+taskkill /PID 1234 /F
+
+CANVAS: https://www.canva.com/design/DAG2uemSawI/UQ0AqaE5CtEs_RlVh50pyQ/edit
+
+1. Create cluster
+kind create cluster --name dqops
+
+2. Helm
 
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.0/cert-manager.yaml
+kubectl get pods -n cert-manager
 
+helm install dqops ./chart -n data-pipeline --create-namespace
+helm install spark-operator ./spark-operator -n data-pipeline
+
+3. Copy dags
 kubectl exec -n data-pipeline airflow-scheduler-8688fcccd8-g24wc -- rm -rf /opt/airflow/dags/*
-kubectl cp ./airflow/dags/ data-pipeline/airflow-scheduler-8688fcccd8-g24wc:/opt/airflow/
+kubectl cp ./airflow/dags/ data-pipeline/:/opt/airflow/
 
-kubectl get pods -n data-pipeline
-
-kubectl rollout restart deployment airflow-scheduler -n data-pipeline
+4. Copy dataset to postgres
 
 kubectl cp mlflow/dataset.csv data-pipeline/postgres-5b895f667b-jfqt8:/tmp/data.csv
 kubectl exec -it postgres-5b895f667b-97w2l -n data-pipeline -- psql -U postgres
 
 CREATE TABLE user_behavior (
+    -- Identifiers
     user_id VARCHAR(10) PRIMARY KEY,
+
+    -- Demographics
     age INTEGER,
     country VARCHAR(50),
     city VARCHAR(50),
     reg_days INTEGER,
     marketing_source VARCHAR(50),
+
+    -- Activity
     sessions_30d INTEGER,
     sessions_90d INTEGER,
-    avg_session_duration_90d NUMERIC(10,2),
-    median_pages_viewed_30d NUMERIC(10,2),
     search_queries_30d INTEGER,
-    device_mix_ratio NUMERIC(10,3),
+
+    -- Engagement metrics
+    avg_session_duration_90d DOUBLE PRECISION,
+    median_pages_viewed_30d DOUBLE PRECISION,
+    device_mix_ratio DOUBLE PRECISION,
+
+    -- App info
     app_version_major VARCHAR(10),
+
+    -- Orders
     orders_30d INTEGER,
     orders_90d INTEGER,
     orders_2024 INTEGER,
-    aov_2024 NUMERIC(10,2),
-    gmv_2024 NUMERIC(10,2),
+
+    -- Revenue (ML-ready: dùng float)
+    aov_2024 DOUBLE PRECISION,
+    gmv_2024 DOUBLE PRECISION,
+
+    -- Behavioral features
     category_diversity_2024 INTEGER,
     days_since_last_order INTEGER,
-    discount_rate_2024 NUMERIC(10,3),
+
+    discount_rate_2024 DOUBLE PRECISION,
     refunds_count_2024 INTEGER,
-    refund_rate_2024 NUMERIC(10,3),
+    refund_rate_2024 DOUBLE PRECISION,
     support_tickets_2024 INTEGER,
-    avg_csat_2024 NUMERIC(10,2),
-    emails_open_rate_90d NUMERIC(10,3),
-    emails_click_rate_90d NUMERIC(10,3),
+
+    -- Satisfaction & marketing
+    avg_csat_2024 DOUBLE PRECISION,
+    emails_open_rate_90d DOUBLE PRECISION,
+    emails_click_rate_90d DOUBLE PRECISION,
+
+    -- Reviews
     review_count_2024 INTEGER,
-    avg_review_stars_2024 NUMERIC(10,2),
+    avg_review_stars_2024 DOUBLE PRECISION,
+
+    -- RFM
     rfm_recency INTEGER,
     rfm_frequency INTEGER,
-    rfm_monetary NUMERIC(10,2),
-    churn_label INTEGER
+    rfm_monetary DOUBLE PRECISION,
+
+    -- Label
+    churn_label SMALLINT
 );
 
-\copy user_behavior
+
+COPY user_behavior (
+    user_id,
+    age,
+    country,
+    city,
+    reg_days,
+    marketing_source,
+    sessions_30d,
+    sessions_90d,
+    avg_session_duration_90d,
+    median_pages_viewed_30d,
+    search_queries_30d,
+    device_mix_ratio,
+    app_version_major,
+    orders_30d,
+    orders_90d,
+    orders_2024,
+    aov_2024,
+    gmv_2024,
+    category_diversity_2024,
+    days_since_last_order,
+    discount_rate_2024,
+    refunds_count_2024,
+    refund_rate_2024,
+    support_tickets_2024,
+    avg_csat_2024,
+    emails_open_rate_90d,
+    emails_click_rate_90d,
+    review_count_2024,
+    avg_review_stars_2024,
+    rfm_recency,
+    rfm_frequency,
+    rfm_monetary,
+    churn_label
+)
 FROM '/tmp/data.csv'
 DELIMITER ','
 CSV HEADER;

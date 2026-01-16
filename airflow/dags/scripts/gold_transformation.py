@@ -110,14 +110,14 @@ def apply_transformations(
             lower_bound = q1 - 1.5 * iqr
             upper_bound = q3 + 1.5 * iqr
             
+            # SỬA: Clip về boundary thay vì set NULL
             df = df.withColumn(
                 output_col,
-                F.when(
-                    (F.col(col_name) >= lower_bound) & (F.col(col_name) <= upper_bound),
-                    F.col(col_name)
-                ).otherwise(F.lit(None))
+                F.when(F.col(col_name) < lower_bound, lower_bound)
+                .when(F.col(col_name) > upper_bound, upper_bound)
+                .otherwise(F.col(col_name))
             )
-            logger.info(f"IQR filter: {col_name} -> {output_col} [{lower_bound:.4f}, {upper_bound:.4f}]")
+            logger.info(f"IQR clip: {col_name} -> {output_col} [{lower_bound:.4f}, {upper_bound:.4f}]")
     
     # 5. Drop columns
     drop_cols = transformations.get('drop_columns', [])
