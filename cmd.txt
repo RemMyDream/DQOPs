@@ -2,27 +2,53 @@ kubectl get pods -n cert-manager
 
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.0/cert-manager.yaml
 
-kubectl cp ./airflow/dags/ data-pipeline/airflow-scheduler-7cdd457794-mpwpc:/opt/airflow/
+kubectl exec -n data-pipeline airflow-scheduler-8688fcccd8-g24wc -- rm -rf /opt/airflow/dags/*
+kubectl cp ./airflow/dags/ data-pipeline/airflow-scheduler-8688fcccd8-g24wc:/opt/airflow/
 
 kubectl get pods -n data-pipeline
 
 kubectl rollout restart deployment airflow-scheduler -n data-pipeline
 
-kubectl cp kafka/data.csv data-pipeline/postgres-5b895f667b-97w2l:/tmp/finance.csv
+kubectl cp mlflow/dataset.csv data-pipeline/postgres-5b895f667b-jfqt8:/tmp/data.csv
 kubectl exec -it postgres-5b895f667b-97w2l -n data-pipeline -- psql -U postgres
 
-CREATE TABLE IF NOT EXISTS finance (
-    transaction_id      TEXT,
-    transaction_date    TEXT,
-    customer_id         TEXT,
-    product_name        TEXT,
-    quantity            TEXT,
-    price               TEXT,
-    payment_method      TEXT,
-    transaction_status  TEXT
+CREATE TABLE user_behavior (
+    user_id VARCHAR(10) PRIMARY KEY,
+    age INTEGER,
+    country VARCHAR(50),
+    city VARCHAR(50),
+    reg_days INTEGER,
+    marketing_source VARCHAR(50),
+    sessions_30d INTEGER,
+    sessions_90d INTEGER,
+    avg_session_duration_90d NUMERIC(10,2),
+    median_pages_viewed_30d NUMERIC(10,2),
+    search_queries_30d INTEGER,
+    device_mix_ratio NUMERIC(10,3),
+    app_version_major VARCHAR(10),
+    orders_30d INTEGER,
+    orders_90d INTEGER,
+    orders_2024 INTEGER,
+    aov_2024 NUMERIC(10,2),
+    gmv_2024 NUMERIC(10,2),
+    category_diversity_2024 INTEGER,
+    days_since_last_order INTEGER,
+    discount_rate_2024 NUMERIC(10,3),
+    refunds_count_2024 INTEGER,
+    refund_rate_2024 NUMERIC(10,3),
+    support_tickets_2024 INTEGER,
+    avg_csat_2024 NUMERIC(10,2),
+    emails_open_rate_90d NUMERIC(10,3),
+    emails_click_rate_90d NUMERIC(10,3),
+    review_count_2024 INTEGER,
+    avg_review_stars_2024 NUMERIC(10,2),
+    rfm_recency INTEGER,
+    rfm_frequency INTEGER,
+    rfm_monetary NUMERIC(10,2),
+    churn_label INTEGER
 );
 
-\copy finance
-FROM '/tmp/finance.csv'
+\copy user_behavior
+FROM '/tmp/data.csv'
 DELIMITER ','
 CSV HEADER;

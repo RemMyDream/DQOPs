@@ -16,13 +16,6 @@ default_args = {
 
 NAMESPACE = Variable.get("namespace", default_var="data-pipeline")
 TRAINER_IMAGE = Variable.get("trainer_image", default_var="remmydream/model:v3.1")
-FEATURES_PATH = Variable.get("features_path", default_var="gold/data_source/churn_features/data")
-LABELS_PATH = Variable.get("labels_path", default_var="gold/data_source/churn_label/data")
-MINIO_ENDPOINT = Variable.get("minio_endpoint", default_var="http://minio-svc:9000")
-MLFLOW_URI = Variable.get("mlflow_uri", default_var="http://mlflow-svc:5000")
-MLFLOW_EXPERIMENT = Variable.get("mlflow_experiment", default_var="churn-prediction2")
-N_TRIALS = "1"
-N_SPLITS = "5"
 
 # Git config
 GIT_REPO = Variable.get("git_repo", default_var="https://github.com/RemMyDream/DQOPs.git")
@@ -52,29 +45,30 @@ git_sync_init = k8s.V1Container(
     volume_mounts=[code_volume_mount]
 )
 
-env_vars = [
-    k8s.V1EnvVar(
-        name="AWS_ACCESS_KEY_ID",
-        value_from=k8s.V1EnvVarSource(
-            secret_key_ref=k8s.V1SecretKeySelector(
-                name="minio-credential",
-                key="MINIO_ROOT_USER"
+def get_env_vars(minio_endpoint):
+    return [
+        k8s.V1EnvVar(
+            name="AWS_ACCESS_KEY_ID",
+            value_from=k8s.V1EnvVarSource(
+                secret_key_ref=k8s.V1SecretKeySelector(
+                    name="minio-credential",
+                    key="MINIO_ROOT_USER"
+                )
             )
-        )
-    ),
-    k8s.V1EnvVar(
-        name="AWS_SECRET_ACCESS_KEY",
-        value_from=k8s.V1EnvVarSource(
-            secret_key_ref=k8s.V1SecretKeySelector(
-                name="minio-credential",
-                key="MINIO_ROOT_PASSWORD"
+        ),
+        k8s.V1EnvVar(
+            name="AWS_SECRET_ACCESS_KEY",
+            value_from=k8s.V1EnvVarSource(
+                secret_key_ref=k8s.V1SecretKeySelector(
+                    name="minio-credential",
+                    key="MINIO_ROOT_PASSWORD"
+                )
             )
-        )
-    ),
-    k8s.V1EnvVar(name="MLFLOW_S3_ENDPOINT_URL", value=MINIO_ENDPOINT),
-    k8s.V1EnvVar(name="MLFLOW_S3_IGNORE_TLS", value="true"),
-    k8s.V1EnvVar(name="GIT_PYTHON_REFRESH", value="quiet"),
-]
+        ),
+        k8s.V1EnvVar(name="MLFLOW_S3_ENDPOINT_URL", value=minio_endpoint),
+        k8s.V1EnvVar(name="MLFLOW_S3_IGNORE_TLS", value="true"),
+        k8s.V1EnvVar(name="GIT_PYTHON_REFRESH", value="quiet"),
+    ]
 
 with DAG(
     dag_id='churn_model_training',
@@ -84,6 +78,15 @@ with DAG(
     start_date=datetime(2024, 1, 1),
     catchup=False,
     tags=['ml', 'training', 'churn'],
+    params={
+        "features_path": "gold/data_source/churn_features/data",
+        "labels_path": "gold/data_source/churn_label/data",
+        "minio_endpoint": "http://minio-svc:9000",
+        "mlflow_uri": "http://mlflow-svc:5000",
+        "mlflow_experiment": "churn-prediction",
+        "n_trials": "1",
+        "n_splits": "5",
+    }
 ) as dag:
     
     # Train XGBoost
@@ -94,20 +97,20 @@ with DAG(
         image=TRAINER_IMAGE,
         cmds=["python", "/app/trainer.py"],
         arguments=[
-            "--features-path", FEATURES_PATH,
-            "--labels-path", LABELS_PATH,
-            "--minio-endpoint", MINIO_ENDPOINT,
-            "--mlflow-tracking-uri", MLFLOW_URI,
-            "--mlflow-experiment", MLFLOW_EXPERIMENT,
+            "--features-path", "{{ params.features_path }}",
+            "--labels-path", "{{ params.labels_path }}",
+            "--minio-endpoint", "{{ params.minio_endpoint }}",
+            "--mlflow-tracking-uri", "{{ params.mlflow_uri }}",
+            "--mlflow-experiment", "{{ params.mlflow_experiment }}",
             "--models", "xgb",
-            "--n-trials", N_TRIALS,
-            "--n-splits", N_SPLITS,
+            "--n-trials", "{{ params.n_trials }}",
+            "--n-splits", "{{ params.n_splits }}",
             "--register-models",
         ],
         init_containers=[git_sync_init],
         volumes=[code_volume],
         volume_mounts=[code_volume_mount],
-        env_vars=env_vars,
+        env_vars=get_env_vars("{{ params.minio_endpoint }}"),
         container_resources=k8s.V1ResourceRequirements(
             requests=RESOURCE_REQUESTS,
             limits=RESOURCE_LIMITS
@@ -125,20 +128,20 @@ with DAG(
         image=TRAINER_IMAGE,
         cmds=["python", "/app/trainer.py"],
         arguments=[
-            "--features-path", FEATURES_PATH,
-            "--labels-path", LABELS_PATH,
-            "--minio-endpoint", MINIO_ENDPOINT,
-            "--mlflow-tracking-uri", MLFLOW_URI,
-            "--mlflow-experiment", MLFLOW_EXPERIMENT,
+            "--features-path", "{{ params.features_path }}",
+            "--labels-path", "{{ params.labels_path }}",
+            "--minio-endpoint", "{{ params.minio_endpoint }}",
+            "--mlflow-tracking-uri", "{{ params.mlflow_uri }}",
+            "--mlflow-experiment", "{{ params.mlflow_experiment }}",
             "--models", "lightgbm",
-            "--n-trials", N_TRIALS,
-            "--n-splits", N_SPLITS,
+            "--n-trials", "{{ params.n_trials }}",
+            "--n-splits", "{{ params.n_splits }}",
             "--register-models",
         ],
         init_containers=[git_sync_init],
         volumes=[code_volume],
         volume_mounts=[code_volume_mount],
-        env_vars=env_vars,
+        env_vars=get_env_vars("{{ params.minio_endpoint }}"),
         container_resources=k8s.V1ResourceRequirements(
             requests=RESOURCE_REQUESTS,
             limits=RESOURCE_LIMITS
