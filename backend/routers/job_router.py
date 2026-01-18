@@ -6,7 +6,6 @@ from domain.entity.job_client import JobType
 from services.job_service import JobService
 
 from routers.dependencies import get_job_service
-from utils.helpers import create_logger
 
 logger = create_logger("JobRouter")
 

@@ -5,7 +5,6 @@ Supports multiple job types (Ingest, Transform, Export, etc.)
 from typing import List, Dict, Any, Optional, Union
 from datetime import datetime
 
-from utils.helpers import create_logger
 from repositories.job_repository import JobRepository
 from repositories.job_version_repository import JobVersionRepository
 from factories.job_factory import JobFactory

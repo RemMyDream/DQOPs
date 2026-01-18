@@ -166,3 +166,79 @@ mlflow:
   # Artifact Store (S3/MinIO)
   s3:
     bucket: mlflow-artifacts
+
+# ==================== FASTAPI ====================
+fastapi:
+  enabled: true
+  
+  app:
+    image:
+      repository: remmydream/fastapi-image
+      tag: "v1.0"
+      pullPolicy: IfNotPresent
+    
+    # Number of replicas
+    replicas: 1
+    
+    reload: true
+    
+    healthCheck:
+      path: /health
+    
+    # Service configuration
+    service:
+      type: ClusterIP
+      port: 8000
+    
+    # Resource limits
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+  
+  gitSync:
+    enabled: true
+    image:
+      repository: registry.k8s.io/git-sync/git-sync
+      tag: v4.2.4
+      pullPolicy: IfNotPresent
+    
+    repo: https://github.com/RemMyDream/DQOPs
+    branch: backend
+    depth: 1  
+    wait: 60 
+    
+    subPath: ""
+    
+    root: /git
+    
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+  
+  persistence:
+    codeSize: 2Gi 
+  
+  # Internal PostgreSQL Database
+  postgres:
+    user: postgres
+    password: postgres
+    database: internal_database
+    
+    persistence:
+      size: 5Gi
+    
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"

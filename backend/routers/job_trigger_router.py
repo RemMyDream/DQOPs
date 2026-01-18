@@ -11,7 +11,6 @@ from domain.request.ingest_job_create_request import IngestJobCreateRequest
 from services.job_trigger_service import JobTriggerService
 from services.job_service import JobService
 from routers.dependencies import get_job_trigger_service, get_job_service
-from utils.helpers import create_logger
 
 logger = create_logger("JobTriggerRouter")
 

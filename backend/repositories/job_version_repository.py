@@ -7,7 +7,6 @@ from datetime import datetime
 
 from domain.entity.postgres_client import PostgresConnectionClient
 from domain.entity.job_schemas import JobVersion, ScheduleType
-from utils.helpers import create_logger
 
 logger = create_logger("JobVersionRepository")
 

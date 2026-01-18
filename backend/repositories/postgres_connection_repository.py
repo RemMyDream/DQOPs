@@ -3,8 +3,6 @@ from typing import Optional, List
 from domain.entity.postgres_client import PostgresConnectionClient
 from domain.entity.source_client import SourceClient
 
-from utils.helpers import create_logger
-
 logger = create_logger("PostgresConnectionRepository")
 
 

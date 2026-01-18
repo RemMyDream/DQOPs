@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
 from domain.request.table_connection_request import DBConfig, DBCredential
-from utils.helpers import create_logger
 from .dependencies import get_postgres_service
 from services.postgres_connection_service import PostgresConnectionService
 

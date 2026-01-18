@@ -5,7 +5,6 @@ Simplified service - trigger directly from request, save to DB is optional
 from typing import Dict, Any, Optional
 import requests
 
-from utils.helpers import create_logger
 from domain.entity.airflow_client import Airflow
 from domain.entity.job_client import JobType
 

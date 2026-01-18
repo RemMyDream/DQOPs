@@ -2,7 +2,6 @@
 from typing import Dict, Any
 
 from domain.entity.airflow_client import Airflow
-from utils.helpers import load_cfg, create_logger
 from repositories.postgres_connection_repository import PostgresConnectionRepository
 from repositories.job_repository import JobRepository
 from repositories.job_version_repository import JobVersionRepository

@@ -1,0 +1,313 @@
+{{- if .Values.fastapi.enabled }}
+# ==================== FASTAPI ENTRYPOINT ====================
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fastapi-entrypoint
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: fastapi
+data:
+  entrypoint.sh: |
+    #!/bin/bash
+    set -e
+    exec "$@"
+
+# ==================== FASTAPI ENV ====================
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fastapi-env
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: fastapi
+data:
+  APP_HOST: "0.0.0.0"
+  APP_PORT: "8000"
+  RELOAD: "true"
+
+# ==================== FASTAPI DB SECRET ====================
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: fastapi-db-secret
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: fastapi
+type: Opaque
+stringData:
+  POSTGRES_USER: {{ .Values.fastapi.postgres.user }}
+  POSTGRES_PASSWORD: {{ .Values.fastapi.postgres.password }}
+  POSTGRES_DB: {{ .Values.fastapi.postgres.database }}
+  DATABASE_URL: "postgresql://{{ .Values.fastapi.postgres.user }}:{{ .Values.fastapi.postgres.password }}@fastapi-postgres:5432/{{ .Values.fastapi.postgres.database }}"
+
+# ==================== PVC ====================
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fastapi-postgres-data
+  namespace: {{ include "chart.namespace" . }}
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: {{ .Values.fastapi.postgres.persistence.size }}
+  {{- if .Values.storageClass }}
+  storageClassName: {{ .Values.storageClass }}
+  {{- end }}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fastapi-code
+  namespace: {{ include "chart.namespace" . }}
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: {{ .Values.fastapi.persistence.codeSize }}
+  {{- if .Values.storageClass }}
+  storageClassName: {{ .Values.storageClass }}
+  {{- end }}
+
+# ==================== POSTGRES ====================
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-postgres
+  namespace: {{ include "chart.namespace" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fastapi
+      component: postgres
+  template:
+    metadata:
+      labels:
+        app: fastapi
+        component: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: fastapi-db-secret
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - {{ .Values.fastapi.postgres.user }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - {{ .Values.fastapi.postgres.user }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.fastapi.postgres.resources | nindent 12 }}
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: fastapi-postgres-data
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-postgres
+  namespace: {{ include "chart.namespace" . }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: fastapi
+    component: postgres
+
+# ==================== FASTAPI APP ====================
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-app
+  namespace: {{ include "chart.namespace" . }}
+spec:
+  replicas: {{ .Values.fastapi.app.replicas }}
+  selector:
+    matchLabels:
+      app: fastapi
+      component: app
+  template:
+    metadata:
+      labels:
+        app: fastapi
+        component: app
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:15
+          command:
+            - /bin/sh
+            - -c
+            - |
+              until pg_isready -h fastapi-postgres -p 5432 -U {{ .Values.fastapi.postgres.user }}; do
+                echo "Waiting for PostgreSQL..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready!"
+          envFrom:
+            - secretRef:
+                name: fastapi-db-secret
+
+      containers:
+        # Main FastAPI application container
+        - name: fastapi
+          image: "{{ .Values.fastapi.app.image.repository }}:{{ .Values.fastapi.app.image.tag }}"
+          imagePullPolicy: {{ .Values.fastapi.app.image.pullPolicy }}
+          command: 
+            - /bin/bash
+            - -c
+            - |
+              # Wait for git-sync to complete initial sync
+              {{- if .Values.fastapi.gitSync.enabled }}
+              echo "Waiting for initial code sync..."
+              while [ ! -f {{ .Values.fastapi.gitSync.root }}/{{ .Values.fastapi.gitSync.branch }}/main.py ]; do
+                echo "Code not synced yet, waiting..."
+                sleep 2
+              done
+              echo "Code synced successfully!"
+              
+              # Change to code directory
+              cd {{ .Values.fastapi.gitSync.root }}/{{ .Values.fastapi.gitSync.branch }}
+              {{- if .Values.fastapi.gitSync.subPath }}
+              cd {{ .Values.fastapi.gitSync.subPath }}
+              {{- end }}
+              {{- end }}
+              
+              # Start FastAPI
+              uvicorn main:app --host 0.0.0.0 --port 8000 {{ if .Values.fastapi.app.reload }}--reload{{ end }}
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: fastapi-env
+            - secretRef:
+                name: fastapi-db-secret
+          volumeMounts:
+            {{- if .Values.fastapi.gitSync.enabled }}
+            - name: code
+              mountPath: {{ .Values.fastapi.gitSync.root }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.fastapi.app.healthCheck.path | default "/health" }}
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.fastapi.app.healthCheck.path | default "/health" }}
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.fastapi.app.resources | nindent 12 }}
+
+        {{- if .Values.fastapi.gitSync.enabled }}
+        # Git-Sync sidecar container
+        - name: git-sync
+          image: "{{ .Values.fastapi.gitSync.image.repository }}:{{ .Values.fastapi.gitSync.image.tag }}"
+          imagePullPolicy: {{ .Values.fastapi.gitSync.image.pullPolicy }}
+          args:
+            - --repo={{ .Values.fastapi.gitSync.repo }}
+            - --branch={{ .Values.fastapi.gitSync.branch }}
+            - --depth={{ .Values.fastapi.gitSync.depth }}
+            - --period={{ .Values.fastapi.gitSync.wait }}s
+            - --root={{ .Values.fastapi.gitSync.root }}
+            - --link={{ .Values.fastapi.gitSync.branch }}
+            {{- if .Values.fastapi.gitSync.subPath }}
+            - --submodules=recursive
+            {{- end }}
+            - -v=2
+          volumeMounts:
+            - name: code
+              mountPath: {{ .Values.fastapi.gitSync.root }}
+          {{- if .Values.fastapi.gitSync.secret }}
+          env:
+            - name: GITSYNC_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.fastapi.gitSync.secret }}
+                  key: username
+            - name: GITSYNC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.fastapi.gitSync.secret }}
+                  key: password
+          {{- end }}
+          resources:
+            {{- toYaml .Values.fastapi.gitSync.resources | nindent 12 }}
+          securityContext:
+            runAsUser: 65533  # git-sync user
+            runAsGroup: 65533
+            fsGroup: 65533
+        {{- end }}
+
+      volumes:
+        {{- if .Values.fastapi.gitSync.enabled }}
+        - name: code
+          persistentVolumeClaim:
+            claimName: fastapi-code
+        {{- end }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-service
+  namespace: {{ include "chart.namespace" . }}
+spec:
+  type: {{ .Values.fastapi.app.service.type }}
+  ports:
+    - port: {{ .Values.fastapi.app.service.port }}
+      targetPort: 8000
+      {{- if and (eq .Values.fastapi.app.service.type "NodePort") .Values.fastapi.app.service.nodePort }}
+      nodePort: {{ .Values.fastapi.app.service.nodePort }}
+      {{- end }}
+      protocol: TCP
+      name: http
+  selector:
+    app: fastapi
+    component: app
+{{- end }}

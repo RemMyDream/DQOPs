@@ -3,7 +3,6 @@ from domain.entity.source_client import SourceClient
 from domain.entity.airflow_client import Airflow
 from repositories.postgres_connection_repository import PostgresConnectionRepository
 from domain.request.table_connection_request import DBConfig, DBCredential
-from utils.helpers import create_logger
 
 logger = create_logger("Postgres Connection Service")
 
