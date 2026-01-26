@@ -8,18 +8,18 @@ import json
 class Airflow:
     """Airflow client for DAG triggers and connection management"""
     url: str
-    user: str
+    username: str
     password: str
     
     def __post_init__(self):
-        self.auth = (self.user, self.password)
+        self.auth = (self.username, self.password)
         self.headers = {"Content-Type": "application/json"}
     
     @classmethod
     def from_dict(cls, config: Dict):
         return cls(
             url=config.get("url"),
-            user=config.get("username"),
+            username=config.get("username"),
             password=config.get("password")
         )
     
@@ -33,7 +33,6 @@ class Airflow:
         if isinstance(port, str):
             port = int(port)
         
-        # Build payload according to Airflow API spec
         payload = {
             "connection_id": connection_id,
             "conn_type": "postgres",
@@ -44,7 +43,6 @@ class Airflow:
             "password": config["password"]
         }
         
-        # Add extra only if it exists and is not empty
         jdbc_properties = config.get("jdbc_properties", {})
         if jdbc_properties:
             payload["extra"] = json.dumps(jdbc_properties)

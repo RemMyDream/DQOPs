@@ -18,6 +18,24 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def get_airflow_config() -> dict:
+    return {
+        "username": os.environ.get("AIRFLOW_USERNAME", "admin"),
+        "password": os.environ.get("AIRFLOW_PASSWORD", "admin"),
+        "url": os.environ.get("AIRFLOW_URL", "http://webserver:8080")
+    }
+
+
+def get_postgres_config() -> dict:
+    return {
+        "host": os.environ.get("POSTGRES_HOST", "fastapi-postgres"),
+        "port": int(os.environ.get("POSTGRES_PORT", "5432")),
+        "username": os.environ.get("POSTGRES_USER", "postgres"),
+        "password": os.environ.get("POSTGRES_PASSWORD", "postgres"),
+        "database": os.environ.get("POSTGRES_DATABASE", "internal_database")
+    }
+
+
 class ServiceContainer:
     """Container for all repositories and services"""
     _repos: Dict[str, Any] = {}
@@ -30,7 +48,7 @@ class ServiceContainer:
     def get_airflow(cls) -> Airflow:
         """Get singleton Airflow client"""
         if cls._airflow is None:
-            cls._airflow = Airflow.from_dict(os.environ.get("airflow"))
+            cls._airflow = Airflow.from_dict(get_airflow_config())
         return cls._airflow
 
 # ============== REPOSITORY ===============
@@ -49,7 +67,7 @@ class ServiceContainer:
         if repo_name not in repo_map:
             raise ValueError(f"Unknown repository: {repo_name}")
         
-        cls._repos[repo_name] = repo_map[repo_name].from_dict(os.environ.get("internal_database"))
+        cls._repos[repo_name] = repo_map[repo_name].from_dict(get_postgres_config())
         
         if not cls._initialized.get(repo_name):
             cls._repos[repo_name].init_table()

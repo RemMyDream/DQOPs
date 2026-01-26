@@ -29,6 +29,13 @@ data:
   APP_HOST: "0.0.0.0"
   APP_PORT: "8000"
   RELOAD: "true"
+  # Airflow connection
+  AIRFLOW_HOST: "airflow-webserver"
+  AIRFLOW_PORT: "8080"
+  AIRFLOW_URL: "http://airflow-webserver:8080"
+  # PostgreSQL connection
+  POSTGRES_HOST: "fastapi-postgres"
+  POSTGRES_PORT: "5432"
 
 # ==================== FASTAPI DB SECRET ====================
 ---
@@ -42,10 +49,31 @@ metadata:
     app: fastapi
 type: Opaque
 stringData:
+  # PostgreSQL credentials
   POSTGRES_USER: {{ .Values.fastapi.postgres.user }}
   POSTGRES_PASSWORD: {{ .Values.fastapi.postgres.password }}
   POSTGRES_DB: {{ .Values.fastapi.postgres.database }}
+  POSTGRES_DATABASE: {{ .Values.fastapi.postgres.database }}
   DATABASE_URL: "postgresql://{{ .Values.fastapi.postgres.user }}:{{ .Values.fastapi.postgres.password }}@fastapi-postgres:5432/{{ .Values.fastapi.postgres.database }}"
+  # Airflow credentials
+  AIRFLOW_USERNAME: {{ .Values.airflow.admin.username }}
+  AIRFLOW_PASSWORD: {{ .Values.airflow.admin.password }}
+
+# ==================== SPARSE CHECKOUT CONFIG ====================
+{{- if and .Values.fastapi.gitSync.enabled .Values.fastapi.gitSync.subPath }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: git-sparse-checkout
+  namespace: {{ include "chart.namespace" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: fastapi
+data:
+  sparse-checkout: |
+    {{ .Values.fastapi.gitSync.subPath }}
+{{- end }}
 
 # ==================== PVC ====================
 ---
@@ -171,7 +199,7 @@ spec:
     spec:
       {{- if .Values.fastapi.gitSync.enabled }}
       securityContext:
-        fsGroup: 65533  # git-sync group - must be at pod level
+        fsGroup: 65533  
       {{- end }}
       
       initContainers:
@@ -268,12 +296,16 @@ spec:
             - --root={{ .Values.fastapi.gitSync.root }}
             - --link={{ .Values.fastapi.gitSync.branch }}
             {{- if .Values.fastapi.gitSync.subPath }}
-            - --submodules=recursive
+            - --sparse-checkout-file=/etc/git-sync/sparse-checkout
             {{- end }}
             - -v=2
           volumeMounts:
             - name: code
               mountPath: {{ .Values.fastapi.gitSync.root }}
+            {{- if .Values.fastapi.gitSync.subPath }}
+            - name: sparse-checkout-config
+              mountPath: /etc/git-sync
+            {{- end }}
           {{- if .Values.fastapi.gitSync.secret }}
           env:
             - name: GITSYNC_USERNAME
@@ -296,6 +328,11 @@ spec:
         - name: code
           persistentVolumeClaim:
             claimName: fastapi-code
+        {{- if .Values.fastapi.gitSync.subPath }}
+        - name: sparse-checkout-config
+          configMap:
+            name: git-sparse-checkout
+        {{- end }}
         {{- end }}
 
 ---
