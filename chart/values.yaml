@@ -224,7 +224,7 @@ fastapi:
         cpu: "100m"
   
   persistence:
-    codeSize: 2Gi 
+    codeSize: 2Gi  # Size for PVC storing code
   
   # Internal PostgreSQL Database
   postgres:

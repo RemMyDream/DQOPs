@@ -29,7 +29,6 @@ class Airflow:
         """Create or update Airflow Connection"""
         connection_id = config["connection_name"]
         
-        # Ensure port is integer
         port = config.get("port")
         if isinstance(port, str):
             port = int(port)
@@ -40,7 +39,7 @@ class Airflow:
             "conn_type": "postgres",
             "host": config["host"],
             "port": port,
-            "schema": config["database"],  # In Postgres, this is the database name
+            "schema": config["database"], 
             "login": config["username"],
             "password": config["password"]
         }

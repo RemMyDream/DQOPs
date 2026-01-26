@@ -7,7 +7,6 @@ from domain.entity.job_client import JobType
 from domain.entity.job_schemas import ScheduleType
 from domain.request.job_request import JobCreateRequest
 
-
 class TableInfo(BaseModel):
     """Single table configuration"""
     schema_name: str = Field(..., min_length=1)

@@ -7,9 +7,13 @@ from datetime import datetime
 
 from domain.entity.postgres_client import PostgresConnectionClient
 from domain.entity.job_schemas import JobVersion, ScheduleType
+import logging
 
-logger = create_logger("JobVersionRepository")
-
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 class JobVersionRepository(PostgresConnectionClient):
     """Repository for Job Version operations"""

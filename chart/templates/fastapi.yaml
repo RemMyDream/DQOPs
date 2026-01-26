@@ -169,6 +169,11 @@ spec:
         app: fastapi
         component: app
     spec:
+      {{- if .Values.fastapi.gitSync.enabled }}
+      securityContext:
+        fsGroup: 65533  # git-sync group - must be at pod level
+      {{- end }}
+      
       initContainers:
         - name: wait-for-postgres
           image: postgres:15
@@ -197,7 +202,11 @@ spec:
               # Wait for git-sync to complete initial sync
               {{- if .Values.fastapi.gitSync.enabled }}
               echo "Waiting for initial code sync..."
+              {{- if .Values.fastapi.gitSync.subPath }}
+              while [ ! -f {{ .Values.fastapi.gitSync.root }}/{{ .Values.fastapi.gitSync.branch }}/{{ .Values.fastapi.gitSync.subPath }}/main.py ]; do
+              {{- else }}
               while [ ! -f {{ .Values.fastapi.gitSync.root }}/{{ .Values.fastapi.gitSync.branch }}/main.py ]; do
+              {{- end }}
                 echo "Code not synced yet, waiting..."
                 sleep 2
               done
@@ -207,6 +216,8 @@ spec:
               cd {{ .Values.fastapi.gitSync.root }}/{{ .Values.fastapi.gitSync.branch }}
               {{- if .Values.fastapi.gitSync.subPath }}
               cd {{ .Values.fastapi.gitSync.subPath }}
+              echo "Working directory: $(pwd)"
+              ls -la
               {{- end }}
               {{- end }}
               
@@ -278,10 +289,6 @@ spec:
           {{- end }}
           resources:
             {{- toYaml .Values.fastapi.gitSync.resources | nindent 12 }}
-          securityContext:
-            runAsUser: 65533  # git-sync user
-            runAsGroup: 65533
-            fsGroup: 65533
         {{- end }}
 
       volumes:

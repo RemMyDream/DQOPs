@@ -8,8 +8,6 @@ services:
       - "8000:8000"
     volumes:
       - .:/app             
-      - ../utils:/app/utils
-      - ../data_quality:/app/data_quality
     restart: unless-stopped
     networks:
       - default
@@ -36,5 +34,5 @@ services:
       - default
 networks:
   default:
-    name: bigdata-net
+    name: b
     external: True
