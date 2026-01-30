@@ -59,22 +59,6 @@ stringData:
   AIRFLOW_USERNAME: {{ .Values.airflow.admin.username }}
   AIRFLOW_PASSWORD: {{ .Values.airflow.admin.password }}
 
-# ==================== SPARSE CHECKOUT CONFIG ====================
-{{- if and .Values.fastapi.gitSync.enabled .Values.fastapi.gitSync.subPath }}
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: git-sparse-checkout
-  namespace: {{ include "chart.namespace" . }}
-  labels:
-    {{- include "chart.labels" . | nindent 4 }}
-    app: fastapi
-data:
-  sparse-checkout: |
-    {{ .Values.fastapi.gitSync.subPath }}
-{{- end }}
-
 # ==================== PVC ====================
 ---
 apiVersion: v1
@@ -230,23 +214,18 @@ spec:
               # Wait for git-sync to complete initial sync
               {{- if .Values.fastapi.gitSync.enabled }}
               echo "Waiting for initial code sync..."
-              {{- if .Values.fastapi.gitSync.subPath }}
-              while [ ! -f {{ .Values.fastapi.gitSync.root }}/{{ .Values.fastapi.gitSync.branch }}/{{ .Values.fastapi.gitSync.subPath }}/main.py ]; do
-              {{- else }}
-              while [ ! -f {{ .Values.fastapi.gitSync.root }}/{{ .Values.fastapi.gitSync.branch }}/main.py ]; do
-              {{- end }}
+              CODE_PATH="{{ .Values.fastapi.gitSync.root }}/repo/{{ .Values.fastapi.gitSync.subPath }}"
+              while [ ! -f $CODE_PATH/main.py ]; do
                 echo "Code not synced yet, waiting..."
+                echo "Checking path: $CODE_PATH"
                 sleep 2
               done
               echo "Code synced successfully!"
               
               # Change to code directory
-              cd {{ .Values.fastapi.gitSync.root }}/{{ .Values.fastapi.gitSync.branch }}
-              {{- if .Values.fastapi.gitSync.subPath }}
-              cd {{ .Values.fastapi.gitSync.subPath }}
+              cd $CODE_PATH
               echo "Working directory: $(pwd)"
               ls -la
-              {{- end }}
               {{- end }}
               
               # Start FastAPI
@@ -288,26 +267,29 @@ spec:
         - name: git-sync
           image: "{{ .Values.fastapi.gitSync.image.repository }}:{{ .Values.fastapi.gitSync.image.tag }}"
           imagePullPolicy: {{ .Values.fastapi.gitSync.image.pullPolicy }}
-          args:
-            - --repo={{ .Values.fastapi.gitSync.repo }}
-            - --branch={{ .Values.fastapi.gitSync.branch }}
-            - --depth={{ .Values.fastapi.gitSync.depth }}
-            - --period={{ .Values.fastapi.gitSync.wait }}s
-            - --root={{ .Values.fastapi.gitSync.root }}
-            - --link={{ .Values.fastapi.gitSync.branch }}
-            {{- if .Values.fastapi.gitSync.subPath }}
-            - --sparse-checkout-file=/etc/git-sync/sparse-checkout
-            {{- end }}
-            - -v=2
-          volumeMounts:
-            - name: code
-              mountPath: {{ .Values.fastapi.gitSync.root }}
-            {{- if .Values.fastapi.gitSync.subPath }}
-            - name: sparse-checkout-config
-              mountPath: /etc/git-sync
-            {{- end }}
-          {{- if .Values.fastapi.gitSync.secret }}
+          securityContext:
+            runAsUser: 65533
+            runAsGroup: 65533
           env:
+            - name: GITSYNC_REPO
+              value: {{ .Values.fastapi.gitSync.repo }}
+            - name: GITSYNC_REF
+              value: {{ .Values.fastapi.gitSync.ref }}
+            - name: GITSYNC_ROOT
+              value: {{ .Values.fastapi.gitSync.root }}
+            - name: GITSYNC_LINK
+              value: {{ .Values.fastapi.gitSync.dest | default "repo" }}
+            - name: GITSYNC_DEPTH
+              value: {{ .Values.fastapi.gitSync.depth | quote }}
+            - name: GITSYNC_PERIOD
+              value: "{{ .Values.fastapi.gitSync.wait }}s"
+            - name: GITSYNC_ONE_TIME
+              value: "false"
+            - name: GITSYNC_VERBOSE
+              value: "2"
+            - name: GITSYNC_MAX_FAILURES
+              value: "0"
+            {{- if .Values.fastapi.gitSync.secret }}
             - name: GITSYNC_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -318,7 +300,10 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.fastapi.gitSync.secret }}
                   key: password
-          {{- end }}
+            {{- end }}
+          volumeMounts:
+            - name: code
+              mountPath: {{ .Values.fastapi.gitSync.root }}
           resources:
             {{- toYaml .Values.fastapi.gitSync.resources | nindent 12 }}
         {{- end }}
@@ -328,11 +313,6 @@ spec:
         - name: code
           persistentVolumeClaim:
             claimName: fastapi-code
-        {{- if .Values.fastapi.gitSync.subPath }}
-        - name: sparse-checkout-config
-          configMap:
-            name: git-sparse-checkout
-        {{- end }}
         {{- end }}
 
 ---

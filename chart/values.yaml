@@ -171,34 +171,29 @@ mlflow:
 fastapi:
   enabled: true
   
+  # FastAPI Application
   app:
+    replicas: 1
     image:
       repository: remmydream/fastapi-image
       tag: "v1.0"
       pullPolicy: IfNotPresent
-    
-    # Number of replicas
-    replicas: 1
-    
     reload: true
-    
     healthCheck:
       path: /health
-    
-    # Service configuration
     service:
       type: ClusterIP
       port: 8000
-    
-    # Resource limits
+      # nodePort: 30800  # Chỉ dùng nếu type là NodePort
     resources:
       requests:
         memory: "256Mi"
         cpu: "250m"
       limits:
         memory: "1Gi"
-        cpu: "1000m"
+        cpu: "500m"
   
+  # Git-Sync Sidecar
   gitSync:
     enabled: true
     image:
@@ -206,15 +201,14 @@ fastapi:
       tag: v4.2.4
       pullPolicy: IfNotPresent
     
-    repo: https://github.com/RemMyDream/DQOPs
-    branch: backend
+    repo: https://github.com/RemMyDream/DQOPs.git
+    ref: backend
     depth: 1  
-    wait: 60 
-    
+    wait: 60
+    dest: repo
     subPath: ""
-    
     root: /git
-    
+
     resources:
       requests:
         memory: "64Mi"
@@ -224,9 +218,8 @@ fastapi:
         cpu: "100m"
   
   persistence:
-    codeSize: 2Gi  # Size for PVC storing code
+    codeSize: 2Gi
   
-  # Internal PostgreSQL Database
   postgres:
     user: postgres
     password: postgres
