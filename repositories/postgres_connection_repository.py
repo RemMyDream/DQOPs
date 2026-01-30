@@ -2,8 +2,13 @@ import json
 from typing import Optional, List
 from domain.entity.postgres_client import PostgresConnectionClient
 from domain.entity.source_client import SourceClient
+import logging
 
-logger = create_logger("PostgresConnectionRepository")
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 
 class PostgresConnectionRepository(PostgresConnectionClient):

@@ -7,8 +7,13 @@ import requests
 
 from domain.entity.airflow_client import Airflow
 from domain.entity.job_client import JobType
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
-logger = create_logger("JobTriggerService")
 
 class JobTriggerService:
     """Simplified Job Trigger Service"""

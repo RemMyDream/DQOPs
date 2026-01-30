@@ -2,8 +2,12 @@ from fastapi import APIRouter, HTTPException, Depends
 from domain.request.table_connection_request import DBConfig, DBCredential
 from .dependencies import get_postgres_service
 from services.postgres_connection_service import PostgresConnectionService
-
-logger = create_logger("PostgresConnectionRouter")
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/postgres",

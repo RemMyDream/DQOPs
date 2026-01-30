@@ -7,11 +7,13 @@ from datetime import datetime
 from domain.entity.postgres_client import PostgresConnectionClient
 from domain.entity.source_client import SourceClient
 from domain.entity.job_client import Job, JobStatus, JobType
+import logging
 
-from utils.helpers import create_logger
-
-logger = create_logger("JobRepository")
-
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 class JobRepository(PostgresConnectionClient):
     """Repository for Job CRUD operations"""

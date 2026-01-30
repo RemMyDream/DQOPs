@@ -11,8 +11,13 @@ from domain.request.ingest_job_create_request import IngestJobCreateRequest
 from services.job_trigger_service import JobTriggerService
 from services.job_service import JobService
 from routers.dependencies import get_job_trigger_service, get_job_service
+import logging
 
-logger = create_logger("JobTriggerRouter")
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/trigger",

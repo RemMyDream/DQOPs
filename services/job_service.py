@@ -14,8 +14,13 @@ from domain.entity.job_schemas import JobVersion, JobSummary, ScheduleType
 
 from domain.request.job_request import JobCreateRequest
 from domain.request.ingest_job_create_request import IngestJobCreateRequest
+import logging
 
-logger = create_logger("JobService")
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 JobRequestType = Union[JobCreateRequest, IngestJobCreateRequest]
 

@@ -3,9 +3,13 @@ from domain.entity.source_client import SourceClient
 from domain.entity.airflow_client import Airflow
 from repositories.postgres_connection_repository import PostgresConnectionRepository
 from domain.request.table_connection_request import DBConfig, DBCredential
+import logging
 
-logger = create_logger("Postgres Connection Service")
-
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 class PostgresConnectionService:
     def __init__(self, 
