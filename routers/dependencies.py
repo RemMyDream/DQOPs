@@ -5,9 +5,11 @@ from domain.entity.airflow_client import Airflow
 from repositories.postgres_connection_repository import PostgresConnectionRepository
 from repositories.job_repository import JobRepository
 from repositories.job_version_repository import JobVersionRepository
+from repositories.profiling_repository import ProfilingRepository
 from services.postgres_connection_service import PostgresConnectionService
 from services.job_trigger_service import JobTriggerService
 from services.job_service import JobService
+from services.profiling_service import ProfilingService
 import os
 import logging
 
@@ -61,7 +63,8 @@ class ServiceContainer:
         repo_map = {
             'postgres_connection': PostgresConnectionRepository,
             'job': JobRepository,
-            'job_version': JobVersionRepository
+            'job_version': JobVersionRepository,
+            'profiling': ProfilingRepository
         }
         
         if repo_name not in repo_map:
@@ -100,6 +103,14 @@ class ServiceContainer:
         return cls._services['job_trigger']
 
     @classmethod
+    def get_profiling_service(cls) -> ProfilingService:
+        if 'profiling' not in cls._services:
+            profiling_repo = cls.get_repo('profiling')
+            trigger_service = cls.get_job_trigger_service()
+            cls._services['profiling'] = ProfilingService(profiling_repo, trigger_service)
+        return cls._services['profiling']
+
+    @classmethod
     def reset(cls, name: str = None):
         """Reset services/repos"""
         if name is None:
@@ -124,3 +135,6 @@ def get_job_trigger_service() -> JobTriggerService:
 
 def get_airflow() -> Airflow:
     return ServiceContainer.get_airflow()
+
+def get_profiling_service() -> ProfilingService:
+    return ServiceContainer.get_profiling_service()

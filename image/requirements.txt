@@ -7,3 +7,4 @@ pandas
 psycopg2-binary
 SQLAlchemy==1.4.49
 requests
+jinja2

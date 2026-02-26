@@ -1,6 +1,5 @@
 """
 Service: Job Trigger
-Simplified service - trigger directly from request, save to DB is optional
 """
 from typing import Dict, Any, Optional
 import requests
@@ -33,6 +32,9 @@ class JobTriggerService:
         "postgres": "export_to_postgres",
         "s3": "export_to_s3",
         "default": "export_to_postgres"
+    },
+    JobType.QUALITY: {
+        "default": "dq_profiling"
     }
 }
     def __init__(self, airflow: Airflow):
