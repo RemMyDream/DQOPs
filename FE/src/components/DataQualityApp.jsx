@@ -1,6 +1,7 @@
 // App.jsx - Main Component
 import React, { useState } from 'react';
 import { Database, ChevronRight, Check } from 'lucide-react';
+import { API_BASE } from '../config';
 import DatabaseConnectionForm from './DatabaseConnectionForm';
 import SchemaTableSelector from './SchemaTableSelector';
 import DataQualityDashboard from './DataQualityDashboard';
@@ -30,7 +31,7 @@ export default function DataQualityApp() {
     setSchemas([]);
     
     try {
-      const response = await fetch(`http://localhost:8000/postgres/schemas/${dbConfig.connection_name}`, {
+      const response = await fetch(`${API_BASE}/postgres/schemas/${dbConfig.connection_name}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });

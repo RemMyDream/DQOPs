@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef} from 'react';
 import { Trash2, Database, Check, ChevronDown, ChevronRight, RefreshCw, Loader2, Search, X, Eye, CheckSquare, AlertTriangle, Key } from 'lucide-react';
+import { API_BASE } from '../config';
 
 export default function SchemaTableSelector({
   schemas,
@@ -83,7 +84,7 @@ export default function SchemaTableSelector({
         table_name: tableName
       };
       
-      const response = await fetch('http://localhost:8000/postgres/tables/preview', {
+      const response = await fetch(`${API_BASE}/postgres/tables/preview`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -135,7 +136,7 @@ export default function SchemaTableSelector({
         table_name: tableName
       };
       
-      const response = await fetch('http://localhost:8000/postgres/tables/primary-keys', {
+      const response = await fetch(`${API_BASE}/postgres/tables/primary-keys`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -220,7 +221,7 @@ export default function SchemaTableSelector({
         target_layer: 'bronze'
       };
 
-      const response = await fetch('http://localhost:8000/trigger/ingest', {
+      const response = await fetch(`${API_BASE}/trigger/ingest`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -268,7 +269,7 @@ export default function SchemaTableSelector({
     
     const poll = async () => {
       try {
-        const url = `http://localhost:8000/trigger/status/${encodeURIComponent(dagId)}/${encodeURIComponent(dagRunId)}`;
+        const url = `${API_BASE}/trigger/status/${encodeURIComponent(dagId)}/${encodeURIComponent(dagRunId)}`;
         const response = await fetch(url);
 
         if (!response.ok) return;

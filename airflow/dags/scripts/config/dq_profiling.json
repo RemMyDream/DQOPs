@@ -1,0 +1,19 @@
+{
+  "profile_run_id": "run_20260211_example",
+  "internal_postgres": {
+    "host": "fastapi-postgres",
+    "port": 5432,
+    "database": "internal_database",
+    "username": "postgres",
+    "password": "postgres"
+  },
+  "tables": [
+    {
+      "schema_name": "data_source",
+      "table_name": "transactions",
+      "columns": null
+    }
+  ],
+  "dimensions": ["completeness", "uniqueness", "validity", "volume"],
+  "iceberg_catalog": "bronze"
+}

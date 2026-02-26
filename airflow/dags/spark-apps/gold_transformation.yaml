@@ -14,15 +14,8 @@ spec:
   arguments:
     - "--config"
     - "/opt/airflow/dags/scripts/config/gold_transformation.json"
-  # restartPolicy:
-  #   type: OnFailure
-  #   onFailureRetries: 1
-  #   onFailureRetryInterval: 10
   sparkConf:
-    # S3/MinIO config
-    spark.hadoop.fs.s3a.endpoint: "http://minio-svc:9000"
-    spark.hadoop.fs.s3a.access.key: "minio_access_key"
-    spark.hadoop.fs.s3a.secret.key: "minio_secret_key"
+    # S3/MinIO config (non-sensitive)
     spark.hadoop.fs.s3a.path.style.access: "true"
     spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
     spark.hadoop.fs.s3a.connection.ssl.enabled: "false"
@@ -34,9 +27,6 @@ spec:
     spark.sql.catalog.gold: "org.apache.iceberg.spark.SparkCatalog"
     spark.sql.catalog.gold.type: "hadoop"
     spark.sql.catalog.gold.warehouse: "s3a://gold"
-    # Event log
-    # spark.eventLog.enabled: "true"
-    # spark.eventLog.dir: "/opt/spark/spark-events"
   driver:
     cores: 1
     coreLimit: "1200m"
@@ -45,11 +35,25 @@ spec:
     labels:
       app: spark
       role: driver
+    env:
+      - name: MINIO_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: minio-secret
+            key: MINIO_ACCESS_KEY
+      - name: MINIO_SECRET_KEY
+        valueFrom:
+          secretKeyRef:
+            name: minio-secret
+            key: MINIO_SECRET_KEY
+      - name: MINIO_ENDPOINT
+        valueFrom:
+          secretKeyRef:
+            name: minio-secret
+            key: MINIO_ENDPOINT
     volumeMounts:
       - name: airflow-dags
         mountPath: /opt/airflow/dags
-      # - name: spark-events
-      #   mountPath: /opt/spark/spark-events
     securityContext:
       capabilities:
         drop:
@@ -68,11 +72,25 @@ spec:
       app: spark
       role: executor
       version: "3.5.1"
+    env:
+      - name: MINIO_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: minio-secret
+            key: MINIO_ACCESS_KEY
+      - name: MINIO_SECRET_KEY
+        valueFrom:
+          secretKeyRef:
+            name: minio-secret
+            key: MINIO_SECRET_KEY
+      - name: MINIO_ENDPOINT
+        valueFrom:
+          secretKeyRef:
+            name: minio-secret
+            key: MINIO_ENDPOINT
     volumeMounts:
       - name: airflow-dags
         mountPath: /opt/airflow/dags
-      # - name: spark-events
-      #   mountPath: /opt/spark/spark-events
     securityContext:
       capabilities:
         drop:
@@ -87,6 +105,3 @@ spec:
     - name: airflow-dags
       persistentVolumeClaim:
         claimName: airflow-dags
-    # - name: spark-events
-    #   persistentVolumeClaim:
-    #     claimName: spark-events

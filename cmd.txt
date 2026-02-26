@@ -40,8 +40,8 @@ helm install dqops ./chart -n data-pipeline --create-namespace
 helm install spark-operator ./spark-operator -n data-pipeline
 
 3. Copy dags
-kubectl exec -n data-pipeline airflow-scheduler-8688fcccd8-g24wc -- rm -rf /opt/airflow/dags/*
-kubectl cp ./airflow/dags/ data-pipeline/:/opt/airflow/
+kubectl exec -n data-pipeline airflow-scheduler-8688fcccd8-wjgqj -- rm -rf /opt/airflow/dags/*
+kubectl cp ./airflow/dags/ data-pipeline/airflow-scheduler-8688fcccd8-wjgqj:/opt/airflow/
 
 4. Copy dataset to postgres
 
@@ -109,41 +109,52 @@ CREATE TABLE user_behavior (
 );
 
 
-COPY user_behavior (
-    user_id,
-    age,
-    country,
-    city,
-    reg_days,
-    marketing_source,
-    sessions_30d,
-    sessions_90d,
-    avg_session_duration_90d,
-    median_pages_viewed_30d,
-    search_queries_30d,
-    device_mix_ratio,
-    app_version_major,
-    orders_30d,
-    orders_90d,
-    orders_2024,
-    aov_2024,
-    gmv_2024,
-    category_diversity_2024,
-    days_since_last_order,
-    discount_rate_2024,
-    refunds_count_2024,
-    refund_rate_2024,
-    support_tickets_2024,
-    avg_csat_2024,
-    emails_open_rate_90d,
-    emails_click_rate_90d,
-    review_count_2024,
-    avg_review_stars_2024,
-    rfm_recency,
-    rfm_frequency,
-    rfm_monetary,
-    churn_label
-)
+COPY transactions
 FROM '/tmp/data.csv'
 DELIMITER ','
 CSV HEADER;
+
+
+
+engine = TemplateEngine()
+template_path = "column/accepted_values/text_found_in_set_percent/spark.sql.jinja2"
+
+full_context = {
+    'target_table': {
+        'schema_name': 'sales',
+        'table_name': 'orders'
+    },
+    'table': {
+        'filter': "status != 'deleted'",
+        'columns': {
+            'order_id': {'type_snapshot': {'column_type': 'VARCHAR'}, 'sql_expression': None},
+            'customer_id': {'type_snapshot': {'column_type': 'VARCHAR'}, 'sql_expression': None},
+            'status': {'type_snapshot': {'column_type': 'VARCHAR'}, 'sql_expression': None},
+            'total_amount': {'type_snapshot': {'column_type': 'DECIMAL'}, 'sql_expression': None},
+            'region': {'type_snapshot': {'column_type': 'VARCHAR'}, 'sql_expression': None},
+            'created_at': {'type_snapshot': {'column_type': 'TIMESTAMP'}, 'sql_expression': None}
+        }
+    },
+    'column_name': 'status',
+    'error_sampling': {
+        'samples_limit': 10,
+        'total_samples_limit': 1000,
+        'id_columns': ['order_id']
+    },
+    'parameters': {
+        'expected_values': ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled']
+    },
+    'data_groupings': {
+        'region': {'source': 'column_value', 'column': 'region'}
+    },
+    'time_series': {
+        'mode': 'timestamp_column',
+        'timestamp_column': 'created_at',
+        'time_gradient': 'day'
+    },
+    'time_window_filter': {
+        'daily_partitioning_recent_days': 30,
+        'daily_partitioning_include_today': False
+    },
+    'additional_filters': ["region IS NOT NULL", "total_amount > 0"]
+}

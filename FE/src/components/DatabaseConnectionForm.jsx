@@ -1,6 +1,7 @@
 // DatabaseConnectionForm.jsx
 import React, { useState } from 'react';
 import { Server, Database, User, Lock, Plus, Trash2, CheckCircle, XCircle, Loader2, ChevronRight } from 'lucide-react';
+import { API_BASE } from '../config';
 
 export default function DatabaseConnectionForm({
   dbConfig,
@@ -65,7 +66,7 @@ export default function DatabaseConnectionForm({
         saved_at: new Date().toISOString()
       };
 
-      const response = await fetch('http://localhost:8000/postgres/connections', {
+      const response = await fetch(`${API_BASE}/postgres/connections`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

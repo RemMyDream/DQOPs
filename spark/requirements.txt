@@ -11,3 +11,4 @@ SQLAlchemy==1.4.49
 pandas-datareader
 pyarrow==14.0.2
 pyiceberg[s3fs]>=0.7.0
+jinja2

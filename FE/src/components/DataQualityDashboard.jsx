@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Database, 
-  ChevronRight, 
+import {
+  Database,
+  ChevronRight,
   ChevronDown,
   Table,
   Columns,
@@ -10,13 +10,16 @@ import {
   AlertCircle,
   RefreshCw,
   Settings,
-  LogOut
+  LogOut,
+  Play
 } from 'lucide-react';
+import { API_BASE } from '../config';
+import ProfilingView from './ProfilingView';
 
-export default function DataQualityDashboard({ 
+export default function DataQualityDashboard({
   connectionName,
   ingestedTables, // Array of {schema, table, primary_keys}
-  onLogout 
+  onLogout
 }) {
   const [connections, setConnections] = useState([]);
   const [selectedConnection, setSelectedConnection] = useState(null);
@@ -27,6 +30,7 @@ export default function DataQualityDashboard({
   const [expandedSchemas, setExpandedSchemas] = useState({});
   const [expandedTables, setExpandedTables] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('datasources');
 
   useEffect(() => {
     loadIngestedTables();
@@ -57,7 +61,7 @@ export default function DataQualityDashboard({
             tables.map(async (tableName) => {
               try {
                 const columnsResponse = await fetch(
-                  'http://localhost:8000/postgres/tables/columns',
+                  `${API_BASE}/postgres/tables/columns`,
                   {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -74,7 +78,7 @@ export default function DataQualityDashboard({
                 }
 
                 const columnsData = await columnsResponse.json();
-                
+
                 return {
                   table_name: tableName,
                   columns: columnsData.columns
@@ -100,15 +104,15 @@ export default function DataQualityDashboard({
         connection_name: connectionName,
         schemas: schemasWithColumns
       }];
-      
+
       setConnections(connectionData);
-      
+
       // Auto-expand the connection
       setExpandedConnections({ [connectionName]: true });
-      
+
       // Auto-select the connection
       setSelectedConnection(connectionName);
-      
+
     } catch (error) {
       console.error('Failed to load ingested tables:', error);
       alert(`Failed to load ingested tables: ${error.message}`);
@@ -168,6 +172,10 @@ export default function DataQualityDashboard({
     setSelectedColumn(columnName);
   };
 
+  const handleRunProfiling = () => {
+    setActiveTab('profiling');
+  };
+
   const getBreadcrumb = () => {
     const parts = [];
     if (selectedConnection) parts.push(selectedConnection);
@@ -176,6 +184,16 @@ export default function DataQualityDashboard({
     if (selectedColumn) parts.push(selectedColumn);
     return parts.join(' / ');
   };
+
+  const navTabs = [
+    { key: 'datasources', label: 'Data sources' },
+    { key: 'profiling', label: 'Profiling' },
+    { key: 'monitoring', label: 'Monitoring checks' },
+    { key: 'partition', label: 'Partition checks' },
+    { key: 'dashboards', label: 'Data quality dashboards' },
+    { key: 'incidents', label: 'Incidents' },
+    { key: 'configuration', label: 'Configuration' }
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col">
@@ -196,27 +214,19 @@ export default function DataQualityDashboard({
 
               {/* Navigation Tabs */}
               <div className="flex items-center space-x-1 ml-8">
-                <button className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg">
-                  Data sources
-                </button>
-                <button className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
-                  Profiling
-                </button>
-                <button className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
-                  Monitoring checks
-                </button>
-                <button className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
-                  Partition checks
-                </button>
-                <button className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
-                  Data quality dashboards
-                </button>
-                <button className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
-                  Incidents
-                </button>
-                <button className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
-                  Configuration
-                </button>
+                {navTabs.map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      activeTab === tab.key
+                        ? 'text-blue-600 bg-blue-50'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -225,7 +235,7 @@ export default function DataQualityDashboard({
                 <span>Root data domain</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
-              
+
               <button className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
                 <RefreshCw className="w-4 h-4" />
                 <span>Synchronize</span>
@@ -236,7 +246,7 @@ export default function DataQualityDashboard({
               </button>
 
               {onLogout && (
-                <button 
+                <button
                   onClick={onLogout}
                   className="p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
                   title="Logout"
@@ -258,7 +268,7 @@ export default function DataQualityDashboard({
               <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
                 Data Sources
               </h2>
-              <button 
+              <button
                 onClick={loadIngestedTables}
                 className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors"
                 title="Refresh"
@@ -447,169 +457,198 @@ export default function DataQualityDashboard({
               </div>
             )}
 
-            {/* Content Area */}
-            {!selectedConnection && (
+            {/* Profiling Tab */}
+            {activeTab === 'profiling' && selectedSchema && selectedTable && (
+              <ProfilingView
+                connectionName={connectionName}
+                schemaName={selectedSchema}
+                tableName={selectedTable}
+              />
+            )}
+
+            {activeTab === 'profiling' && (!selectedSchema || !selectedTable) && (
               <div className="text-center py-20">
-                <Database className="w-20 h-20 text-slate-300 mx-auto mb-4" />
+                <BarChart3 className="w-20 h-20 text-slate-300 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-slate-700 mb-2">
-                  Select a data source
+                  Select a table to profile
                 </h3>
                 <p className="text-slate-500">
-                  Choose a connection, schema, table, or column from the sidebar to view details
+                  Choose a schema and table from the sidebar to view or run profiling
                 </p>
               </div>
             )}
 
-            {selectedConnection && !selectedSchema && (
-              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className="p-3 bg-blue-100 rounded-lg">
-                    <Database className="w-8 h-8 text-blue-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-slate-900">{selectedConnection}</h2>
-                    <p className="text-slate-500">Database Connection</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-slate-50 rounded-lg p-4">
-                    <p className="text-sm text-slate-600 mb-1">Schemas</p>
-                    <p className="text-2xl font-bold text-slate-900">
-                      {connections.find(c => c.connection_name === selectedConnection)?.schemas.length || 0}
-                    </p>
-                  </div>
-                  <div className="bg-slate-50 rounded-lg p-4">
-                    <p className="text-sm text-slate-600 mb-1">Tables</p>
-                    <p className="text-2xl font-bold text-slate-900">
-                      {connections.find(c => c.connection_name === selectedConnection)?.schemas.reduce(
-                        (acc, s) => acc + s.tables.length, 0
-                      ) || 0}
-                    </p>
-                  </div>
-                  <div className="bg-slate-50 rounded-lg p-4">
-                    <p className="text-sm text-slate-600 mb-1">Status</p>
-                    <p className="text-sm font-semibold text-green-600">Connected</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {selectedConnection && selectedSchema && !selectedTable && (
-              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className="p-3 bg-purple-100 rounded-lg">
-                    <Database className="w-8 h-8 text-purple-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-slate-900">{selectedSchema}</h2>
-                    <p className="text-slate-500">{selectedConnection} / Schema</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-slate-50 rounded-lg p-4">
-                    <p className="text-sm text-slate-600 mb-1">Tables</p>
-                    <p className="text-2xl font-bold text-slate-900">
-                      {connections.find(c => c.connection_name === selectedConnection)
-                        ?.schemas.find(s => s.schema_name === selectedSchema)
-                        ?.tables.length || 0}
-                    </p>
-                  </div>
-                  <div className="bg-slate-50 rounded-lg p-4">
-                    <p className="text-sm text-slate-600 mb-1">Total Columns</p>
-                    <p className="text-2xl font-bold text-slate-900">
-                      {connections.find(c => c.connection_name === selectedConnection)
-                        ?.schemas.find(s => s.schema_name === selectedSchema)
-                        ?.tables.reduce((acc, t) => acc + t.columns.length, 0) || 0}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {selectedConnection && selectedSchema && selectedTable && !selectedColumn && (
-              <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
-                <div className="p-6 border-b border-slate-200">
-                  <div className="flex items-center space-x-4 mb-4">
-                    <div className="p-3 bg-green-100 rounded-lg">
-                      <Table className="w-8 h-8 text-green-600" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-slate-900">{selectedTable}</h2>
-                      <p className="text-slate-500">{selectedConnection} / {selectedSchema} / Table</p>
-                    </div>
-                  </div>
-                  
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm">
-                    Collect statistics
-                  </button>
-                </div>
-
-                {/* Column Statistics Table Placeholder */}
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-slate-900 mb-4">Columns</h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-slate-50">
-                        <tr>
-                          <th className="px-4 py-3 text-left font-medium text-slate-700">Column name</th>
-                          <th className="px-4 py-3 text-left font-medium text-slate-700">Data type</th>
-                          <th className="px-4 py-3 text-left font-medium text-slate-700">Nulls</th>
-                          <th className="px-4 py-3 text-left font-medium text-slate-700">Distinct</th>
-                          <th className="px-4 py-3 text-left font-medium text-slate-700">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200">
-                        {connections.find(c => c.connection_name === selectedConnection)
-                          ?.schemas.find(s => s.schema_name === selectedSchema)
-                          ?.tables.find(t => t.table_name === selectedTable)
-                          ?.columns.map((column) => (
-                            <tr key={column} className="hover:bg-slate-50">
-                              <td className="px-4 py-3">
-                                <button
-                                  onClick={() => selectColumn(selectedConnection, selectedSchema, selectedTable, column)}
-                                  className="text-blue-600 hover:text-blue-700 font-medium"
-                                >
-                                  {column}
-                                </button>
-                              </td>
-                              <td className="px-4 py-3 text-slate-600">-</td>
-                              <td className="px-4 py-3 text-slate-600">-</td>
-                              <td className="px-4 py-3 text-slate-600">-</td>
-                              <td className="px-4 py-3">
-                                <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors">
-                                  <BarChart3 className="w-4 h-4" />
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {selectedConnection && selectedSchema && selectedTable && selectedColumn && (
-              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className="p-3 bg-indigo-100 rounded-lg">
-                    <Columns className="w-8 h-8 text-indigo-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-slate-900">{selectedColumn}</h2>
+            {/* Data Sources Tab */}
+            {activeTab === 'datasources' && (
+              <>
+                {!selectedConnection && (
+                  <div className="text-center py-20">
+                    <Database className="w-20 h-20 text-slate-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-slate-700 mb-2">
+                      Select a data source
+                    </h3>
                     <p className="text-slate-500">
-                      {selectedConnection} / {selectedSchema} / {selectedTable} / Column
+                      Choose a connection, schema, table, or column from the sidebar to view details
                     </p>
                   </div>
-                </div>
-                
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-                  <BarChart3 className="w-12 h-12 text-blue-600 mx-auto mb-3" />
-                  <p className="text-slate-600">
-                    Column statistics will be displayed here after collecting data quality metrics
-                  </p>
-                </div>
-              </div>
+                )}
+
+                {selectedConnection && !selectedSchema && (
+                  <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
+                    <div className="flex items-center space-x-4 mb-6">
+                      <div className="p-3 bg-blue-100 rounded-lg">
+                        <Database className="w-8 h-8 text-blue-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-slate-900">{selectedConnection}</h2>
+                        <p className="text-slate-500">Database Connection</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="bg-slate-50 rounded-lg p-4">
+                        <p className="text-sm text-slate-600 mb-1">Schemas</p>
+                        <p className="text-2xl font-bold text-slate-900">
+                          {connections.find(c => c.connection_name === selectedConnection)?.schemas.length || 0}
+                        </p>
+                      </div>
+                      <div className="bg-slate-50 rounded-lg p-4">
+                        <p className="text-sm text-slate-600 mb-1">Tables</p>
+                        <p className="text-2xl font-bold text-slate-900">
+                          {connections.find(c => c.connection_name === selectedConnection)?.schemas.reduce(
+                            (acc, s) => acc + s.tables.length, 0
+                          ) || 0}
+                        </p>
+                      </div>
+                      <div className="bg-slate-50 rounded-lg p-4">
+                        <p className="text-sm text-slate-600 mb-1">Status</p>
+                        <p className="text-sm font-semibold text-green-600">Connected</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedConnection && selectedSchema && !selectedTable && (
+                  <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
+                    <div className="flex items-center space-x-4 mb-6">
+                      <div className="p-3 bg-purple-100 rounded-lg">
+                        <Database className="w-8 h-8 text-purple-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-slate-900">{selectedSchema}</h2>
+                        <p className="text-slate-500">{selectedConnection} / Schema</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-slate-50 rounded-lg p-4">
+                        <p className="text-sm text-slate-600 mb-1">Tables</p>
+                        <p className="text-2xl font-bold text-slate-900">
+                          {connections.find(c => c.connection_name === selectedConnection)
+                            ?.schemas.find(s => s.schema_name === selectedSchema)
+                            ?.tables.length || 0}
+                        </p>
+                      </div>
+                      <div className="bg-slate-50 rounded-lg p-4">
+                        <p className="text-sm text-slate-600 mb-1">Total Columns</p>
+                        <p className="text-2xl font-bold text-slate-900">
+                          {connections.find(c => c.connection_name === selectedConnection)
+                            ?.schemas.find(s => s.schema_name === selectedSchema)
+                            ?.tables.reduce((acc, t) => acc + t.columns.length, 0) || 0}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedConnection && selectedSchema && selectedTable && !selectedColumn && (
+                  <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="p-6 border-b border-slate-200">
+                      <div className="flex items-center space-x-4 mb-4">
+                        <div className="p-3 bg-green-100 rounded-lg">
+                          <Table className="w-8 h-8 text-green-600" />
+                        </div>
+                        <div>
+                          <h2 className="text-2xl font-bold text-slate-900">{selectedTable}</h2>
+                          <p className="text-slate-500">{selectedConnection} / {selectedSchema} / Table</p>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={handleRunProfiling}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm flex items-center space-x-2"
+                      >
+                        <Play className="w-4 h-4" />
+                        <span>Run Profiling</span>
+                      </button>
+                    </div>
+
+                    {/* Column Statistics Table */}
+                    <div className="p-6">
+                      <h3 className="text-lg font-semibold text-slate-900 mb-4">Columns</h3>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className="bg-slate-50">
+                            <tr>
+                              <th className="px-4 py-3 text-left font-medium text-slate-700">Column name</th>
+                              <th className="px-4 py-3 text-left font-medium text-slate-700">Data type</th>
+                              <th className="px-4 py-3 text-left font-medium text-slate-700">Nulls</th>
+                              <th className="px-4 py-3 text-left font-medium text-slate-700">Distinct</th>
+                              <th className="px-4 py-3 text-left font-medium text-slate-700">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200">
+                            {connections.find(c => c.connection_name === selectedConnection)
+                              ?.schemas.find(s => s.schema_name === selectedSchema)
+                              ?.tables.find(t => t.table_name === selectedTable)
+                              ?.columns.map((column) => (
+                                <tr key={column} className="hover:bg-slate-50">
+                                  <td className="px-4 py-3">
+                                    <button
+                                      onClick={() => selectColumn(selectedConnection, selectedSchema, selectedTable, column)}
+                                      className="text-blue-600 hover:text-blue-700 font-medium"
+                                    >
+                                      {column}
+                                    </button>
+                                  </td>
+                                  <td className="px-4 py-3 text-slate-600">-</td>
+                                  <td className="px-4 py-3 text-slate-600">-</td>
+                                  <td className="px-4 py-3 text-slate-600">-</td>
+                                  <td className="px-4 py-3">
+                                    <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors">
+                                      <BarChart3 className="w-4 h-4" />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedConnection && selectedSchema && selectedTable && selectedColumn && (
+                  <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
+                    <div className="flex items-center space-x-4 mb-6">
+                      <div className="p-3 bg-indigo-100 rounded-lg">
+                        <Columns className="w-8 h-8 text-indigo-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-slate-900">{selectedColumn}</h2>
+                        <p className="text-slate-500">
+                          {selectedConnection} / {selectedSchema} / {selectedTable} / Column
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+                      <BarChart3 className="w-12 h-12 text-blue-600 mx-auto mb-3" />
+                      <p className="text-slate-600">
+                        Column statistics will be displayed here after collecting data quality metrics
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </main>

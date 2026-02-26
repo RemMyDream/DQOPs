@@ -16,7 +16,21 @@ logger = logging.getLogger("BronzeIngestion")
 
 
 def create_spark_session(app_name: str = "BronzeIngestion") -> SparkSession:
-    spark = SparkSession.builder.appName(app_name).getOrCreate()
+    builder = SparkSession.builder.appName(app_name)
+
+    # Set S3/MinIO credentials from env vars (injected by K8s Secret)
+    minio_access_key = os.environ.get("MINIO_ACCESS_KEY")
+    minio_secret_key = os.environ.get("MINIO_SECRET_KEY")
+    minio_endpoint = os.environ.get("MINIO_ENDPOINT")
+
+    if minio_access_key:
+        builder = builder.config("spark.hadoop.fs.s3a.access.key", minio_access_key)
+    if minio_secret_key:
+        builder = builder.config("spark.hadoop.fs.s3a.secret.key", minio_secret_key)
+    if minio_endpoint:
+        builder = builder.config("spark.hadoop.fs.s3a.endpoint", minio_endpoint)
+
+    spark = builder.getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
     logger.info("SparkSession created successfully")
     return spark
@@ -99,9 +113,6 @@ def write_to_iceberg(
     
     full_table_name = f"{catalog}.{database}.{table_name}"
     
-    # db_location = f"{warehouse.rstrip('/')}/{database}/"
-    # spark.sql(f"CREATE DATABASE IF NOT EXISTS {catalog}.{database} LOCATION '{db_location}'")    
-    # logger.info(f"CREATE DATABASE SUCCESSFULLY")
     # Check if table exists
     try:
         spark.table(full_table_name)

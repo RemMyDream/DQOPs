@@ -1,0 +1,240 @@
+# ==================================================================================
+# FULL CONTEXT DICT FOR DQ TEMPLATE ENGINE
+# ==================================================================================
+
+context = {
+    
+    # ==========================================================================
+    # 1. target_table (REQUIRED) - Bảng cần phân tích
+    # ==========================================================================
+    'target_table': {
+        'schema_name': 'string',    # Tên schema/database
+        'table_name': 'string'      # Tên bảng
+    },
+    
+    # ==========================================================================
+    # 2. table (REQUIRED) - Metadata của bảng
+    # ==========================================================================
+    'table': {
+        'filter': 'string | None',  # Default WHERE filter, e.g. "status != 'deleted'"
+        'columns': {
+            '<column_name>': {
+                'type_snapshot': {
+                    'column_type': 'DATE | TIMESTAMP | VARCHAR | STRING | INT | BIGINT | DECIMAL | FLOAT | DOUBLE | BOOLEAN'
+                },
+                'sql_expression': 'string | None'  # None = normal column, string = computed column
+                # Placeholders: {alias}, {table}, {column}
+                # Example: "CONCAT({alias}.first_name, ' ', {alias}.last_name)"
+            }
+        }
+    },
+    
+    # ==========================================================================
+    # 3. column_name (REQUIRED) - Cột đang được phân tích
+    # ==========================================================================
+    'column_name': 'string',
+    
+    # ==========================================================================
+    # 4. error_sampling (REQUIRED) - Cấu hình lấy mẫu lỗi
+    # ==========================================================================
+    'error_sampling': {
+        'samples_limit': 'int',           # Max samples per group (default: 10)
+        'total_samples_limit': 'int',     # Total max samples (default: 1000)
+        'id_columns': ['string', ...]     # Columns to identify rows, e.g. ['order_id']
+    },
+    
+    # ==========================================================================
+    # 5. parameters (REQUIRED) - Tham số cho sensor
+    # ==========================================================================
+    'parameters': {
+        # --- Common ---
+        'filter': 'string | None',        # Additional SQL filter
+        
+        # --- For foreign key checks ---
+        'foreign_table': 'string | None', # e.g. 'schema.table' or 'table'
+        'foreign_column': 'string | None',
+        
+        # --- For value_in_set_percent ---
+        'expected_values': ['value1', 'value2', ...],  # List of valid values
+        
+        # --- For value_in_range_percent ---
+        'min_value': 'number | None',
+        'max_value': 'number | None',
+        
+        # --- For mean_match ---
+        'referenced_table': 'string',     # e.g. 'staging.orders_raw'
+        'referenced_column': 'string',
+        
+        # --- For regex_match ---
+        'pattern': 'string',              # Regex pattern
+        
+        # --- For date_format ---
+        'date_format': 'YYYY-MM-DD | MM/DD/YYYY | DD/MM/YYYY | YYYY/MM/DD | Month D, YYYY'
+    },
+    
+    # ==========================================================================
+    # 6. additional_filters (OPTIONAL) - Danh sách filter bổ sung
+    # ==========================================================================
+    'additional_filters': [
+        'string',  # SQL conditions, e.g. "region IS NOT NULL"
+        'string',  # e.g. "total_amount > 0"
+        # Placeholders: {column}, {table}, {alias}
+    ],
+    
+    # ==========================================================================
+    # 7. time_series (OPTIONAL) - Cấu hình trục thời gian
+    # ==========================================================================
+    'time_series': {
+        'mode': 'current_time | timestamp_column',
+        # current_time: Dùng CURRENT_TIMESTAMP()
+        # timestamp_column: Dùng cột timestamp trong bảng
+        
+        'timestamp_column': 'string',  # REQUIRED nếu mode = 'timestamp_column'
+        
+        'time_gradient': 'year | quarter | month | week | day | hour'
+        # Độ chia nhỏ của thời gian để GROUP BY
+    },
+    
+    # ==========================================================================
+    # 8. time_window_filter (OPTIONAL) - Lọc khoảng thời gian
+    #    Chỉ hoạt động khi có time_series.timestamp_column
+    # ==========================================================================
+    'time_window_filter': {
+        # --------- START boundary (ưu tiên theo thứ tự) ---------
+        'from_date_time_offset': 'string | None',  # ISO-8601 + timezone, e.g. '2024-01-01T00:00:00+07:00'
+        'from_date_time': 'string | None',         # ISO-8601, e.g. '2024-01-01 00:00:00'
+        'from_date': 'string | None',              # YYYY-MM-DD, e.g. '2024-01-01'
+        
+        # --------- END boundary (ưu tiên theo thứ tự) ---------
+        'to_date_time_offset': 'string | None',
+        'to_date_time': 'string | None',
+        'to_date': 'string | None',
+        
+        # --------- RELATIVE window ---------
+        'daily_partitioning_recent_days': 'int | None',    # >= 1, e.g. 7 = last 7 days
+        'monthly_partitioning_recent_months': 'int | None', # >= 1, e.g. 3 = last 3 months
+        
+        # --------- INCLUDE flags ---------
+        'daily_partitioning_include_today': 'True | False',           # Default: True
+        'monthly_partitioning_include_current_month': 'True | False'  # Default: True
+    },
+    
+    # ==========================================================================
+    # 9. data_groupings (OPTIONAL) - Nhóm dữ liệu theo dimensions
+    # ==========================================================================
+    'data_groupings': {
+        '<attribute_name>': {
+            'source': 'column_value | tag',
+            
+            # Nếu source = 'column_value': lấy giá trị từ cột
+            'column': 'string',  # REQUIRED nếu source = 'column_value'
+            
+            # Nếu source = 'tag': gán giá trị cố định
+            'tag': 'string'      # REQUIRED nếu source = 'tag'
+        }
+    }
+}
+
+
+# ==================================================================================
+# EXAMPLES
+# ==================================================================================
+
+# Example 1: Minimal
+minimal = {
+    'target_table': {'schema_name': 'sales', 'table_name': 'orders'},
+    'table': {
+        'filter': None,
+        'columns': {
+            'customer_id': {'type_snapshot': {'column_type': 'VARCHAR'}, 'sql_expression': None}
+        }
+    },
+    'column_name': 'customer_id',
+    'error_sampling': {'samples_limit': 10, 'total_samples_limit': 1000, 'id_columns': []},
+    'parameters': {},
+    'additional_filters': []
+}
+
+# Example 2: With time filter (last 7 days)
+with_time = {
+    **minimal,
+    'table': {
+        'filter': None,
+        'columns': {
+            'customer_id': {'type_snapshot': {'column_type': 'VARCHAR'}, 'sql_expression': None},
+            'created_at': {'type_snapshot': {'column_type': 'TIMESTAMP'}, 'sql_expression': None}
+        }
+    },
+    'time_series': {
+        'mode': 'timestamp_column',
+        'timestamp_column': 'created_at',
+        'time_gradient': 'day'
+    },
+    'time_window_filter': {
+        'daily_partitioning_recent_days': 7,
+        'daily_partitioning_include_today': False
+    }
+}
+
+# Example 3: With data groupings
+with_groupings = {
+    **minimal,
+    'table': {
+        'filter': None,
+        'columns': {
+            'customer_id': {'type_snapshot': {'column_type': 'VARCHAR'}, 'sql_expression': None},
+            'region': {'type_snapshot': {'column_type': 'VARCHAR'}, 'sql_expression': None}
+        }
+    },
+    'data_groupings': {
+        'region': {'source': 'column_value', 'column': 'region'},
+        'env': {'source': 'tag', 'tag': 'production'}
+    }
+}
+
+# Example 4: value_in_set check
+value_in_set = {
+    **minimal,
+    'column_name': 'status',
+    'table': {
+        'filter': None,
+        'columns': {
+            'status': {'type_snapshot': {'column_type': 'VARCHAR'}, 'sql_expression': None}
+        }
+    },
+    'parameters': {
+        'expected_values': ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled']
+    }
+}
+
+# Example 5: Full context
+full = {
+    'target_table': {'schema_name': 'sales', 'table_name': 'orders'},
+    'table': {
+        'filter': "status != 'deleted'",
+        'columns': {
+            'order_id': {'type_snapshot': {'column_type': 'VARCHAR'}, 'sql_expression': None},
+            'status': {'type_snapshot': {'column_type': 'VARCHAR'}, 'sql_expression': None},
+            'region': {'type_snapshot': {'column_type': 'VARCHAR'}, 'sql_expression': None},
+            'created_at': {'type_snapshot': {'column_type': 'TIMESTAMP'}, 'sql_expression': None}
+        }
+    },
+    'column_name': 'status',
+    'error_sampling': {'samples_limit': 5, 'total_samples_limit': 500, 'id_columns': ['order_id']},
+    'parameters': {
+        'expected_values': ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled']
+    },
+    'additional_filters': ['region IS NOT NULL'],
+    'time_series': {
+        'mode': 'timestamp_column',
+        'timestamp_column': 'created_at',
+        'time_gradient': 'day'
+    },
+    'time_window_filter': {
+        'daily_partitioning_recent_days': 30,
+        'daily_partitioning_include_today': False
+    },
+    'data_groupings': {
+        'region': {'source': 'column_value', 'column': 'region'}
+    }
+}

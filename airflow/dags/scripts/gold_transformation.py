@@ -18,19 +18,30 @@ logger = logging.getLogger("GoldTransformation")
 
 
 def create_spark_session(app_name: str = "GoldTransformation") -> SparkSession:
-    spark = SparkSession.builder \
-        .appName(app_name) \
-        .getOrCreate()
-    
+    builder = SparkSession.builder.appName(app_name)
+
+    # Set S3/MinIO credentials from env vars (injected by K8s Secret)
+    minio_access_key = os.environ.get("MINIO_ACCESS_KEY")
+    minio_secret_key = os.environ.get("MINIO_SECRET_KEY")
+    minio_endpoint = os.environ.get("MINIO_ENDPOINT")
+
+    if minio_access_key:
+        builder = builder.config("spark.hadoop.fs.s3a.access.key", minio_access_key)
+    if minio_secret_key:
+        builder = builder.config("spark.hadoop.fs.s3a.secret.key", minio_secret_key)
+    if minio_endpoint:
+        builder = builder.config("spark.hadoop.fs.s3a.endpoint", minio_endpoint)
+
+    spark = builder.getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
-    
+
     spark._jvm.org.apache.log4j.Logger.getLogger("org.apache.iceberg").setLevel(
         spark._jvm.org.apache.log4j.Level.ERROR
     )
     spark._jvm.org.apache.log4j.Logger.getLogger("org.apache.hadoop").setLevel(
         spark._jvm.org.apache.log4j.Level.ERROR
     )
-    
+
     logger.info("SparkSession created successfully")
     return spark
 
@@ -45,7 +56,6 @@ def read_from_iceberg(
     full_table_name = f"{catalog}.{database}.{table_name}"
     logger.info(f"Reading from {full_table_name}")
     return spark.table(full_table_name)
-
 
 def apply_transformations(
     df: DataFrame,
@@ -309,4 +319,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    spark = create_spark_session("Chien")
+    df = read_from_iceberg(spark, "bronze", "data_source", "transactions")
+    print(df.head(20))

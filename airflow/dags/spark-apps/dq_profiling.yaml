@@ -1,0 +1,129 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: dq-profiling
+  namespace: data-pipeline
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: remmydream/spark-image:v3.1
+  imagePullPolicy: Always
+  mainApplicationFile: local:///opt/airflow/dags/scripts/dq_profiling.py
+  sparkVersion: 3.5.1
+  arguments:
+    - "--config"
+    - "/opt/airflow/dags/scripts/config/dq_profiling.json"
+  sparkConf:
+    # S3/MinIO config (non-sensitive)
+    spark.hadoop.fs.s3a.path.style.access: "true"
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    spark.hadoop.fs.s3a.connection.ssl.enabled: "false"
+    # Iceberg config
+    spark.sql.extensions: "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
+    spark.sql.catalog.bronze: "org.apache.iceberg.spark.SparkCatalog"
+    spark.sql.catalog.bronze.type: "hadoop"
+    spark.sql.catalog.bronze.warehouse: "s3a://bronze"
+  driver:
+    cores: 1
+    coreLimit: "1200m"
+    memory: "1g"
+    serviceAccount: spark-operator-spark
+    labels:
+      app: spark
+      role: driver
+    env:
+      - name: MINIO_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: minio-secret
+            key: MINIO_ACCESS_KEY
+      - name: MINIO_SECRET_KEY
+        valueFrom:
+          secretKeyRef:
+            name: minio-secret
+            key: MINIO_SECRET_KEY
+      - name: MINIO_ENDPOINT
+        valueFrom:
+          secretKeyRef:
+            name: minio-secret
+            key: MINIO_ENDPOINT
+      - name: INTERNAL_DB_HOST
+        valueFrom:
+          secretKeyRef:
+            name: internal-db-secret
+            key: INTERNAL_DB_HOST
+      - name: INTERNAL_DB_PORT
+        valueFrom:
+          secretKeyRef:
+            name: internal-db-secret
+            key: INTERNAL_DB_PORT
+      - name: INTERNAL_DB_NAME
+        valueFrom:
+          secretKeyRef:
+            name: internal-db-secret
+            key: INTERNAL_DB_NAME
+      - name: INTERNAL_DB_USER
+        valueFrom:
+          secretKeyRef:
+            name: internal-db-secret
+            key: INTERNAL_DB_USER
+      - name: INTERNAL_DB_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: internal-db-secret
+            key: INTERNAL_DB_PASSWORD
+    volumeMounts:
+      - name: airflow-dags
+        mountPath: /opt/airflow/dags
+    securityContext:
+      capabilities:
+        drop:
+          - ALL
+      runAsGroup: 185
+      runAsUser: 185
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      seccompProfile:
+        type: RuntimeDefault
+  executor:
+    cores: 1
+    instances: 2
+    memory: "2g"
+    labels:
+      app: spark
+      role: executor
+      version: "3.5.1"
+    env:
+      - name: MINIO_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: minio-secret
+            key: MINIO_ACCESS_KEY
+      - name: MINIO_SECRET_KEY
+        valueFrom:
+          secretKeyRef:
+            name: minio-secret
+            key: MINIO_SECRET_KEY
+      - name: MINIO_ENDPOINT
+        valueFrom:
+          secretKeyRef:
+            name: minio-secret
+            key: MINIO_ENDPOINT
+    volumeMounts:
+      - name: airflow-dags
+        mountPath: /opt/airflow/dags
+    securityContext:
+      capabilities:
+        drop:
+          - ALL
+      runAsGroup: 185
+      runAsUser: 185
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      seccompProfile:
+        type: RuntimeDefault
+  volumes:
+    - name: airflow-dags
+      persistentVolumeClaim:
+        claimName: airflow-dags
