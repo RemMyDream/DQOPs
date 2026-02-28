@@ -61,8 +61,8 @@ class JobTriggerService:
         
         return type_mapping.get(target_key, type_mapping.get('default', 'unknown_dag'))
     
-    def _unpause_dag(self, dag_id: str) -> bool:
-        """Unpause DAG before triggering"""
+    def _unpause_dag(self, dag_id: str) -> tuple:
+        """Unpause DAG before triggering. Returns (success, error_detail)."""
         try:
             response = requests.patch(
                 f"{self.airflow.url}/api/v1/dags/{dag_id}",
@@ -72,21 +72,35 @@ class JobTriggerService:
                 timeout=30
             )
             response.raise_for_status()
-            return True
+            return True, ""
+        except requests.HTTPError as e:
+            detail = ""
+            try:
+                detail = e.response.json().get("detail", e.response.text)
+            except Exception:
+                detail = e.response.text if e.response is not None else str(e)
+            status_code = e.response.status_code if e.response is not None else "?"
+            logger.error(f"Failed to unpause DAG {dag_id}: HTTP {status_code} - {detail}")
+            return False, f"HTTP {status_code} from Airflow: {detail}"
+        except requests.ConnectionError as e:
+            msg = f"Cannot reach Airflow at {self.airflow.url} - connection refused"
+            logger.error(f"Failed to unpause DAG {dag_id}: {msg}")
+            return False, msg
         except requests.RequestException as e:
             logger.error(f"Failed to unpause DAG {dag_id}: {e}")
-            return False
-    
+            return False, str(e)
+
     def _trigger_dag(
         self,
         dag_id: str,
         dag_conf: Dict[str, Any],
     ) -> Dict[str, Any]:
         """Internal method to trigger Airflow DAG"""
-        if not self._unpause_dag(dag_id):
+        unpause_ok, unpause_err = self._unpause_dag(dag_id)
+        if not unpause_ok:
             return {
                 "status": "error",
-                "message": f"Failed to unpause DAG {dag_id}",
+                "message": f"Failed to unpause DAG '{dag_id}': {unpause_err}",
                 "dag_id": dag_id,
             }
         
