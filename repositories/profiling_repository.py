@@ -28,6 +28,7 @@ class ProfilingRepository(PostgresConnectionClient):
                 dimension VARCHAR(50) NOT NULL,
                 metric_name VARCHAR(100) NOT NULL,
                 actual_value DOUBLE PRECISION,
+                string_value TEXT,
                 executed_sql TEXT,
                 execution_time_ms INTEGER,
                 error_message TEXT,
